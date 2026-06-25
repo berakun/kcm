@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kurnia Cipta Mandiri - Admin Dashboard</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#a53936",
+                    "outline-variant": "#e1bfbb",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "on-primary-fixed-variant": "#8e1214",
+                    "surface-dim": "#dadada",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#ffb4ac",
+                    "primary-container": "#991b1b",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary": "#353739",
+                    "surface": "#f9f9f9",
+                    "on-primary-container": "#ffaaa1",
+                    "secondary-fixed": "#ffdad7",
+                    "on-surface-variant": "#59413e",
+                    "surface-container-high": "#e8e8e8",
+                    "background": "#f9f9f9",
+                    "surface-container-highest": "#e2e2e2",
+                    "tertiary-fixed": "#e1e2e4",
+                    "secondary-fixed-dim": "#ffb3ad",
+                    "tertiary-container": "#4c4e50",
+                    "surface-bright": "#f9f9f9",
+                    "outline": "#8d706d",
+                    "tertiary-fixed-dim": "#c5c6c8",
+                    "surface-container": "#eeeeee",
+                    "primary-fixed-dim": "#ffb4ac",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#2f3131",
+                    "surface-tint": "#b02d29",
+                    "on-surface": "#1a1c1c",
+                    "on-secondary-container": "#721315",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f1",
+                    "on-tertiary-container": "#bebfc1",
+                    "on-secondary-fixed": "#410004",
+                    "on-primary-fixed": "#410002",
+                    "error": "#ba1a1a",
+                    "on-background": "#1a1c1c",
+                    "surface-variant": "#e2e2e2",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#191c1e",
+                    "surface-container-low": "#f3f3f4",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#ffdad6",
+                    "secondary-container": "#fe7c74",
+                    "primary": "#760009",
+                    "on-secondary-fixed-variant": "#852221"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "32px",
+                    "gutter": "16px",
+                    "container-margin": "24px",
+                    "unit": "4px",
+                    "card-padding": "20px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "data-tabular": ["Inter"],
+                    "body-md": ["Inter"],
+                    "title-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "data-tabular": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F3F4F6;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(153, 27, 27, 0.2);
+            border-radius: 10px;
+        }
+        .card-shadow {
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.05), 0px 4px 6px rgba(0,0,0,0.02);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface">
+<!-- Navigation Drawer (Left Sidebar) -->
+<aside class="fixed h-full w-[260px] left-0 top-0 bg-primary-container z-50 transition-transform duration-300 flex flex-col shadow-md" id="sidebar">
+<!-- Brand Section -->
+<div class="px-6 py-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-white rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">architecture</span>
+</div>
+<div>
+<h1 class="text-white font-bold text-headline-md tracking-tight">KCM</h1>
+<p class="text-on-primary-container text-[10px] uppercase font-bold tracking-widest">Kurnia Cipta Mandiri</p>
+</div>
+</div>
+<!-- User Profile Header -->
+<div class="px-6 mb-6">
+<div class="flex items-center gap-3 p-3 bg-white/10 rounded-lg">
+<img class="w-10 h-10 rounded-full border border-white/20 object-cover" data-alt="A professional headshot of a middle-aged male administrator with a confident expression, wearing a clean white shirt and dark blazer. The lighting is soft and studio-quality, emphasizing a professional corporate environment. The background is a blurred high-end office interior with warm mahogany tones and minimalist furniture, consistent with a luxury administrative style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJb2KiUHQy2OOMaX_R878NdeiqPQLIahGIWlgwFmfpPPld7kV_ciQY0ZFozmqrnWqSO9t1rX9JCD6iF6BgIrJRYnsuD2ZPTfTHmRLtlsfzOE6hPaRRUx_w-1XyDHf57NbcIf90EHAZiM4h51qAF_hF4q2Y_-UzU5yBU6n9gDlCA9tyYm-8gxsPXAGk0BsWRsIZ9e7Y4aYRdCpGmu_J6iSSwyYK5qqBPXVfLZJ9bQvlQpujXIpX2XtH_g"/>
+<div class="overflow-hidden">
+<p class="text-white font-semibold text-body-sm truncate">Ahmad Kurnia</p>
+<p class="text-on-primary-container text-[11px] truncate">Super Admin</p>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-3 overflow-y-auto custom-scrollbar flex flex-col gap-1">
+<!-- Active: Overview -->
+<a class="flex items-center gap-3 px-4 py-3 border-l-4 border-secondary-container bg-white/10 text-white font-bold transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-body-sm font-label-caps">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-body-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-body-sm">Karyawan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="text-body-sm">Departemen</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="text-body-sm">Shift</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">fingerprint</span>
+<span class="text-body-sm">Presensi</span>
+</a>
+<div class="my-4 border-t border-white/10 mx-4"></div>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span class="text-body-sm">Izin &amp; Cuti</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="text-body-sm">Laporan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">manage_accounts</span>
+<span class="text-body-sm">Akun</span>
+</a>
+</nav>
+<!-- Footer Meta -->
+<div class="p-6 border-t border-white/10">
+<p class="text-on-primary-container/60 text-[10px] text-center uppercase tracking-widest">v2.4.0 • Kurnia Cipta</p>
+</div>
+</aside>
+<!-- Top AppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-260px)] bg-surface h-16 flex justify-between items-center px-6 border-b border-outline-variant z-40 transition-all duration-300 ml-[260px]">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="text-headline-md font-headline-md text-primary">Dashboard Overview</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group hidden lg:block">
+<input class="bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-body-sm w-64 focus:ring-2 focus:ring-primary-container transition-all" placeholder="Search data..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-sm">search</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="pt-24 pb-12 ml-[260px] px-6 min-h-screen transition-all duration-300">
+<!-- Welcome Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+<div>
+<h3 class="text-display-lg font-display-lg text-on-surface">Selamat Datang, Ahmad</h3>
+<p class="text-on-surface-variant font-body-sm">Berikut adalah ringkasan operasional Kurnia Cipta Mandiri hari ini.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center bg-white px-3 py-2 rounded-lg card-shadow border border-outline-variant">
+<span class="material-symbols-outlined text-primary mr-2">calendar_today</span>
+<span class="text-body-sm font-semibold">24 Mei 2024</span>
+</div>
+</div>
+</div>
+<!-- Quick Actions Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+<button class="group flex items-center justify-center gap-3 bg-primary text-white py-4 px-6 rounded-xl hover:bg-[#760009] transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">person_add</span>
+<span class="font-semibold">Tambah User</span>
+</button>
+<button class="group flex items-center justify-center gap-3 bg-white text-primary border-2 border-primary py-4 px-6 rounded-xl hover:bg-primary/5 transition-all card-shadow">
+<span class="material-symbols-outlined">post_add</span>
+<span class="font-semibold">Buat RAB Baru</span>
+</button>
+<button class="group flex items-center justify-center gap-3 bg-white text-on-surface border border-outline-variant py-4 px-6 rounded-xl hover:bg-surface-container-high transition-all card-shadow">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-semibold">Lihat Laporan</span>
+</button>
+</div>
+<!-- Stat Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<!-- Total Users -->
+<div class="bg-white p-5 rounded-xl card-shadow border-l-4 border-blue-500 relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-label-caps text-on-surface-variant">TOTAL USERS</p>
+<h4 class="text-display-lg font-display-lg mt-1">1,284</h4>
+</div>
+<div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">group</span>
+</div>
+</div>
+<div class="flex items-center text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded w-max">
+<span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +12% MoM
+                </div>
+</div>
+<!-- Active Today -->
+<div class="bg-white p-5 rounded-xl card-shadow border-l-4 border-emerald-500 relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-label-caps text-on-surface-variant">ACTIVE TODAY</p>
+<h4 class="text-display-lg font-display-lg mt-1">856</h4>
+</div>
+<div class="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+</div>
+<div class="flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded w-max">
+<span class="material-symbols-outlined text-[14px] mr-1">check_circle</span> Target tercapai
+                </div>
+</div>
+<!-- Proyek Aktif -->
+<div class="bg-white p-5 rounded-xl card-shadow border-l-4 border-primary-container relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-label-caps text-on-surface-variant">PROYEK AKTIF</p>
+<h4 class="text-display-lg font-display-lg mt-1">42</h4>
+</div>
+<div class="w-10 h-10 bg-red-50 text-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">construction</span>
+</div>
+</div>
+<p class="text-xs text-on-surface-variant">7 proyek mendekati tenggat</p>
+</div>
+<!-- Pending Approval -->
+<div class="bg-white p-5 rounded-xl card-shadow border-l-4 border-amber-500 relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-label-caps text-on-surface-variant">PENDING APPROVAL</p>
+<h4 class="text-display-lg font-display-lg mt-1">18</h4>
+</div>
+<div class="w-10 h-10 bg-amber-50 text-amber-500 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+</div>
+<div class="flex items-center text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded w-max">
+<span class="material-symbols-outlined text-[14px] mr-1">priority_high</span> High Priority
+                </div>
+</div>
+</div>
+<!-- Charts & Activity Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Bar Chart: Absensi Minggu Ini -->
+<div class="lg:col-span-2 bg-white rounded-xl card-shadow overflow-hidden border border-outline-variant flex flex-col">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<div>
+<h5 class="text-title-sm font-title-sm">Absensi Minggu Ini</h5>
+<p class="text-body-sm text-on-surface-variant">Data kehadiran dari Sen - Sab</p>
+</div>
+<button class="text-primary text-xs font-bold uppercase tracking-wider hover:underline">Download PDF</button>
+</div>
+<div class="p-6 flex-1 flex items-end justify-between gap-4 h-[300px]">
+<!-- Chart Bars -->
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg relative flex items-end overflow-hidden h-[85%]">
+<div class="w-full bg-primary-container transition-all duration-700 h-[70%]" style="height: 70%"></div>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">SEN</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg relative flex items-end overflow-hidden h-[85%]">
+<div class="w-full bg-primary-container transition-all duration-700 h-[85%]" style="height: 85%"></div>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">SEL</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg relative flex items-end overflow-hidden h-[85%]">
+<div class="w-full bg-primary-container transition-all duration-700 h-[75%]" style="height: 75%"></div>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">RAB</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg relative flex items-end overflow-hidden h-[85%]">
+<div class="w-full bg-primary-container transition-all duration-700 h-[92%]" style="height: 92%"></div>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">KAM</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg relative flex items-end overflow-hidden h-[85%]">
+<div class="w-full bg-primary-container transition-all duration-700 h-[60%]" style="height: 60%"></div>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">JUM</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg relative flex items-end overflow-hidden h-[85%]">
+<div class="w-full bg-primary-container transition-all duration-700 h-[40%]" style="height: 40%"></div>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">SAB</span>
+</div>
+</div>
+</div>
+<!-- Vertical Feed: Aktivitas Terbaru -->
+<div class="bg-white rounded-xl card-shadow overflow-hidden border border-outline-variant flex flex-col">
+<div class="p-6 border-b border-outline-variant bg-surface-container-low">
+<h5 class="text-title-sm font-title-sm">Aktivitas Terbaru</h5>
+</div>
+<div class="p-6 overflow-y-auto max-h-[360px] custom-scrollbar space-y-6">
+<!-- Activity Item 1 -->
+<div class="flex gap-4 relative">
+<div class="absolute left-[19px] top-10 bottom-0 w-[2px] bg-outline-variant"></div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover flex-shrink-0 z-10" data-alt="Close up photo of a young professional woman with a warm, friendly smile. She has dark hair tied back and is wearing a stylish charcoal grey blazer over a soft cream top. The image is brightly lit, with clean shadows and a high-end corporate feel. The background is a soft-focus office with elegant, minimalist white walls and a hint of a lush green plant." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9iRl7Ngdjm0MxxsDcHCsGrc95e18Jt_1LnerlUgUhtjfVwlKlXdUBxEA-JeiBUJIXN6kW0SSgf2SiYMUoB534SZJsanINLKusVPTNH9QjbI0rhWcvKPlRr-yhx5ekeY51KVi8wPtpK4H3UEExl9gQDef2MGtJjNdBrKWXtASGVnMr2hAFgWVDRV81TC0S0I66Gy5lLlWYtqgdSsiHLYhO8vvqRbcauRv29ITjSFh0bi7PGYKPwDpmAg"/>
+<div>
+<p class="text-body-sm font-semibold">Siti Aminah <span class="text-on-surface-variant font-normal">mengajukan cuti sakit.</span></p>
+<p class="text-[11px] text-on-surface-variant mt-1">2 jam yang lalu • HR Department</p>
+<div class="mt-2 flex gap-2">
+<button class="text-[11px] font-bold text-primary hover:underline">APPROVE</button>
+<button class="text-[11px] font-bold text-on-surface-variant hover:underline">REJECT</button>
+</div>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="flex gap-4 relative">
+<div class="absolute left-[19px] top-10 bottom-0 w-[2px] bg-outline-variant"></div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover flex-shrink-0 z-10" data-alt="Portrait of a young man in his late 20s, with short cropped hair and a creative, professional look. He is wearing a tailored navy blue shirt and a slim-fit dark tie. He looks slightly to the side with an focused expression. High-key studio lighting with soft highlights on the skin. Background is a crisp architectural detail of glass and steel in a high-rise office building." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDF2jh_kSMEaITuX6i-qHPb6MFOxK4-zcRt76JUy0DWquBSjJW_6KMI2CMzNqsqgRDwf5tVeqWS19c_DcFVjK74G7ep4qRxl795fWExzIA5_0Lh_1_sZ_Cn9MrIaYSRQ0R1muYssQosTB5VpS-mJN9pElEBS0cPWNel7SrXAfb4iNCPdgKhM9wyW802DQJg1rYB9tNT_gM6O9KZveXFfXtEgDbdQY_qs6plt-fhZiQbnQSXNqajOO8svg"/>
+<div>
+<p class="text-body-sm font-semibold">Budi Santoso <span class="text-on-surface-variant font-normal">mengupdate status Proyek Jembatan.</span></p>
+<p class="text-[11px] text-on-surface-variant mt-1">4 jam yang lalu • Engineering</p>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="flex gap-4 relative">
+<div class="absolute left-[19px] top-10 bottom-[-24px] w-[2px] bg-outline-variant"></div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover flex-shrink-0 z-10" data-alt="A portrait of an older, distinguished man in his 50s with salt-and-pepper hair, wearing a high-quality light grey suit and a crisp white shirt. He has a calm, authoritative expression. The image captures a sense of leadership and professional luxury. The lighting is balanced, creating a high-contrast corporate look. Background is an expensive, textured dark wall with subtle accent lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWp2SjqFXyb4_QSEmaEbIWljSuTQYWXoMJri0F7au6zj3CmSz8xhuVlxSzEF-lnQ6IZan-q3r1SEaqAJlCkfH2PtWcBAYrYS6Cdx6l3j-X1TkoLlYoZ9fySx2fgfWNdxEj8IcDT4iPl19qTSV6DDcI2oilJStGoSP7vswNDK1PaO9_FJhjZwqioPJtCNw1drPlV3kKct1uaJg17Oby_u7IhRZ5LaJhuTkL5tKw45rTuAStsX5gh4b0Cg"/>
+<div>
+<p class="text-body-sm font-semibold">Doni Wijaya <span class="text-on-surface-variant font-normal">mengunggah laporan RAB baru.</span></p>
+<p class="text-[11px] text-on-surface-variant mt-1">6 jam yang lalu • Finance</p>
+</div>
+</div>
+<!-- Activity Item 4 -->
+<div class="flex gap-4 relative">
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover flex-shrink-0 z-10" data-alt="A profile photo of a modern, professional woman in her 30s. She is wearing a chic maroon sweater that matches the brand's primary color. She has a subtle, confident smile and spectacles. The photography style is modern, bright, and high-fidelity. The background features a blurred luxury lounge area with neutral-toned furniture and soft, natural light coming from a large window." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUdGROkJtI7nF12fFMmQ_gwksJQNgyK3ou06vInt4x3qW4_b_n1mWWRX2CtgcXmNVU0rWX0_D71PT6KlAumkJ3nlcrffD1QKYCYDiLndiYRLEbEFEw_SVG0adSlhs0eNgKL7yYbK6tKVCg5C3pZBhRl5_x0SsY_nc5aNzQk96W_dfyAFrQV0FgiFTt5dTizKtUpu4xdWcBFjl47m827pnmPfIH4HZ2Wd3GAcbdwkHm_6hq49kHo5rz6g"/>
+<div>
+<p class="text-body-sm font-semibold">Lina Putri <span class="text-on-surface-variant font-normal">telah bergabung di tim Marketing.</span></p>
+<p class="text-[11px] text-on-surface-variant mt-1">Kemarin • General</p>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-outline-variant text-center">
+<button class="text-body-sm font-bold text-primary hover:underline">Lihat Semua Aktivitas</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="ml-[260px] w-[calc(100%-260px)] bg-surface-container-lowest border-t border-outline-variant py-4 px-6 flex justify-between items-center transition-all duration-300">
+<p class="text-body-sm text-on-surface-variant">© 2024 <span class="font-bold text-primary">Kurnia Cipta Mandiri.</span> All Rights Reserved.</p>
+<div class="flex items-center gap-6">
+<a class="text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<span class="text-body-sm text-on-surface-variant opacity-50">v2.4.1</span>
+</div>
+</footer>
+<!-- Mobile Navigation Overlay (Visible only when sidebar is triggered on mobile) -->
+<div class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<script>
+        // Simple Sidebar Toggle for Mobile
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        let isSidebarOpen = false;
+
+        function toggleSidebar() {
+            if (window.innerWidth >= 768) return;
+            isSidebarOpen = !isSidebarOpen;
+            if (isSidebarOpen) {
+                sidebar.style.transform = 'translateX(0)';
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.style.transform = 'translateX(-100%)';
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // Handle initial sidebar state based on screen size
+        function checkScreenSize() {
+            if (window.innerWidth >= 768) {
+                sidebar.style.transform = 'translateX(0)';
+                overlay.classList.add('hidden');
+                isSidebarOpen = true;
+            } else {
+                sidebar.style.transform = 'translateX(-100%)';
+                isSidebarOpen = false;
+            }
+        }
+
+        window.addEventListener('resize', checkScreenSize);
+        document.addEventListener('DOMContentLoaded', checkScreenSize);
+        
+        // Expose toggle to the menu button
+        document.querySelector('header button.md\\:hidden').addEventListener('click', toggleSidebar);
+    </script>
+</body></html>

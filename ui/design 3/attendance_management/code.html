@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KCM Admin - Attendance Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Load Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#a53936",
+                    "outline-variant": "#e1bfbb",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "on-primary-fixed-variant": "#8e1214",
+                    "surface-dim": "#dadada",
+                    "on-tertiary": "#ffffff",
+                    "inverse-primary": "#ffb4ac",
+                    "primary-container": "#991b1b",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary": "#353739",
+                    "surface": "#f9f9f9",
+                    "on-primary-container": "#ffaaa1",
+                    "secondary-fixed": "#ffdad7",
+                    "on-surface-variant": "#59413e",
+                    "surface-container-high": "#e8e8e8",
+                    "background": "#f9f9f9",
+                    "surface-container-highest": "#e2e2e2",
+                    "tertiary-fixed": "#e1e2e4",
+                    "secondary-fixed-dim": "#ffb3ad",
+                    "tertiary-container": "#4c4e50",
+                    "surface-bright": "#f9f9f9",
+                    "outline": "#8d706d",
+                    "tertiary-fixed-dim": "#c5c6c8",
+                    "surface-container": "#eeeeee",
+                    "primary-fixed-dim": "#ffb4ac",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#2f3131",
+                    "surface-tint": "#b02d29",
+                    "on-surface": "#1a1c1c",
+                    "on-secondary-container": "#721315",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f1",
+                    "on-tertiary-container": "#bebfc1",
+                    "on-secondary-fixed": "#410004",
+                    "on-primary-fixed": "#410002",
+                    "error": "#ba1a1a",
+                    "on-background": "#1a1c1c",
+                    "surface-variant": "#e2e2e2",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#191c1e",
+                    "surface-container-low": "#f3f3f4",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#ffdad6",
+                    "secondary-container": "#fe7c74",
+                    "primary": "#760009",
+                    "on-secondary-fixed-variant": "#852221"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "32px",
+                    "gutter": "16px",
+                    "container-margin": "24px",
+                    "unit": "4px",
+                    "card-padding": "20px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "data-tabular": ["Inter"],
+                    "display-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "title-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "data-tabular": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #F3F4F6; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-sidebar-item {
+            border-left: 4px solid #fe7c74;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .card-shadow {
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.05), 0px 4px 6px rgba(0,0,0,0.02);
+        }
+        /* Custom scrollbar for data tables */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #991b1b; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface">
+<!-- Navigation Drawer -->
+<aside class="fixed h-full w-[260px] left-0 top-0 bg-primary-container text-white flex flex-col z-50 shadow-md">
+<div class="p-6">
+<span class="text-title-sm font-title-sm font-bold text-on-primary-container tracking-wider">KURNIA CIPTA MANDIRI</span>
+</div>
+<nav class="flex-1 overflow-y-auto">
+<div class="px-4 py-2">
+<span class="text-label-caps font-label-caps text-on-primary-container/60 mb-2 block">MAIN MENU</span>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-body-sm font-body-sm">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="text-body-sm font-body-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-body-sm font-body-sm">Karyawan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 border-l-4 border-secondary-container bg-white/10 text-white font-bold transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="fingerprint">fingerprint</span>
+<span class="text-body-sm font-body-sm">Presensi</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+<span class="text-body-sm font-body-sm">Izin &amp; Cuti</span>
+</a>
+</div>
+</div>
+<div class="px-4 py-6">
+<span class="text-label-caps font-label-caps text-on-primary-container/60 mb-2 block">ADMINISTRATION</span>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="text-body-sm font-body-sm">Laporan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="manage_accounts">manage_accounts</span>
+<span class="text-body-sm font-body-sm">Akun</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="text-body-sm font-body-sm">Keamanan</span>
+</a>
+</div>
+</div>
+</nav>
+<div class="p-6 bg-black/10 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border border-white/30">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a business leader in a sharp dark suit against a minimalist architectural background with warm lighting, expressing confidence and reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzXGUDhPJobDqDQzr6fieSLKTutaBeyB2tKcJoZjq-7IiAAwBJ2VUQyo0O-7sMB71xs_rxvgUYjwJrdW2Jx0wjm1m0gvUxe3mSn3F7f8j0oeNmE65X_VZIhgtaDz_6bENeWmXdX6pI3sNslmuMrdAa4-YhFCGM3pD1xGipbzgz2P1BKJwiCkVgGc5x6EnZdc-8zzt5zl2_0n_SS8J4NbXl44z4hkBs5ogncoC1i2sOSMiafsC-8JhkHA"/>
+</div>
+<div class="flex flex-col">
+<span class="text-body-sm font-bold text-white">Ahmad Kurnia</span>
+<span class="text-label-caps text-on-primary-container/80 uppercase">Super Admin</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[260px] min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-260px)] h-16 bg-white border-b border-outline-variant flex justify-between items-center px-gutter z-40 shadow-sm">
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-all">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+</button>
+<h1 class="text-headline-md font-headline-md text-primary">Presensi Kehadiran</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined text-on-surface-variant p-2 cursor-pointer hover:bg-surface-container rounded-full" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-2">
+<span class="text-body-sm font-medium text-on-surface">24 Oct 2024</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="calendar_today">calendar_today</span>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<section class="mt-16 p-container-margin space-y-section-gap flex-1">
+<!-- Summary Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<!-- Hadir Card -->
+<div class="bg-white p-card-padding rounded-xl card-shadow border-l-4 border-emerald-500 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-label-caps font-label-caps text-on-surface-variant mb-1">HADIR</p>
+<h3 class="text-display-lg font-display-lg text-emerald-600">142</h3>
+</div>
+<div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant mt-4 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-emerald-500 scale-75" data-icon="trending_up">trending_up</span>
+<span>8% dari kemarin</span>
+</p>
+</div>
+<!-- Terlambat Card -->
+<div class="bg-white p-card-padding rounded-xl card-shadow border-l-4 border-amber-500 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-label-caps font-label-caps text-on-surface-variant mb-1">TERLAMBAT</p>
+<h3 class="text-display-lg font-display-lg text-amber-600">12</h3>
+</div>
+<div class="p-2 bg-amber-50 rounded-lg text-amber-600">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant mt-4 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-error scale-75" data-icon="trending_down">trending_down</span>
+<span>2% dari kemarin</span>
+</p>
+</div>
+<!-- Tidak Hadir Card -->
+<div class="bg-white p-card-padding rounded-xl card-shadow border-l-4 border-error flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-label-caps font-label-caps text-on-surface-variant mb-1">TIDAK HADIR</p>
+<h3 class="text-display-lg font-display-lg text-error">8</h3>
+</div>
+<div class="p-2 bg-error-container rounded-lg text-error">
+<span class="material-symbols-outlined" data-icon="block">block</span>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant mt-4 font-medium">8 Alasan sakit/izin</p>
+</div>
+<!-- Total Karyawan -->
+<div class="bg-primary p-card-padding rounded-xl card-shadow flex flex-col justify-between text-white">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-label-caps font-label-caps text-white/70 mb-1">TOTAL STAFF</p>
+<h3 class="text-display-lg font-display-lg text-white">162</h3>
+</div>
+<div class="p-2 bg-white/20 rounded-lg text-white">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+</div>
+</div>
+<div class="w-full bg-white/20 h-1.5 rounded-full mt-4">
+<div class="bg-white h-1.5 rounded-full" style="width: 87%"></div>
+</div>
+</div>
+</div>
+<!-- View Toggler and Search -->
+<div class="flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="bg-surface-container rounded-xl p-1 flex">
+<button class="px-6 py-2 rounded-lg bg-white card-shadow text-primary font-bold text-body-sm flex items-center gap-2 transition-all" id="btn-table-view">
+<span class="material-symbols-outlined" data-icon="list">list</span>
+                        Tabel
+                    </button>
+<button class="px-6 py-2 rounded-lg text-on-surface-variant font-medium text-body-sm flex items-center gap-2 hover:bg-white/50 transition-all" id="btn-calendar-view">
+<span class="material-symbols-outlined" data-icon="calendar_view_month">calendar_view_month</span>
+                        Kalender
+                    </button>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto">
+<div class="relative flex-1 md:w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-body-sm" placeholder="Cari nama karyawan..." type="text"/>
+</div>
+<button class="bg-primary text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-secondary transition-all shadow-md active:scale-95">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+<span class="text-body-sm font-bold">Export</span>
+</button>
+</div>
+</div>
+<!-- Main Container (Switchable) -->
+<div class="space-y-6" id="view-container">
+<!-- Table View (Default) -->
+<div class="bg-white rounded-xl card-shadow overflow-hidden border border-outline-variant" id="table-view">
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant">KARYAWAN</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant">CHECK-IN</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant">CHECK-OUT</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant">DURASI</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant">LOKASI</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant">STATUS</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant text-right">AKSI</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer" onclick="openDetailModal()">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a professional corporate employee in a white business shirt, clean-cut with a friendly smile, photographed in a high-key studio setting with soft neutral colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGL3xie5_dopgHSwWF4quruw6cmwWunSu2Y2r-k_qiPUWqezxQSt94bmS4ntlGdOUzzE2cZ113Edzw95msWYzyAfrAaTky3EUJCI91pV6Omr6GlLAuIDrRN2Nnu4LjnlAfRbAp3P4v89WNZ8nXUtD5ZpnckwOghlM6UItq-urJ_UTNz7HfDjvFwHBW50dXEQNLRe56naLlVQHruEvZ1Z53KJ5N7kTBZS9OiY30fvBp-NvpV5kLH49xog"/>
+</div>
+<div>
+<p class="text-body-sm font-bold text-on-surface">Budi Santoso</p>
+<p class="text-[11px] text-on-surface-variant uppercase">Engineering</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-data-tabular">07:55 AM</td>
+<td class="px-6 py-4 text-data-tabular">05:02 PM</td>
+<td class="px-6 py-4 text-data-tabular">9h 7m</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-blue-50 text-blue-700 text-[11px] font-bold rounded-lg uppercase tracking-tight">Di Kantor</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-emerald-600 font-bold text-body-sm">
+<span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                                            Tepat Waktu
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary-fixed rounded-full text-primary">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface-container-lowest hover:bg-surface-container-low transition-colors cursor-pointer" onclick="openDetailModal()">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Portrait of a young modern female executive with glasses and a soft grey blazer, sitting in a bright airy office environment, soft daylight lighting, professional corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDn1ikfO6tVIEY-TSeDMc28RcGRF7dKoxGsBtELXUF-IIfcxGVBbE0wG-hWYQMrOfwEW-kO3kW57j9vHGFFKaDnfKhEkibP2c3ipKHMM-6M-INQU5AEwIn1uGZ7EnsBNnXkC_SovTcxoO_UGYYSWsXeCFnXG1Uy7xYl3dmfaqQPhR4JkmxTHelw4MJjJsx2rkF1ngqZv_cuUdlzFQRbGNtBof6m7zzQnJBpGlR_maDpqplkYPUIulL3OA"/>
+</div>
+<div>
+<p class="text-body-sm font-bold text-on-surface">Siti Aminah</p>
+<p class="text-[11px] text-on-surface-variant uppercase">Marketing</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-data-tabular">08:15 AM</td>
+<td class="px-6 py-4 text-data-tabular">05:30 PM</td>
+<td class="px-6 py-4 text-data-tabular">9h 15m</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-purple-50 text-purple-700 text-[11px] font-bold rounded-lg uppercase tracking-tight">Remote</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-amber-600 font-bold text-body-sm">
+<span class="w-2 h-2 bg-amber-500 rounded-full"></span>
+                                            Terlambat
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary-fixed rounded-full text-primary">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer" onclick="openDetailModal()">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A dignified middle-aged man in business attire, clean grey hair, warm smile, standing in a contemporary office setting with large windows and blurred cityscape background, soft professional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqGtLKhQ5b3FPwRC2xy5ZaFT_vojKOa3-tTVJQQpTD5fY3K--_e-GVdScsqoztJKtL9Flf2XWJRgGvTjchMS6g5vMCmxG6NM8FMP7ZN_BzSjW3jTI7PaskHsGYzehSyIeisucTI3B-EWmUP3wSvUBMqD1zfUbfV_UVB9dhSaaFhv0BT5px9QBzJMWanjpB9zdiG-vnkv5UkWchC6orlnDE62HOi79RecIzW9pnFHJ5s6d9Rjid0h4Jmg"/>
+</div>
+<div>
+<p class="text-body-sm font-bold text-on-surface">Agus Pratama</p>
+<p class="text-[11px] text-on-surface-variant uppercase">Finance</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-data-tabular">--:--</td>
+<td class="px-6 py-4 text-data-tabular">--:--</td>
+<td class="px-6 py-4 text-data-tabular">0h 0m</td>
+<td class="px-6 py-4">
+<span class="text-on-surface-variant/40">--</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-error font-bold text-body-sm">
+<span class="w-2 h-2 bg-error rounded-full"></span>
+                                            Alpha
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary-fixed rounded-full text-primary">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Calendar View (Hidden initially) -->
+<div class="hidden bg-white rounded-xl card-shadow p-6 border border-outline-variant" id="calendar-view">
+<div class="flex justify-between items-center mb-6">
+<h4 class="text-title-sm font-bold text-primary">Oktober 2024</h4>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-container rounded-lg border border-outline-variant"><span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span></button>
+<button class="p-2 hover:bg-surface-container rounded-lg border border-outline-variant"><span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span></button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-px bg-outline-variant border border-outline-variant">
+<!-- Header Days -->
+<div class="bg-surface-container-low py-2 text-center text-label-caps font-bold">MON</div>
+<div class="bg-surface-container-low py-2 text-center text-label-caps font-bold">TUE</div>
+<div class="bg-surface-container-low py-2 text-center text-label-caps font-bold">WED</div>
+<div class="bg-surface-container-low py-2 text-center text-label-caps font-bold">THU</div>
+<div class="bg-surface-container-low py-2 text-center text-label-caps font-bold">FRI</div>
+<div class="bg-surface-container-low py-2 text-center text-label-caps font-bold text-error">SAT</div>
+<div class="bg-surface-container-low py-2 text-center text-label-caps font-bold text-error">SUN</div>
+<!-- Calendar Days Example -->
+<script>
+                            const calendarContainer = document.querySelector('#calendar-view .grid');
+                            for (let i = 1; i <= 31; i++) {
+                                const dayDiv = document.createElement('div');
+                                dayDiv.className = "bg-white min-h-[100px] p-2 hover:bg-surface-container transition-all cursor-pointer group";
+                                
+                                const statusHtml = i < 24 ? `
+                                    <div class="mt-2 space-y-1">
+                                        <div class="flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                            <span class="text-[9px] font-bold text-on-surface-variant">142</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                                            <span class="text-[9px] font-bold text-on-surface-variant">12</span>
+                                        </div>
+                                    </div>
+                                ` : '';
+
+                                dayDiv.innerHTML = `
+                                    <span class="text-body-sm font-medium ${i > 24 ? 'opacity-30' : ''}">${i}</span>
+                                    ${statusHtml}
+                                `;
+                                calendarContainer.appendChild(dayDiv);
+                            }
+                        </script>
+</div>
+</div>
+</div>
+</section>
+<!-- Employee Detail Modal (Overlay) -->
+<div class="fixed inset-0 z-[100] hidden" id="detail-modal">
+<div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeDetailModal()"></div>
+<div class="absolute right-0 top-0 h-full w-full max-w-lg bg-white shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out" id="modal-panel">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-primary text-white">
+<h2 class="text-title-sm font-bold">Detail Kehadiran</h2>
+<button class="p-2 hover:bg-white/20 rounded-full transition-all" onclick="closeDetailModal()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-8">
+<!-- Profile Header -->
+<div class="flex items-center gap-4">
+<div class="w-20 h-20 rounded-2xl overflow-hidden border-2 border-primary/20">
+<img class="w-full h-full object-cover" data-alt="High-resolution, high-contrast studio portrait of a corporate professional with a warm and approachable facial expression, dressed in elegant business casual attire with soft studio lighting and a clean neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAygbhQhI6RIfTyhWUcz-jCc5T8Kgne_MbdENS0Nj7dpkEDw9tjRanRYrLt77urhrBaKUTrB6e2DJV-5DTt3QLIbtvQ0FRaOCeu_UZ_FNVTBlkVETuDnyQV31ESL_DNEgJPOl15cBG5fbT3GbXMQ15oFmKurG2UOlzSK8kHDakVxd3qQPkeKbi5jfaGOMZO-49axGTn4Z543zedja3Pbr0OwNXiI6rQBLM0S2qmv4BCPk1IsuTYYrCAeg"/>
+</div>
+<div>
+<h3 class="text-headline-md font-bold text-on-surface">Budi Santoso</h3>
+<p class="text-body-sm text-on-surface-variant">Engineering Department • Staff Senior</p>
+<span class="inline-block mt-2 px-3 py-1 bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-full uppercase">Aktif</span>
+</div>
+</div>
+<!-- Monthly Stat Grid -->
+<div class="grid grid-cols-3 gap-3">
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant text-center">
+<p class="text-label-caps font-bold text-on-surface-variant">HADIR</p>
+<p class="text-title-sm font-bold text-emerald-600">21/22</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant text-center">
+<p class="text-label-caps font-bold text-on-surface-variant">LATE</p>
+<p class="text-title-sm font-bold text-amber-600">1</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl border border-outline-variant text-center">
+<p class="text-label-caps font-bold text-on-surface-variant">ABSEN</p>
+<p class="text-title-sm font-bold text-error">0</p>
+</div>
+</div>
+<!-- Location Tracking -->
+<div class="space-y-3">
+<h4 class="text-body-sm font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="location_on">location_on</span>
+                            Lokasi Terakhir
+                        </h4>
+<div class="rounded-xl overflow-hidden border border-outline-variant relative h-40">
+<div class="absolute inset-0 bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-outline-variant scale-[3]" data-icon="map">map</span>
+</div>
+<!-- Mock Map Pin -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary scale-125 drop-shadow-lg" data-icon="person_pin_circle" style="font-variation-settings: 'FILL' 1;">person_pin_circle</span>
+</div>
+</div>
+<p class="text-[11px] text-on-surface-variant text-center italic">Jl. Raya Industri No. 12, Cikarang, Bekasi</p>
+</div>
+<!-- Detailed Timeline -->
+<div class="space-y-4">
+<h4 class="text-body-sm font-bold text-on-surface">Riwayat 7 Hari Terakhir</h4>
+<div class="space-y-3">
+<div class="flex justify-between items-center p-3 border-b border-outline-variant">
+<div>
+<p class="text-body-sm font-medium">Kamis, 24 Oct</p>
+<p class="text-[11px] text-on-surface-variant">07:55 - 17:02</p>
+</div>
+<span class="text-emerald-600 text-body-sm font-bold">Hadir</span>
+</div>
+<div class="flex justify-between items-center p-3 border-b border-outline-variant">
+<div>
+<p class="text-body-sm font-medium">Rabu, 23 Oct</p>
+<p class="text-[11px] text-on-surface-variant">08:02 - 17:15</p>
+</div>
+<span class="text-amber-600 text-body-sm font-bold">Terlambat</span>
+</div>
+<div class="flex justify-between items-center p-3 border-b border-outline-variant">
+<div>
+<p class="text-body-sm font-medium">Selasa, 22 Oct</p>
+<p class="text-[11px] text-on-surface-variant">07:45 - 17:00</p>
+</div>
+<span class="text-emerald-600 text-body-sm font-bold">Hadir</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-6 bg-surface-container-low flex gap-3">
+<button class="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-secondary transition-all">Lihat Report Lengkap</button>
+<button class="p-3 border border-outline-variant rounded-xl hover:bg-white transition-all">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="mt-auto border-t border-outline-variant py-4 px-gutter flex justify-between items-center bg-surface-container-lowest text-on-surface-variant text-body-sm">
+<div>
+<span class="font-bold text-primary">KCM Admin</span>
+<span class="ml-2">© 2024 Kurnia Cipta Mandiri. All Rights Reserved.</span>
+</div>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<span class="opacity-50">v2.4.1</span>
+</div>
+</footer>
+</main>
+<!-- Interactions & State Logic -->
+<script>
+        const tableView = document.getElementById('table-view');
+        const calendarView = document.getElementById('calendar-view');
+        const btnTable = document.getElementById('btn-table-view');
+        const btnCalendar = document.getElementById('btn-calendar-view');
+        
+        const detailModal = document.getElementById('detail-modal');
+        const modalPanel = document.getElementById('modal-panel');
+
+        btnTable.addEventListener('click', () => {
+            tableView.classList.remove('hidden');
+            calendarView.classList.add('hidden');
+            btnTable.className = "px-6 py-2 rounded-lg bg-white card-shadow text-primary font-bold text-body-sm flex items-center gap-2 transition-all";
+            btnCalendar.className = "px-6 py-2 rounded-lg text-on-surface-variant font-medium text-body-sm flex items-center gap-2 hover:bg-white/50 transition-all";
+        });
+
+        btnCalendar.addEventListener('click', () => {
+            tableView.classList.add('hidden');
+            calendarView.classList.remove('hidden');
+            btnCalendar.className = "px-6 py-2 rounded-lg bg-white card-shadow text-primary font-bold text-body-sm flex items-center gap-2 transition-all";
+            btnTable.className = "px-6 py-2 rounded-lg text-on-surface-variant font-medium text-body-sm flex items-center gap-2 hover:bg-white/50 transition-all";
+        });
+
+        function openDetailModal() {
+            detailModal.classList.remove('hidden');
+            setTimeout(() => {
+                modalPanel.classList.remove('translate-x-full');
+            }, 10);
+        }
+
+        function closeDetailModal() {
+            modalPanel.classList.add('translate-x-full');
+            setTimeout(() => {
+                detailModal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body></html>

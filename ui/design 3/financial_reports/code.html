@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Reports | KCM Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sidebar-active { border-left: 4px solid #fe7c74; background-color: rgba(255, 255, 255, 0.1); color: #ffffff; font-weight: 700; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e1bfbb; border-radius: 10px; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#a53936",
+                        "outline-variant": "#e1bfbb",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-primary-fixed-variant": "#8e1214",
+                        "surface-dim": "#dadada",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#ffb4ac",
+                        "primary-container": "#991b1b",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#353739",
+                        "surface": "#f9f9f9",
+                        "on-primary-container": "#ffaaa1",
+                        "secondary-fixed": "#ffdad7",
+                        "on-surface-variant": "#59413e",
+                        "surface-container-high": "#e8e8e8",
+                        "background": "#f9f9f9",
+                        "surface-container-highest": "#e2e2e2",
+                        "tertiary-fixed": "#e1e2e4",
+                        "secondary-fixed-dim": "#ffb3ad",
+                        "tertiary-container": "#4c4e50",
+                        "surface-bright": "#f9f9f9",
+                        "outline": "#8d706d",
+                        "tertiary-fixed-dim": "#c5c6c8",
+                        "surface-container": "#eeeeee",
+                        "primary-fixed-dim": "#ffb4ac",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#2f3131",
+                        "surface-tint": "#b02d29",
+                        "on-surface": "#1a1c1c",
+                        "on-secondary-container": "#721315",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f1",
+                        "on-tertiary-container": "#bebfc1",
+                        "on-secondary-fixed": "#410004",
+                        "on-primary-fixed": "#410002",
+                        "error": "#ba1a1a",
+                        "on-background": "#1a1c1c",
+                        "surface-variant": "#e2e2e2",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-container-low": "#f3f3f4",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffdad6",
+                        "secondary-container": "#fe7c74",
+                        "primary": "#760009",
+                        "on-secondary-fixed-variant": "#852221"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "32px",
+                        "gutter": "16px",
+                        "container-margin": "24px",
+                        "unit": "4px",
+                        "card-padding": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "data-tabular": ["Inter"],
+                        "body-md": ["Inter"],
+                        "title-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "data-tabular": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "title-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface">
+<!-- Navigation Drawer -->
+<aside class="fixed h-full w-[260px] left-0 top-0 bg-primary-container shadow-md flex flex-col z-50">
+<div class="px-6 py-8 flex flex-col gap-1 items-start">
+<span class="text-title-sm font-title-sm font-bold text-on-primary-container">Kurnia Cipta Mandiri</span>
+<div class="mt-6 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border border-on-primary-container/20">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate male administrator in a clean white shirt, smiling subtly against a blurred modern office background. High-key lighting highlights his professional demeanor. The image is crisp, modern, and aligned with a corporate luxury aesthetic, featuring neutral tones and sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmTaZ8Xq6F7f56sLG7oXYhaVnH4SVWyFSYCSj-pT3iBNxk6dZWE3K4Nww8lv0KIw72Ffd5ovUSRzGjSe3t7V1ade3Dk4_o3DwDn1jznngfVvj5WxAQSEeKN7WtAxZu9tAU7XOT1-m24cFQOFddr0vSeGuaSZTHBBea5fwv5FRDio3yrAKwmImn8L6zVMRwHG5MO_n4a3PfSK-UsdFbgb62uoQgnpiaGazjSUQlg-qZOaPs-1SDhzeiSA"/>
+</div>
+<div class="flex flex-col">
+<span class="text-on-tertiary text-body-sm font-bold">Ahmad Kurnia</span>
+<span class="text-on-primary-container text-[11px] font-medium opacity-80">Super Admin</span>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-0 custom-scrollbar overflow-y-auto mt-4">
+<div class="px-4 mb-2 text-[10px] font-bold text-on-primary-container/50 uppercase tracking-widest">Main Menu</div>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-body-sm font-body-sm">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 border-l-4 border-secondary-container bg-white/10 text-white font-bold" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-body-sm font-body-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-body-sm font-body-sm">Karyawan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="text-body-sm font-body-sm">Departemen</span>
+</a>
+<div class="px-4 mt-6 mb-2 text-[10px] font-bold text-on-primary-container/50 uppercase tracking-widest">Administrative</div>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="text-body-sm font-body-sm">Shift</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">fingerprint</span>
+<span class="text-body-sm font-body-sm">Presensi</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span class="text-body-sm font-body-sm">Izin &amp; Cuti</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="text-body-sm font-body-sm">Laporan</span>
+</a>
+<div class="px-4 mt-6 mb-2 text-[10px] font-bold text-on-primary-container/50 uppercase tracking-widest">System</div>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">manage_accounts</span>
+<span class="text-body-sm font-body-sm">Akun</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/80 hover:text-white hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">security</span>
+<span class="text-body-sm font-body-sm">Keamanan</span>
+</a>
+</nav>
+<div class="p-4 border-t border-white/10 mt-auto">
+<div class="text-[10px] text-on-primary-container/60">Version v2.4.0</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[260px] min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-260px)] z-40 flex justify-between items-center px-gutter h-16 bg-surface border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary hover:bg-surface-container-high p-2 rounded-full transition-all">menu</button>
+<h1 class="text-headline-md font-headline-md text-primary">Financial Reports</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center bg-surface-container border border-outline-variant rounded-lg px-3 py-1.5 gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
+<input class="bg-transparent border-none text-body-sm focus:ring-0 w-48" placeholder="Search reports..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-all">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-all">settings</button>
+</div>
+</header>
+<!-- Content Canvas -->
+<section class="mt-16 p-container-margin flex flex-col gap-section-gap">
+<!-- Summary Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<!-- Total Pendapatan -->
+<div class="bg-white p-card-padding rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(0,0,0,0.02)] border border-gray-100 flex flex-col gap-2 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-green-600"></div>
+<span class="text-label-caps font-label-caps text-on-surface-variant uppercase">Total Pendapatan</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="text-body-sm font-bold text-green-700">Rp</span>
+<span class="text-display-lg font-display-lg text-on-surface">1.240,5M</span>
+</div>
+<div class="flex items-center gap-1 text-green-600 text-[12px] font-semibold">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+12.5% vs last month</span>
+</div>
+</div>
+<!-- Pengeluaran -->
+<div class="bg-white p-card-padding rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(0,0,0,0.02)] border border-gray-100 flex flex-col gap-2 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+<span class="text-label-caps font-label-caps text-on-surface-variant uppercase">Pengeluaran</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="text-body-sm font-bold text-red-700">Rp</span>
+<span class="text-display-lg font-display-lg text-on-surface">842,2M</span>
+</div>
+<div class="flex items-center gap-1 text-red-600 text-[12px] font-semibold">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+4.2% higher spend</span>
+</div>
+</div>
+<!-- Laba Bersih -->
+<div class="bg-white p-card-padding rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(0,0,0,0.02)] border border-gray-100 flex flex-col gap-2 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary-container"></div>
+<span class="text-label-caps font-label-caps text-on-surface-variant uppercase">Laba Bersih</span>
+<div class="flex items-baseline gap-1 mt-1">
+<span class="text-body-sm font-bold text-primary">Rp</span>
+<span class="text-display-lg font-display-lg text-on-surface">398,3M</span>
+</div>
+<div class="flex items-center gap-1 text-primary text-[12px] font-semibold">
+<span class="material-symbols-outlined text-[16px]">payments</span>
+<span>Operational efficiency 94%</span>
+</div>
+</div>
+<!-- Budget Utilization -->
+<div class="bg-white p-card-padding rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(0,0,0,0.02)] border border-gray-100 flex items-center justify-between">
+<div class="flex flex-col gap-1">
+<span class="text-label-caps font-label-caps text-on-surface-variant uppercase">Budget Used</span>
+<span class="text-display-lg font-display-lg text-on-surface">78.4%</span>
+<span class="text-[11px] text-on-surface-variant italic">Q3 Projections</span>
+</div>
+<div class="relative w-16 h-16">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-yellow-100" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-width="6"></circle>
+<circle class="text-yellow-500" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-dasharray="175.9" stroke-dashoffset="38" stroke-width="6"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-yellow-700">78%</div>
+</div>
+</div>
+</div>
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Revenue vs Expense -->
+<div class="lg:col-span-2 bg-white p-card-padding rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(0,0,0,0.02)] border border-gray-100">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-title-sm font-title-sm text-on-surface">Revenue vs Expense (6 Months)</h3>
+<div class="flex gap-2">
+<span class="flex items-center gap-1 text-[11px] font-bold"><span class="w-3 h-3 rounded-full bg-primary"></span> Revenue</span>
+<span class="flex items-center gap-1 text-[11px] font-bold"><span class="w-3 h-3 rounded-full bg-outline-variant"></span> Expense</span>
+</div>
+</div>
+<div class="h-64 w-full">
+<canvas id="revenueExpenseChart"></canvas>
+</div>
+</div>
+<!-- Spending Category -->
+<div class="bg-white p-card-padding rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(0,0,0,0.02)] border border-gray-100">
+<h3 class="text-title-sm font-title-sm text-on-surface mb-6">Spending per Category</h3>
+<div class="h-48 w-full relative">
+<canvas id="spendingDonutChart"></canvas>
+</div>
+<div class="mt-6 flex flex-col gap-2">
+<div class="flex justify-between items-center text-body-sm">
+<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary-container"></span> Operasional</span>
+<span class="font-bold">45%</span>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-secondary"></span> Gaji/Payroll</span>
+<span class="font-bold">30%</span>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-outline"></span> Inventaris</span>
+<span class="font-bold">15%</span>
+</div>
+<div class="flex justify-between items-center text-body-sm">
+<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-outline-variant"></span> Lainnya</span>
+<span class="font-bold">10%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Table & Alerts Section -->
+<div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+<!-- RAB vs Actual Table -->
+<div class="xl:col-span-3 bg-white rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(0,0,0,0.02)] border border-gray-100 overflow-hidden">
+<div class="px-card-padding py-4 border-b border-gray-100 flex justify-between items-center">
+<h3 class="text-title-sm font-title-sm text-on-surface">RAB vs Actual Comparison</h3>
+<button class="text-primary text-[12px] font-bold flex items-center gap-1">
+                            Download CSV <span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-gray-50 border-b border-gray-100">
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase">Project Name</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase text-right">Budget (RAB)</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase text-right">Actual Spend</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase text-right">Variance</th>
+<th class="px-6 py-4 text-label-caps font-label-caps text-on-surface-variant uppercase text-center">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100">
+<tr class="hover:bg-gray-50 transition-colors">
+<td class="px-6 py-4">
+<div class="text-body-md font-bold">Project Wisma Indah Phase 2</div>
+<div class="text-[11px] text-gray-500">Divisi Konstruksi</div>
+</td>
+<td class="px-6 py-4 text-right font-data-tabular">Rp 2.450.000.000</td>
+<td class="px-6 py-4 text-right font-data-tabular">Rp 2.100.000.000</td>
+<td class="px-6 py-4 text-right font-data-tabular text-green-600 font-bold">- Rp 350M</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-1 rounded-full bg-green-50 text-green-700 text-[11px] font-bold uppercase tracking-wider">On-Budget</span>
+</td>
+</tr>
+<tr class="bg-gray-50/50 hover:bg-gray-50 transition-colors">
+<td class="px-6 py-4">
+<div class="text-body-md font-bold">Upgrade Server Backend</div>
+<div class="text-[11px] text-gray-500">Divisi IT &amp; Infrastruktur</div>
+</td>
+<td class="px-6 py-4 text-right font-data-tabular">Rp 450.000.000</td>
+<td class="px-6 py-4 text-right font-data-tabular text-red-600 font-bold">Rp 520.000.000</td>
+<td class="px-6 py-4 text-right font-data-tabular text-red-600 font-bold">+ Rp 70M</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-1 rounded-full bg-red-50 text-red-700 text-[11px] font-bold uppercase tracking-wider">Over-Budget</span>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 transition-colors">
+<td class="px-6 py-4">
+<div class="text-body-md font-bold">Marketing Campaign Q3</div>
+<div class="text-[11px] text-gray-500">Divisi Komunikasi</div>
+</td>
+<td class="px-6 py-4 text-right font-data-tabular">Rp 120.000.000</td>
+<td class="px-6 py-4 text-right font-data-tabular">Rp 118.500.000</td>
+<td class="px-6 py-4 text-right font-data-tabular text-green-600 font-bold">- Rp 1.5M</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-1 rounded-full bg-green-50 text-green-700 text-[11px] font-bold uppercase tracking-wider">On-Budget</span>
+</td>
+</tr>
+<tr class="bg-gray-50/50 hover:bg-gray-50 transition-colors">
+<td class="px-6 py-4">
+<div class="text-body-md font-bold">Maintenance Fleet Kendaraan</div>
+<div class="text-[11px] text-gray-500">Divisi Logistik</div>
+</td>
+<td class="px-6 py-4 text-right font-data-tabular">Rp 85.000.000</td>
+<td class="px-6 py-4 text-right font-data-tabular text-red-600 font-bold">Rp 98.200.000</td>
+<td class="px-6 py-4 text-right font-data-tabular text-red-600 font-bold">+ Rp 13.2M</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-1 rounded-full bg-red-50 text-red-700 text-[11px] font-bold uppercase tracking-wider">Over-Budget</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Rembes / Leakage Tracker -->
+<div class="bg-primary-container p-card-padding rounded-xl shadow-lg border border-primary text-white flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-title-sm font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container">warning</span>
+                            Leakage Tracker
+                        </h3>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-black uppercase">High Priority</span>
+</div>
+<p class="text-[12px] opacity-80 leading-relaxed">System detected 5 significant discrepancies in petty cash and reimbursement requests.</p>
+<div class="flex flex-col gap-3 mt-2">
+<div class="bg-white/10 p-3 rounded-lg border border-white/10 flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="text-[11px] font-bold">Fuel Claims #8921</span>
+<span class="text-red-300 font-bold text-[12px]">Rp 4.2M</span>
+</div>
+<p class="text-[10px] text-white/70 italic">Duplicate invoice detected via OCR.</p>
+</div>
+<div class="bg-white/10 p-3 rounded-lg border border-white/10 flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="text-[11px] font-bold">Client Dinner #0192</span>
+<span class="text-red-300 font-bold text-[12px]">Rp 1.8M</span>
+</div>
+<p class="text-[10px] text-white/70 italic">Exceeds individual cap by 45%.</p>
+</div>
+<div class="bg-white/10 p-3 rounded-lg border border-white/10 flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="text-[11px] font-bold">Office Supplies #442</span>
+<span class="text-red-300 font-bold text-[12px]">Rp 0.9M</span>
+</div>
+<p class="text-[10px] text-white/70 italic">Merchant mismatch in geofencing.</p>
+</div>
+</div>
+<button class="mt-4 w-full bg-white text-primary font-bold py-2 rounded-lg text-body-sm hover:bg-gray-100 transition-all">
+                        Resolve All Issues
+                    </button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="mt-auto py-4 px-gutter flex justify-between items-center bg-surface-container-lowest border-t border-outline-variant text-on-surface-variant text-body-sm">
+<div class="flex items-center gap-2">
+<span class="font-bold text-primary">KCM Admin</span>
+<span>© 2024 Kurnia Cipta Mandiri. All Rights Reserved.</span>
+</div>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<span class="opacity-50">v2.4.1</span>
+</div>
+</footer>
+</main>
+<script>
+        // Line Chart Initialization
+        const ctxRevenue = document.getElementById('revenueExpenseChart').getContext('2d');
+        new Chart(ctxRevenue, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [
+                    {
+                        label: 'Revenue',
+                        data: [1200, 1500, 1400, 1800, 2100, 2400],
+                        borderColor: '#760009',
+                        backgroundColor: 'rgba(118, 0, 9, 0.05)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'Expense',
+                        data: [900, 1100, 950, 1300, 1400, 1600],
+                        borderColor: '#e1bfbb',
+                        backgroundColor: 'transparent',
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: { font: { size: 10 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10 } }
+                    }
+                }
+            }
+        });
+
+        // Donut Chart Initialization
+        const ctxSpending = document.getElementById('spendingDonutChart').getContext('2d');
+        new Chart(ctxSpending, {
+            type: 'doughnut',
+            data: {
+                labels: ['Operasional', 'Payroll', 'Inventaris', 'Lainnya'],
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: ['#991b1b', '#a53936', '#8d706d', '#e1bfbb'],
+                    hoverOffset: 4,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+</body></html>
