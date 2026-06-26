@@ -250,3 +250,67 @@ exports.updateCashbonStatus = async (req, res) => {
   }
 };
 
+// ==========================================
+// 4. ONGKOS TUKANG
+// ==========================================
+exports.getOngkosTukang = async (req, res) => {
+  const rabId = req.query.rab_id;
+  try {
+    if (rabId) {
+      const [rows] = await db.query(
+        'SELECT ot.*, rab.project_name, rab.code as rab_code FROM ongkos_tukang ot JOIN rab ON ot.rab_id = rab.id WHERE ot.rab_id = ? ORDER BY ot.date DESC',
+        [rabId]
+      );
+      return res.json(rows);
+    } else {
+      const [rows] = await db.query(
+        'SELECT ot.*, rab.project_name, rab.code as rab_code FROM ongkos_tukang ot JOIN rab ON ot.rab_id = rab.id ORDER BY ot.date DESC'
+      );
+      return res.json(rows);
+    }
+  } catch (err) {
+    return res.status(500).json({ error: 'Gagal mengambil data ongkos tukang: ' + err.message });
+  }
+};
+
+exports.saveOngkosTukang = async (req, res) => {
+  const { id, rab_id, date, description, amount } = req.body;
+
+  if (!rab_id || !description || !amount || parseFloat(amount) <= 0) {
+    return res.status(400).json({ error: 'Proyek RAB, deskripsi, dan nominal ongkos tukang wajib diisi.' });
+  }
+
+  const numericAmount = parseFloat(amount);
+
+  try {
+    if (id) {
+      await db.query(
+        'UPDATE ongkos_tukang SET rab_id = ?, date = ?, description = ?, amount = ? WHERE id = ?',
+        [rab_id, date || new Date(), description, numericAmount, id]
+      );
+    } else {
+      await db.query(
+        'INSERT INTO ongkos_tukang (rab_id, date, description, amount) VALUES (?, ?, ?, ?)',
+        [rab_id, date || new Date(), description, numericAmount]
+      );
+    }
+    return res.json({ success: true, message: 'Ongkos tukang berhasil disimpan.' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Gagal menyimpan ongkos tukang: ' + err.message });
+  }
+};
+
+exports.deleteOngkosTukang = async (req, res) => {
+  const id = req.query.id || req.body.id;
+  if (!id) {
+    return res.status(400).json({ error: 'ID ongkos tukang wajib diisi.' });
+  }
+  try {
+    await db.query('DELETE FROM ongkos_tukang WHERE id = ?', [id]);
+    return res.json({ success: true, message: 'Ongkos tukang berhasil dihapus.' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Gagal menghapus ongkos tukang: ' + err.message });
+  }
+};
+
+

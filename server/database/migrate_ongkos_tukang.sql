@@ -1,0 +1,11 @@
+-- Migration: Add ongkos_tukang table
+CREATE TABLE IF NOT EXISTS ongkos_tukang (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    rab_id INT NOT NULL,
+    date DATE NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    amount DECIMAL(15,2) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (rab_id) REFERENCES rab(id) ON DELETE CASCADE
+);

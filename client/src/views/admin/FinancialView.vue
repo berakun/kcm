@@ -51,7 +51,7 @@
             </div>
             <div class="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
               <span class="material-symbols-outlined text-sm text-red-800">info</span>
-              <span>Gabungan Rembes, Cashbon & ATK</span>
+              <span>Gabungan Rembes, Cashbon, ATK & Ongkos Tukang</span>
             </div>
           </div>
 

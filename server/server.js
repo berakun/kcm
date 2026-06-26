@@ -53,6 +53,26 @@ app.use((err, req, res, next) => {
 app.listen(PORT, async () => {
   console.log(`[KCM Server] Backend running in ${process.env.NODE_ENV} mode on port ${PORT}`);
   
+  // Create ongkos_tukang table if not exists
+  const db = require('./config/db');
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS ongkos_tukang (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        rab_id INT NOT NULL,
+        date DATE NOT NULL,
+        description VARCHAR(255) NOT NULL,
+        amount DECIMAL(15,2) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (rab_id) REFERENCES rab(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('[KCM Server] Table ongkos_tukang verified/created.');
+  } catch (err) {
+    console.error('[KCM Server] Failed to verify/create table ongkos_tukang:', err.message);
+  }
+
   // Run database seeder
   const seedDb = require('./database/seed');
   await seedDb();

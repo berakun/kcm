@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
     prepared_by VARCHAR(100),
     approved_by VARCHAR(100) DEFAULT 'Anriko K, ST.',
     term_of_payment VARCHAR(200) DEFAULT 'Anriko K, ST.',
+    status VARCHAR(20) DEFAULT 'draft',
     created_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (rab_id) REFERENCES rab(id) ON DELETE SET NULL,

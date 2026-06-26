@@ -5,29 +5,58 @@
       <AppTopbar title="Slip Gaji Karyawan" />
       <div class="p-6 md:p-8 flex-grow space-y-6 overflow-y-auto max-h-[calc(100vh-80px)]">
 
-        <!-- Filter -->
-        <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div class="flex flex-col md:flex-row gap-4 items-end">
-            <div class="flex-1">
-              <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Tanggal Mulai</label>
-              <input v-model="filterDateStart" type="date" @change="onDateRangeChange" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0"/>
-            </div>
-            <div class="flex items-center pb-1"><span class="text-gray-400 text-xs">→</span></div>
-            <div class="flex-1">
-              <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Tanggal Selesai</label>
-              <input v-model="filterDateEnd" type="date" @change="onDateRangeChange" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0"/>
-            </div>
-            <div class="flex-1">
-              <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Bulan (Shortcut)</label>
-              <select v-model="selectedMonth" @change="loadData" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0">
+        <!-- Premium Filter & Overview Header -->
+        <div class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-850 dark:to-gray-900 p-6 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 animate-fade-in">
+          <!-- Month Selector -->
+          <div class="w-full lg:max-w-xs space-y-2">
+            <label class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block">PILIH PERIODE GAJI</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">calendar_month</span>
+              <select 
+                v-model="selectedMonth" 
+                @change="loadData" 
+                class="w-full pl-11 pr-10 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-xs font-bold text-gray-850 dark:text-white shadow-sm hover:border-red-500 dark:hover:border-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 appearance-none"
+              >
                 <option v-for="m in months" :key="m.value" :value="m.value">{{ m.label }}</option>
               </select>
+              <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-base">expand_more</span>
             </div>
-            <div class="flex gap-2">
-              <button @click="cetakSemua" :disabled="tableRows.length === 0" class="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 rounded-xl text-xs font-bold flex items-center gap-2 disabled:opacity-50">
-                <span class="material-symbols-outlined text-sm">print</span> Cetak Semua
-              </button>
+          </div>
+
+          <!-- Quick Stats Cards in Filter Area -->
+          <div class="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-4 w-full lg:w-auto">
+            <!-- Stat 1: Periode -->
+            <div class="bg-white/80 dark:bg-gray-900/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-800/60 flex items-center gap-3">
+              <div class="p-2.5 bg-red-50 dark:bg-red-950/20 text-red-800 dark:text-red-500 rounded-xl">
+                <span class="material-symbols-outlined text-xl">date_range</span>
+              </div>
+              <div>
+                <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">PERIODE GAJI</p>
+                <p class="text-xs font-black text-gray-850 dark:text-white mt-0.5">{{ monthLabel }}</p>
+              </div>
             </div>
+
+            <!-- Stat 2: Total Pengeluaran -->
+            <div class="bg-white/80 dark:bg-gray-900/40 p-4 rounded-2xl border border-gray-100 dark:border-gray-800/60 flex items-center gap-3">
+              <div class="p-2.5 bg-emerald-50 dark:bg-emerald-955/20 text-emerald-600 dark:text-emerald-500 rounded-xl">
+                <span class="material-symbols-outlined text-xl">payments</span>
+              </div>
+              <div>
+                <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">ESTIMASI TOTAL GAJI</p>
+                <p class="text-xs font-mono font-black text-emerald-700 dark:text-emerald-500 mt-0.5">{{ formatCurrency(totalDiterima) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="w-full lg:w-auto flex justify-end">
+            <button 
+              @click="cetakSemua" 
+              :disabled="tableRows.length === 0" 
+              class="w-full lg:w-auto px-6 py-3.5 bg-red-800 hover:bg-red-900 disabled:opacity-40 text-white rounded-2xl text-xs font-bold shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <span class="material-symbols-outlined text-base">print</span> Cetak Semua Slip
+            </button>
           </div>
         </div>
 
@@ -137,7 +166,7 @@
               <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 <tr v-for="(row, idx) in tableRows" :key="row.userId" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                   <td class="px-4 py-3 text-center font-bold text-gray-600 dark:text-gray-400">{{ idx + 1 }}</td>
-                  <td class="px-4 py-3 font-bold text-gray-800 dark:text-white">{{ row.name }}</td>
+                  <td class="px-4 py-3 font-bold text-red-800 dark:text-red-500 cursor-pointer hover:underline" @click="openDeductionsModal(row)">{{ row.name }}</td>
                   <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ row.roleLabel }}</td>
                   <td class="px-4 py-3 text-right font-mono text-gray-700 dark:text-gray-300">{{ formatCurrency(row.gajiPokok) }}</td>
                   <td class="px-4 py-3 text-right font-mono text-gray-700 dark:text-gray-300">{{ formatCurrency(row.makanTransport) }}</td>
@@ -194,6 +223,16 @@
         </div>
 
         <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Gaji Pokok</label>
+              <input type="number" v-model.number="editModal.gajiPokok" min="0" class="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0">
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Makan & Transport</label>
+              <input type="number" v-model.number="editModal.makanTransport" min="0" class="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0">
+            </div>
+          </div>
           <div>
             <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Jumlah Cuti (hari)</label>
             <input type="number" v-model.number="editModal.cuti" min="0" class="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm dark:bg-gray-900 dark:text-white">
@@ -225,6 +264,80 @@
       </div>
     </div>
 
+    <!-- Deductions Breakdown Modal -->
+    <div v-if="deductionsModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/40" @click="deductionsModal.show = false"></div>
+      <div class="relative bg-white dark:bg-gray-850 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl w-full max-w-md p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-gray-150 dark:border-gray-800 pb-3">
+          <div>
+            <h3 class="text-sm font-black text-gray-800 dark:text-white">Rincian Potongan Kehadiran</h3>
+            <p class="text-xs text-gray-500 mt-0.5">{{ deductionsModal.name }} — {{ deductionsModal.roleLabel }}</p>
+          </div>
+          <button @click="deductionsModal.show = false" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+            <span class="material-symbols-outlined text-base">close</span>
+          </button>
+        </div>
+
+        <div class="space-y-4 text-xs">
+          <div class="bg-red-50/50 dark:bg-red-950/10 border border-red-100 dark:border-red-900/30 rounded-xl p-4 flex justify-between items-center">
+            <span class="font-bold text-gray-700 dark:text-gray-300">TOTAL POTONGAN:</span>
+            <span class="text-sm font-mono font-black text-red-700 dark:text-red-500">-{{ formatCurrency(deductionsModal.totalPotongan) }}</span>
+          </div>
+
+          <div class="divide-y divide-gray-100 dark:divide-gray-800">
+            <!-- 1. Terlambat -->
+            <div class="py-3 flex justify-between items-start">
+              <div>
+                <p class="font-bold text-gray-800 dark:text-gray-200">Terlambat Hadir (10+ menit)</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">Jumlah: {{ deductionsModal.potonganTerlambatCount }} kali</p>
+              </div>
+              <div class="text-right">
+                <p class="font-mono text-gray-700 dark:text-gray-300">{{ formatCurrency(deductionsModal.potonganTerlambatCount * deductionsModal.terlambatRate) }}</p>
+                <p class="text-[9px] text-gray-400 mt-0.5">Rate: {{ formatCurrency(deductionsModal.terlambatRate) }}/kali</p>
+              </div>
+            </div>
+
+            <!-- 2. Absen Setengah Hari -->
+            <div class="py-3 flex justify-between items-start">
+              <div>
+                <p class="font-bold text-gray-800 dark:text-gray-200">Absen Setengah Hari</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">Jumlah: {{ deductionsModal.potonganAbsenCount }} kali (Tanpa Check-Out)</p>
+              </div>
+              <div class="text-right">
+                <p class="font-mono text-gray-700 dark:text-gray-300">{{ formatCurrency(deductionsModal.potonganAbsenCount * deductionsModal.absenSetengahRate) }}</p>
+                <p class="text-[9px] text-gray-400 mt-0.5">Rate: {{ formatCurrency(deductionsModal.absenSetengahRate) }}/hari</p>
+              </div>
+            </div>
+
+            <!-- 3. Tidak Hadir (Mangkir) -->
+            <div class="py-3 flex justify-between items-start">
+              <div>
+                <p class="font-bold text-gray-800 dark:text-gray-200">Tidak Hadir (Mangkir)</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">Jumlah: {{ deductionsModal.potonganTidakHadirCount }} hari</p>
+              </div>
+              <div class="text-right">
+                <p class="font-mono text-gray-700 dark:text-gray-300">{{ formatCurrency(deductionsModal.potonganTidakHadirCount * deductionsModal.tidakHadirRate) }}</p>
+                <p class="text-[9px] text-gray-400 mt-0.5">Rate: {{ formatCurrency(deductionsModal.tidakHadirRate) }}/hari</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 text-[10px] text-gray-500 space-y-1">
+            <p class="font-bold">Info Perhitungan Kehadiran:</p>
+            <p>• Total Hari Kerja Bulan Ini: <span class="font-bold text-gray-700 dark:text-gray-300">{{ deductionsModal.totalWorkingDays }} hari</span> (Senin - Sabtu)</p>
+            <p>• Hari Hadir Lengkap (Check-In & Out): <span class="font-bold text-gray-700 dark:text-gray-300">{{ deductionsModal.hadirLengkap }} hari</span></p>
+            <p>• Cuti & Libur Resmi tidak dihitung sebagai potongan.</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button @click="deductionsModal.show = false" class="px-5 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 rounded-xl text-xs font-bold">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -241,10 +354,20 @@ const showSettings = ref(false)
 
 const now = new Date()
 const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
-const months = ref(monthNames.map((m, i) => ({ value: `${now.getFullYear()}-${String(i+1).padStart(2,'0')}`, label: `${m} ${now.getFullYear()}` })))
+
+// Generate months list for last year and current year
+const monthsList = []
+const curYear = now.getFullYear()
+for (const yr of [curYear - 1, curYear]) {
+  monthNames.forEach((m, i) => {
+    monthsList.push({
+      value: `${yr}-${String(i+1).padStart(2,'0')}`,
+      label: `${m} ${yr}`
+    })
+  })
+}
+const months = ref(monthsList)
 const selectedMonth = ref(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`)
-const filterDateStart = ref('')
-const filterDateEnd = ref('')
 const users = ref([])
 const currentUser = ref(null)
 const tableRows = ref([]) // computed rows for the table
@@ -315,12 +438,44 @@ const editModal = reactive({
   userId: null,
   name: '',
   roleLabel: '',
+  gajiPokok: 0,
+  makanTransport: 0,
   cuti: 0,
   liburTahunan: 0,
   tunjanganKesehatan: 0,
   tunjanganJabatan: 0,
   tunjanganHariRaya: 0
 })
+
+const deductionsModal = reactive({
+  show: false,
+  name: '',
+  roleLabel: '',
+  totalPotongan: 0,
+  potonganTerlambatCount: 0,
+  potonganAbsenCount: 0,
+  potonganTidakHadirCount: 0,
+  terlambatRate: 0,
+  absenSetengahRate: 0,
+  tidakHadirRate: 0,
+  totalWorkingDays: 0,
+  hadirLengkap: 0
+})
+
+function openDeductionsModal(row) {
+  deductionsModal.name = row.name
+  deductionsModal.roleLabel = row.roleLabel
+  deductionsModal.totalPotongan = row.potongan
+  deductionsModal.potonganTerlambatCount = row.potonganTerlambatCount
+  deductionsModal.potonganAbsenCount = row.potonganAbsenCount
+  deductionsModal.potonganTidakHadirCount = row.potonganTidakHadirCount
+  deductionsModal.terlambatRate = row.terlambatRate
+  deductionsModal.absenSetengahRate = row.absenSetengahRate
+  deductionsModal.tidakHadirRate = row.tidakHadirRate
+  deductionsModal.totalWorkingDays = row.totalWorkingDays
+  deductionsModal.hadirLengkap = row.hadirLengkap
+  deductionsModal.show = true
+}
 
 function saveSettings() {
   localStorage.setItem('kcm_salary_settings', JSON.stringify(salarySettings))
@@ -412,10 +567,7 @@ async function loadUsers() {
   } catch (e) { console.error(e) }
 }
 
-function onDateRangeChange() {
-  // When user picks date range, keep it; month dropdown is a shortcut
-  loadData()
-}
+
 
 // Count working days (Mon-Sat) between two date strings
 function countWorkingDays(start, end) {
@@ -431,7 +583,7 @@ function countWorkingDays(start, end) {
 }
 
 async function loadData() {
-  if (!selectedMonth.value && !filterDateStart.value) return
+  if (!selectedMonth.value) return
   loading.value = true
   tableRows.value = []
 
@@ -439,16 +591,10 @@ async function loadData() {
   const rates = getRates()
   const overrides = loadOverrides()
 
-  let startDate, endDate
-  if (filterDateStart.value && filterDateEnd.value) {
-    startDate = filterDateStart.value
-    endDate = filterDateEnd.value
-  } else {
-    const [year, month] = selectedMonth.value.split('-')
-    startDate = `${year}-${month}-01`
-    const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate()
-    endDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`
-  }
+  const [year, month] = selectedMonth.value.split('-')
+  const startDate = `${year}-${month}-01`
+  const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate()
+  const endDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`
 
   const totalWorkingDays = countWorkingDays(startDate, endDate)
 
@@ -470,7 +616,8 @@ async function loadData() {
       const daysWithAnyRecord = new Set(logs.map(l => l.date)).size
 
       // Tidak hadir = totalWorkingDays - days with any attendance record
-      const tidakHadir = Math.max(0, totalWorkingDays - daysWithAnyRecord)
+      // Hanya potong jika staf memiliki riwayat absen di bulan tersebut, mencegah penalty penuh bulan kosong
+      const tidakHadir = logs.length > 0 ? Math.max(0, totalWorkingDays - daysWithAnyRecord) : 0
 
       // Terlambat: check_in after 08:15 (hour > 8 or hour === 8 && minute > 15)
       const terlambat = normalLogs.filter(l => {
@@ -484,8 +631,8 @@ async function loadData() {
 
       const config = getConfig(u.role)
       const ov = overrides[u.id] || {}
-      const gajiPokok = config.gajiPokok || 0
-      const makanTransport = config.makanTransport || 0
+      const gajiPokok = ov.gajiPokok ?? config.gajiPokok ?? 0
+      const makanTransport = ov.makanTransport ?? config.makanTransport ?? 0
       const tunjanganKesehatan = ov.tunjanganKesehatan ?? config.tunjanganKesehatan ?? 0
       const tunjanganJabatan = ov.tunjanganJabatan ?? config.tunjanganJabatan ?? 0
       const tunjanganHariRaya = ov.tunjanganHariRaya ?? config.tunjanganHariRaya ?? 0
@@ -544,6 +691,8 @@ function openEditModal(row) {
   editModal.userId = row.userId
   editModal.name = row.name
   editModal.roleLabel = row.roleLabel
+  editModal.gajiPokok = row.gajiPokok
+  editModal.makanTransport = row.makanTransport
   editModal.cuti = row.cuti
   editModal.liburTahunan = row.liburTahunan
   editModal.tunjanganKesehatan = row.tunjanganKesehatan
@@ -554,6 +703,8 @@ function openEditModal(row) {
 function saveEditModal() {
   const overrides = loadOverrides()
   overrides[editModal.userId] = {
+    gajiPokok: editModal.gajiPokok || 0,
+    makanTransport: editModal.makanTransport || 0,
     cuti: editModal.cuti || 0,
     liburTahunan: editModal.liburTahunan || 0,
     tunjanganKesehatan: editModal.tunjanganKesehatan || 0,

@@ -11,6 +11,8 @@ DROP TABLE IF EXISTS rab_items;
 DROP TABLE IF EXISTS rab;
 DROP TABLE IF EXISTS portfolio;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS ongkos_tukang;
+DROP TABLE IF EXISTS purchase_orders;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- Users table
@@ -168,10 +170,23 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
     prepared_by VARCHAR(100),
     approved_by VARCHAR(100) DEFAULT 'Anriko K, ST.',
     term_of_payment VARCHAR(200) DEFAULT 'Anriko K, ST.',
+    status VARCHAR(20) DEFAULT 'draft',
     created_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (rab_id) REFERENCES rab(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Ongkos Tukang table
+CREATE TABLE IF NOT EXISTS ongkos_tukang (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    rab_id INT NOT NULL,
+    date DATE NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    amount DECIMAL(15,2) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (rab_id) REFERENCES rab(id) ON DELETE CASCADE
 );
 
 -- Insert default office GPS coordinates (from Google Maps link, centered around KCM Yogyakarta: -7.7326, 110.3988)

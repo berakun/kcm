@@ -284,31 +284,19 @@
                     <th class="py-4 px-6">Nama Proyek</th>
                     <th class="py-4 px-6">Tanggal</th>
                     <th class="py-4 px-6">Deskripsi Belanja</th>
-                    <th class="py-4 px-6">Estimasi RAB</th>
-                    <th class="py-4 px-6 text-center">Status</th>
+                    <th class="py-4 px-6">Nominal Rembes</th>
                     <th class="py-4 px-6 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
                   <tr v-if="rembesList.length === 0">
-                    <td colspan="6" class="py-12 text-center text-gray-400">Data pengeluaran rembes belum ada.</td>
+                    <td colspan="5" class="py-12 text-center text-gray-400">Data pengeluaran rembes belum ada.</td>
                   </tr>
                   <tr v-else v-for="rem in rembesList" :key="rem.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                     <td class="py-4 px-6 font-bold text-gray-800 dark:text-gray-200">{{ rem.project_name }}</td>
                     <td class="py-4 px-6 text-gray-400">{{ formatDate(rem.date) }}</td>
                     <td class="py-4 px-6 font-semibold">{{ rem.description }}</td>
-                    <td class="py-4 px-6 font-mono text-gray-500">{{ formatCurrency(rem.rab_amount) }}</td>
-
-                    <td class="py-4 px-6 text-center">
-                      <span :class="[
-                        rem.status === 'aman' ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20' :
-                        rem.status === 'waspada' ? 'text-amber-700 bg-amber-50 dark:bg-amber-950/20' :
-                        'text-red-750 bg-red-50 dark:bg-red-950/20',
-                        'px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase'
-                      ]">
-                        {{ rem.status }}
-                      </span>
-                    </td>
+                    <td class="py-4 px-6 font-mono text-gray-500">{{ formatCurrency(rem.actual_amount) }}</td>
                     <td class="py-4 px-6 text-center">
                       <button @click="deleteRembes(rem.id)" class="text-red-650 hover:text-red-800">
                         <span class="material-symbols-outlined text-base">delete</span>
@@ -411,6 +399,58 @@
           </div>
         </div>
 
+        <!-- ========================================== -->
+        <!-- TAB 4: Ongkos Tukang -->
+        <!-- ========================================== -->
+        <div v-if="activeTab === 'ongkos_tukang'" class="space-y-6">
+          <div class="bg-white dark:bg-gray-850 p-4 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Catatan Ongkos Tukang Proyek</span>
+            <button @click="openOngkosTukangModal()" class="bg-red-800 hover:bg-red-950 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap">
+              <span class="material-symbols-outlined text-sm font-semibold">add</span>
+              Tambah Ongkos Tukang
+            </button>
+          </div>
+
+          <!-- Ongkos Tukang Table -->
+          <div class="bg-white dark:bg-gray-850 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
+                    <th class="py-4 px-6 w-12 text-center">No</th>
+                    <th class="py-4 px-6">Nama Proyek</th>
+                    <th class="py-4 px-6">Tanggal</th>
+                    <th class="py-4 px-6">Keterangan / Deskripsi</th>
+                    <th class="py-4 px-6 text-right">Nominal</th>
+                    <th class="py-4 px-6 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
+                  <tr v-if="ongkosTukangList.length === 0">
+                    <td colspan="6" class="py-12 text-center text-gray-400">Data ongkos tukang belum ada.</td>
+                  </tr>
+                  <tr v-else v-for="(ot, idx) in ongkosTukangList" :key="ot.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                    <td class="py-4 px-6 text-center text-gray-400">{{ idx + 1 }}</td>
+                    <td class="py-4 px-6 font-bold text-gray-800 dark:text-gray-200">[{{ ot.rab_code }}] {{ ot.project_name }}</td>
+                    <td class="py-4 px-6 text-gray-400">{{ formatDate(ot.date) }}</td>
+                    <td class="py-4 px-6 font-semibold">{{ ot.description }}</td>
+                    <td class="py-4 px-6 text-right font-mono font-bold text-gray-900 dark:text-white">{{ formatCurrency(ot.amount) }}</td>
+                    <td class="py-4 px-6 text-center">
+                      <div class="flex items-center justify-center gap-2">
+                        <button @click="openOngkosTukangModal(ot)" class="text-amber-600 hover:text-amber-800" title="Edit">
+                          <span class="material-symbols-outlined text-base">edit</span>
+                        </button>
+                        <button @click="deleteOngkosTukang(ot.id)" class="text-red-650 hover:text-red-800" title="Hapus">
+                          <span class="material-symbols-outlined text-base">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
       </div>
     </main>
@@ -440,8 +480,8 @@
         </div>
 
         <div>
-          <label class="text-[10px] font-bold text-gray-400 block mb-1">Anggaran Awal RAB (Estimasi)</label>
-          <input v-model.number="rembesForm.rab_amount" type="number" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Rp"/>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">Nominal Rembes</label>
+          <input v-model.number="rembesForm.actual_amount" type="number" required class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Rp"/>
         </div>
 
         <div>
@@ -586,6 +626,46 @@
         </div>
       </div>
     </BaseModal>
+
+    <!-- Modal Form: Ongkos Tukang -->
+    <BaseModal :show="showOngkosTukangModal" :title="ongkosTukangForm.id ? 'Edit Ongkos Tukang' : 'Catat Ongkos Tukang Baru'" @close="closeOngkosTukangModal">
+      <form @submit.prevent="submitOngkosTukang" class="p-6 space-y-4">
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">Pilih Proyek RAB</label>
+          <select v-model="ongkosTukangForm.rab_id" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0">
+            <option value="" disabled>-- Pilih Proyek --</option>
+            <option v-for="r in rabsList" :key="r.id" :value="r.id">
+              [{{ r.code }}] {{ r.project_name }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">Tanggal Pembayaran</label>
+          <input v-model="ongkosTukangForm.date" type="date" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0"/>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">Deskripsi / Keterangan</label>
+          <input v-model="ongkosTukangForm.description" type="text" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Contoh: Ongkos pasang plafon gypsum 2 orang"/>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">Nominal Ongkos Tukang (Rp)</label>
+          <input v-model.number="ongkosTukangForm.amount" type="number" min="1" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Rp"/>
+        </div>
+
+        <div class="border-t border-gray-100 dark:border-gray-800 pt-4 flex justify-end space-x-2">
+          <button type="button" @click="closeOngkosTukangModal" class="px-5 py-2.5 rounded-xl border border-gray-250 text-gray-550 dark:text-gray-400 font-semibold text-xs hover:bg-gray-50">
+            Batal
+          </button>
+          <button type="submit" class="bg-red-800 hover:bg-red-950 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-md">
+            Simpan
+          </button>
+        </div>
+      </form>
+    </BaseModal>
+
   </div>
 </template>
 
@@ -606,7 +686,8 @@ const activeTab = ref('rab')
 const tabs = [
   { id: 'rab', name: 'RAB Builder', icon: 'calculate' },
   { id: 'rembes', name: 'Rembes Lapangan', icon: 'trending_down' },
-  { id: 'cashbon', name: 'Persetujuan Cashbon', icon: 'payments' }
+  { id: 'cashbon', name: 'Persetujuan Cashbon', icon: 'payments' },
+  { id: 'ongkos_tukang', name: 'Ongkos Tukang', icon: 'construction' }
 ]
 
 // RAB List states
@@ -648,6 +729,17 @@ const cashbonList = ref([])
 const showActionModal = ref(false)
 const cashbonFilterDateStart = ref('')
 const cashbonFilterDateEnd = ref('')
+
+// Ongkos Tukang states
+const ongkosTukangList = ref([])
+const showOngkosTukangModal = ref(false)
+const ongkosTukangForm = ref({
+  id: '',
+  rab_id: '',
+  date: new Date().toISOString().split('T')[0],
+  description: '',
+  amount: 0
+})
 const actionModalTitle = ref('Tindakan Persetujuan')
 const actionTargetType = ref('') // 'cashbon'
 const actionTargetId = ref(null)
@@ -668,6 +760,9 @@ async function loadAllData() {
 
     const cashbonData = await api.get('/api/rab/cashbon')
     cashbonList.value = cashbonData
+
+    const otData = await api.get('/api/rab/ongkos-tukang')
+    ongkosTukangList.value = otData
   } catch (err) {
     appStore.showAlert('Gagal memuat data dari server.', 'error')
   }
@@ -803,6 +898,7 @@ async function submitRembes() {
     return
   }
   try {
+    rembesForm.value.rab_amount = rembesForm.value.actual_amount
     await api.post('/api/rab/rembes', rembesForm.value)
     appStore.showAlert('Rembes lapangan berhasil disimpan.', 'success')
     closeRembesModal()
@@ -1108,6 +1204,60 @@ async function submitActionForm() {
     await loadAllData()
   } catch (err) {
     appStore.showAlert('Gagal mengkonfirmasi persetujuan.', 'error')
+  }
+}
+
+// ==========================================
+// ONGKOS TUKANG ACTIONS
+// ==========================================
+function openOngkosTukangModal(ot = null) {
+  if (ot) {
+    ongkosTukangForm.value = {
+      id: ot.id,
+      rab_id: ot.rab_id,
+      date: ot.date ? ot.date.split('T')[0] : new Date().toISOString().split('T')[0],
+      description: ot.description,
+      amount: ot.amount
+    }
+  } else {
+    ongkosTukangForm.value = {
+      id: '',
+      rab_id: '',
+      date: new Date().toISOString().split('T')[0],
+      description: '',
+      amount: 0
+    }
+  }
+  showOngkosTukangModal.value = true
+}
+
+function closeOngkosTukangModal() {
+  showOngkosTukangModal.value = false
+}
+
+async function submitOngkosTukang() {
+  if (!ongkosTukangForm.value.rab_id || !ongkosTukangForm.value.description || !ongkosTukangForm.value.amount) {
+    appStore.showAlert('Mohon lengkapi seluruh formulir.', 'error')
+    return
+  }
+  try {
+    await api.post('/api/rab/ongkos-tukang', ongkosTukangForm.value)
+    appStore.showAlert('Data ongkos tukang berhasil disimpan.', 'success')
+    closeOngkosTukangModal()
+    await loadAllData()
+  } catch (err) {
+    appStore.showAlert('Gagal menyimpan ongkos tukang: ' + (err.response?.data?.error || err.message), 'error')
+  }
+}
+
+async function deleteOngkosTukang(id) {
+  if (!confirm('Hapus data ongkos tukang ini?')) return
+  try {
+    await api.delete('/api/rab/ongkos-tukang', { id })
+    appStore.showAlert('Data ongkos tukang berhasil dihapus.', 'success')
+    await loadAllData()
+  } catch (err) {
+    appStore.showAlert('Gagal menghapus ongkos tukang.', 'error')
   }
 }
 

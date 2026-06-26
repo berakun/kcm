@@ -129,7 +129,14 @@
                 <div class="text-[10px] font-bold text-gray-400 uppercase">Geofencing Status</div>
                 <div class="text-xs font-bold mt-0.5 flex items-center gap-1" :class="gpsResult?.status === 'di_kantor' ? 'text-emerald-700' : 'text-amber-700'">
                   <span class="material-symbols-outlined text-sm">{{ gpsResult?.status === 'di_kantor' ? 'verified' : 'warning' }}</span>
-                  <span>{{ gpsResult?.status === 'di_kantor' ? 'Di Area Kantor' : gpsResult ? 'Di Luar Area' : 'Memuat...' }}</span>
+                  <span>
+                    {{ 
+                      gpsResult?.status === 'di_kantor' ? 'Di Area Kantor' : 
+                      gpsResult?.status === 'luar_kantor' ? 'Di Luar Area' : 
+                      gpsResult?.status === 'error' ? (gpsResult.message || 'GPS Tidak Aktif') : 
+                      'Memuat...' 
+                    }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -295,7 +302,10 @@ async function checkIn() {
   absenMsg.value = ''
   absenWarning.value = false
   try {
-    const pos = await getCurrentPosition().catch(() => null)
+    const pos = await getCurrentPosition().catch(err => {
+      gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
+      return null
+    })
     const payload = pos ? { latitude: pos.latitude, longitude: pos.longitude } : {}
     if (pos) gpsResult.value = pos
     const res = await api.post('/api/attendance/check-in', payload)
@@ -314,7 +324,10 @@ async function checkOut() {
   loadingAbsen.value = true
   absenMsg.value = ''
   try {
-    const pos = await getCurrentPosition().catch(() => null)
+    const pos = await getCurrentPosition().catch(err => {
+      gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
+      return null
+    })
     const payload = pos ? { latitude: pos.latitude, longitude: pos.longitude } : {}
     if (pos) gpsResult.value = pos
     await api.post('/api/attendance/check-out', payload)
@@ -343,7 +356,11 @@ onMounted(async () => {
   setInterval(updateClock, 1000)
   loadTodayStatus()
   // Scan GPS on load for geofence display
-  getCurrentPosition().then(pos => { gpsResult.value = pos }).catch(() => {})
+  getCurrentPosition()
+    .then(pos => { gpsResult.value = pos })
+    .catch(err => {
+      gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
+    })
 
   try {
     // 1. Fetch Total Users

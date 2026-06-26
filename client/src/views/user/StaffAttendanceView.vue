@@ -83,7 +83,14 @@
             <div class="text-[10px] font-bold text-gray-400 uppercase">Geofencing Status</div>
             <div class="text-xs font-bold mt-0.5 flex items-center gap-1" :class="gpsResult?.status === 'di_kantor' ? 'text-emerald-700' : 'text-amber-700'">
               <span class="material-symbols-outlined text-sm">{{ gpsResult?.status === 'di_kantor' ? 'verified' : 'warning' }}</span>
-              <span>{{ gpsResult?.status === 'di_kantor' ? 'Di Area Kantor' : 'Di Luar Area' }}</span>
+              <span>
+                {{ 
+                  gpsResult?.status === 'di_kantor' ? 'Di Area Kantor' : 
+                  gpsResult?.status === 'luar_kantor' ? 'Di Luar Area' : 
+                  gpsResult?.status === 'error' ? (gpsResult.message || 'GPS Tidak Aktif') : 
+                  'Memuat...' 
+                }}
+              </span>
             </div>
           </div>
         </div>
@@ -304,6 +311,7 @@ async function triggerGpsCheck() {
     gpsResult.value = res
   } catch (err) {
     console.warn('GPS scanning failed:', err.message)
+    gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
   }
 }
 
@@ -321,6 +329,7 @@ async function performCheckIn() {
     await fetchStatus()
     await fetchHistory()
   } catch (err) {
+    gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
     appStore.showAlert('Check-In gagal: ' + (err.response?.data?.error || err.message), 'error')
   }
 }
@@ -340,6 +349,7 @@ async function performCheckOut() {
     await fetchStatus()
     await fetchHistory()
   } catch (err) {
+    gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
     appStore.showAlert('Check-Out gagal: ' + (err.response?.data?.error || err.message), 'error')
   }
 }

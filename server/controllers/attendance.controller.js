@@ -148,7 +148,7 @@ exports.checkIn = async (req, res) => {
       return res.status(400).json({ error: 'Anda sudah check-in hari ini.' });
     }
 
-    let distance = 0;
+    let distance = null;
     let status = 'di_kantor';
     let warning = null;
 
@@ -215,7 +215,7 @@ exports.checkOut = async (req, res) => {
       return res.status(400).json({ error: 'Anda belum check-in hari ini, atau sudah melakukan check-out.' });
     }
 
-    let distance = 0;
+    let distance = null;
     let status = 'di_kantor';
 
     if (!isAdminRole && latitude && longitude) {

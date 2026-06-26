@@ -25,7 +25,10 @@ exports.getReport = async (req, res) => {
     const [rembes] = await db.query("SELECT SUM(actual_amount) as total FROM rembes");
     const rembesTotal = parseFloat(rembes[0].total) || 0;
 
-    let totalExpenses = cashbonTotal + rembesTotal;
+    const [ongkosTukang] = await db.query("SELECT SUM(amount) as total FROM ongkos_tukang");
+    const ongkosTukangTotal = parseFloat(ongkosTukang[0].total) || 0;
+
+    let totalExpenses = cashbonTotal + rembesTotal + ongkosTukangTotal;
     if (totalExpenses === 0) {
       totalExpenses = 180000000;
     }
@@ -50,10 +53,11 @@ exports.getReport = async (req, res) => {
     // 5. Project comparisons
     const [projectComparisons] = await db.query(`
       SELECT r.id, r.project_name, r.total_budget, 
-             COALESCE(SUM(rem.actual_amount), 0) as total_actual 
+             (
+               COALESCE((SELECT SUM(rem.actual_amount) FROM rembes rem WHERE rem.rab_id = r.id), 0) +
+               COALESCE((SELECT SUM(ot.amount) FROM ongkos_tukang ot WHERE ot.rab_id = r.id), 0)
+             ) as total_actual 
       FROM rab r 
-      LEFT JOIN rembes rem ON r.id = rem.rab_id 
-      GROUP BY r.id 
       ORDER BY r.id DESC 
       LIMIT 5
     `);

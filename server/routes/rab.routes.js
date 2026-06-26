@@ -43,4 +43,10 @@ router.delete('/rembes', authMiddleware, roleMiddleware(['admin', 'super_admin']
 router.get('/cashbon', authMiddleware, rabController.getCashbons);
 router.post('/cashbon', authMiddleware, upload.single('proof_file'), rabController.createCashbon);
 router.put('/cashbon/status', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.updateCashbonStatus);
+
+// Ongkos Tukang routes (Admin/Super Admin only)
+router.get('/ongkos-tukang', authMiddleware, rabController.getOngkosTukang);
+router.post('/ongkos-tukang', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.saveOngkosTukang);
+router.delete('/ongkos-tukang', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.deleteOngkosTukang);
+
 module.exports = router;
