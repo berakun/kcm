@@ -277,7 +277,7 @@ function editPortfolio(p) {
     status: p.status
   }
   selectedFiles.value = []
-  previewUrls.value = p.images ? p.images.map(img => '/' + img) : []
+  previewUrls.value = p.images ? p.images.map(img => getImageUrl(img)) : []
   replaceImages.value = false
   showModal.value = true
 }

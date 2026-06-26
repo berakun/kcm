@@ -41,14 +41,14 @@ async function seed() {
 
     // 2. Seed Portfolio
     const portfolios = [
-      ['Villa Modern Jogja', 'residential', 'Desain interior modern minimalis untuk villa di Sleman. Menggunakan material kayu jati dan batu alam.', 'Budi Hartono', 'Sleman, Yogyakarta', 2024, '["villa1.jpg", "villa2.jpg"]', 'published'],
-      ['Kantor Startup Tech', 'office', 'Renovasi kantor startup dengan konsep open space. Warna dominan putih dengan aksen kayu.', 'PT Tech Indonesia', 'Jakarta Selatan', 2024, '["office1.jpg"]', 'published'],
-      ['Hotel Heritage Jogja', 'hotel', 'Redesain lobby dan 20 kamar hotel heritage bergaya Jawa modern.', 'Hotel Tugu', 'Malioboro, Yogyakarta', 2023, '["hotel1.jpg", "hotel2.jpg"]', 'published'],
-      ['Kost Eksklusif Mahasiswa', 'kost', 'Pembangunan 15 unit kost eksklusif dengan furnished lengkap.', 'Andi Wijaya', 'Universitas Sanata Dharma', 2024, '["kost1.jpg"]', 'published'],
-      ['RS Mitra Keluarga', 'rumah_sakit', 'Renovasi ruang tunggu dan 5 ruang rawat inap dengan desain healing environment.', 'RS Mitra Keluarga', 'Sleman, Yogyakarta', 2023, '["rs1.jpg", "rs2.jpg"]', 'published'],
-      ['Rumah Minimalis 2 Lantai', 'residential', 'Desain interior lengkap rumah 120m2 2 lantai. Gaya Scandinavian modern.', 'Keluarga Raharjo', 'Bantul, Yogyakarta', 2024, '["rumah1.jpg"]', 'published'],
-      ['Co-working Space KCM', 'office', 'Desain co-working space untuk komunitas kreatif. Industrial style dengan exposed brick.', 'Komunitas Kreatif Jogja', 'Tugu, Yogyakarta', 2024, '["cowork1.jpg", "cowork2.jpg"]', 'published'],
-      ['Restoran Padang Modern', 'hotel', 'Renovasi restoran Padang dengan konsep modern tradisional.', 'RM Sederhana', 'Gejayan, Yogyakarta', 2023, '["resto1.jpg"]', 'draft']
+      ['Villa Modern Jogja', 'residential', 'Desain interior modern minimalis untuk villa di Sleman. Menggunakan material kayu jati dan batu alam.', 'Budi Hartono', 'Sleman, Yogyakarta', 2024, '["https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80", "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&q=80"]', 'published'],
+      ['Kantor Startup Tech', 'office', 'Renovasi kantor startup dengan konsep open space. Warna dominan putih dengan aksen kayu.', 'PT Tech Indonesia', 'Jakarta Selatan', 2024, '["https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80"]', 'published'],
+      ['Hotel Heritage Jogja', 'hotel', 'Redesain lobby dan 20 kamar hotel heritage bergaya Jawa modern.', 'Hotel Tugu', 'Malioboro, Yogyakarta', 2023, '["https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80", "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80"]', 'published'],
+      ['Kost Eksklusif Mahasiswa', 'kost', 'Pembangunan 15 unit kost eksklusif dengan furnished lengkap.', 'Andi Wijaya', 'Universitas Sanata Dharma', 2024, '["https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&q=80"]', 'published'],
+      ['RS Mitra Keluarga', 'rumah_sakit', 'Renovasi ruang tunggu dan 5 ruang rawat inap dengan desain healing environment.', 'RS Mitra Keluarga', 'Sleman, Yogyakarta', 2023, '["https://images.unsplash.com/photo-1586773860418-d3b3de97e663?w=800&q=80", "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80"]', 'published'],
+      ['Rumah Minimalis 2 Lantai', 'residential', 'Desain interior lengkap rumah 120m2 2 lantai. Gaya Scandinavian modern.', 'Keluarga Raharjo', 'Bantul, Yogyakarta', 2024, '["https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80"]', 'published'],
+      ['Co-working Space KCM', 'office', 'Desain co-working space untuk komunitas kreatif. Industrial style dengan exposed brick.', 'Komunitas Kreatif Jogja', 'Tugu, Yogyakarta', 2024, '["https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?w=800&q=80", "https://images.unsplash.com/photo-1542744094-3a31f103e35f?w=800&q=80"]', 'published'],
+      ['Restoran Padang Modern', 'hotel', 'Renovasi restoran Padang dengan konsep modern tradisional.', 'RM Sederhana', 'Gejayan, Yogyakarta', 2023, '["https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80"]', 'draft']
     ];
 
     for (const p of portfolios) {
