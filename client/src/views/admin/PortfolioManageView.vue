@@ -128,8 +128,14 @@
           </div>
           <!-- Previews -->
           <div class="flex flex-wrap gap-3 mt-4">
-            <div v-for="(img, idx) in previewUrls" :key="idx" class="w-16 h-16 rounded-xl overflow-hidden relative border border-gray-200">
+            <div v-for="(img, idx) in previewUrls" :key="idx" class="w-16 h-16 rounded-xl overflow-hidden relative border border-gray-200 group/img">
               <img class="w-full h-full object-cover" :src="img"/>
+              <button
+                type="button"
+                @click.stop="removeImage(idx)"
+                class="absolute top-0.5 right-0.5 w-4 h-4 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity text-[8px] leading-none"
+                title="Hapus gambar"
+              >✕</button>
             </div>
           </div>
         </div>
@@ -141,12 +147,6 @@
               <option value="draft">Draft (Disembunyikan)</option>
               <option value="published">Published (Ditampilkan)</option>
             </select>
-          </div>
-          <div v-if="form.id" class="flex items-center pt-5">
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" v-model="replaceImages" class="rounded border-gray-300 text-red-800 focus:ring-0"/>
-              <span class="text-xs font-semibold text-gray-550 dark:text-gray-400">Ganti Gambar yang Ada</span>
-            </label>
           </div>
         </div>
 
@@ -183,7 +183,8 @@ const modalTitle = ref('Tambah Portfolio Baru')
 
 const selectedFiles = ref([])
 const previewUrls = ref([])
-const replaceImages = ref(false)
+const deletedImages = ref([])
+const existingImages = ref([])
 
 const form = ref({
   id: '',
@@ -231,7 +232,7 @@ function onFilesSelected(e) {
   const files = e.target.files
   if (!files || files.length === 0) return
 
-  if (replaceImages.value || !form.value.id) {
+  if (!form.value.id) {
     previewUrls.value = []
     selectedFiles.value = []
   }
@@ -260,7 +261,8 @@ function openAddModal() {
   }
   selectedFiles.value = []
   previewUrls.value = []
-  replaceImages.value = false
+  existingImages.value = []
+  deletedImages.value = []
   showModal.value = true
 }
 
@@ -277,13 +279,26 @@ function editPortfolio(p) {
     status: p.status
   }
   selectedFiles.value = []
+  existingImages.value = p.images ? [...p.images] : []
+  deletedImages.value = []
   previewUrls.value = p.images ? p.images.map(img => getImageUrl(img)) : []
-  replaceImages.value = false
   showModal.value = true
 }
 
 function closeModal() {
   showModal.value = false
+}
+
+function removeImage(idx) {
+  // If editing, track original image for deletion
+  if (form.value.id && idx < existingImages.value.length) {
+    deletedImages.value.push(existingImages.value[idx])
+    existingImages.value.splice(idx, 1)
+  }
+  previewUrls.value.splice(idx, 1)
+  if (idx < selectedFiles.value.length) {
+    selectedFiles.value.splice(idx, 1)
+  }
 }
 
 async function submitForm() {
@@ -300,7 +315,9 @@ async function submitForm() {
 
   if (form.value.id) {
     formData.append('id', form.value.id)
-    formData.append('replace_images', replaceImages.value ? 'true' : 'false')
+    if (deletedImages.value.length > 0) {
+      formData.append('deleted_images', deletedImages.value.join(','))
+    }
   }
 
   // Append images

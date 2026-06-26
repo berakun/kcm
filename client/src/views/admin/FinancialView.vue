@@ -11,6 +11,22 @@
       <!-- Content Body -->
       <div class="p-8 flex-grow space-y-8 overflow-y-auto max-h-[calc(100vh-80px)]">
         
+        <!-- Date Range Filter -->
+        <div class="bg-white dark:bg-gray-850 p-4 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Filter Periode:</span>
+            <input v-model="filterDateStart" type="date" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500" title="Tanggal Mulai"/>
+            <span class="text-gray-400 text-xs">→</span>
+            <input v-model="filterDateEnd" type="date" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500" title="Tanggal Selesai"/>
+            <button @click="applyDateFilter" class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">filter_alt</span> Terapkan
+            </button>
+            <button @click="resetDateFilter" class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">restart_alt</span> Reset
+            </button>
+          </div>
+        </div>
+
         <!-- Summary Bento Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
           <!-- Total Pendapatan -->
@@ -114,12 +130,12 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
-                <tr v-if="leakages.length === 0">
+                <tr v-if="filteredLeakages.length === 0">
                   <td colspan="6" class="py-12 text-center text-gray-400">
                     Tidak ada kebocoran anggaran terdeteksi. Semua pengeluaran aktual berada di bawah atau sama dengan alokasi RAB.
                   </td>
                 </tr>
-                <tr v-else v-for="(leak, idx) in leakages" :key="idx" class="hover:bg-red-50/20 dark:hover:bg-red-950/5 transition-colors">
+                <tr v-else v-for="(leak, idx) in filteredLeakages" :key="idx" class="hover:bg-red-50/20 dark:hover:bg-red-950/5 transition-colors">
                   <td class="py-4 px-6 font-bold text-gray-800 dark:text-gray-200">{{ leak.project_name }}</td>
                   <td class="py-4 px-6 text-gray-400">{{ formatDate(leak.date) }}</td>
                   <td class="py-4 px-6 font-semibold">{{ leak.description }}</td>
@@ -140,7 +156,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
 import { useApi } from '../../composables/useApi'
@@ -148,6 +164,9 @@ import { formatCurrency, formatDate } from '../../utils/helpers'
 import Chart from 'chart.js/auto'
 
 const api = useApi()
+
+const filterDateStart = ref('')
+const filterDateEnd = ref('')
 
 const summary = ref({
   total_revenue: 0,
@@ -159,6 +178,32 @@ const summary = ref({
 const chartDataList = ref([])
 const leakages = ref([])
 const projectComparisons = ref([])
+
+const filteredLeakages = computed(() => {
+  const ds = filterDateStart.value
+  const de = filterDateEnd.value
+  if (!ds && !de) return leakages.value
+  return leakages.value.filter(l => {
+    if (!l.date) return false
+    const d = new Date(l.date)
+    if (ds && d < new Date(ds)) return false
+    if (de) {
+      const deDate = new Date(de)
+      deDate.setHours(23,59,59,999)
+      if (d > deDate) return false
+    }
+    return true
+  })
+})
+
+function applyDateFilter() {
+  // Client-side filtering via computed; no-op needed here
+}
+
+function resetDateFilter() {
+  filterDateStart.value = ''
+  filterDateEnd.value = ''
+}
 
 onMounted(async () => {
   try {

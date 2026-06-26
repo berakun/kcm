@@ -8,6 +8,7 @@ const roleMiddleware = require('../middleware/role');
 router.get('/', authMiddleware, poController.getPos);
 router.get('/:id', authMiddleware, poController.getPos);
 router.post('/', authMiddleware, roleMiddleware(['admin', 'super_admin']), poController.createPo);
+router.put('/:id', authMiddleware, roleMiddleware(['admin', 'super_admin']), poController.updatePo);
 router.delete('/:id', authMiddleware, roleMiddleware(['admin', 'super_admin']), poController.deletePo);
 
 module.exports = router;

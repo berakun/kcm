@@ -5,7 +5,7 @@
     <header class="fixed top-0 left-0 w-full z-50 glass-effect border-b border-gray-200/40 dark:border-gray-800/40 transition-all duration-300">
       <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <router-link to="/" class="flex items-center space-x-2">
-          <img src="/logo.png" alt="KCM Logo" class="w-10 h-10 rounded-lg object-contain shadow-sm">
+          <img src="/logo-transparent.png" alt="KCM Logo" class="w-10 h-10 rounded-lg object-contain shadow-sm">
           <span class="font-bold text-lg text-red-950 dark:text-white">Kurnia Cipta Mandiri</span>
         </router-link>
         
@@ -141,8 +141,9 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div class="group relative overflow-hidden rounded-2xl aspect-[4/3] shadow-md cursor-pointer" v-for="p in previewProjects" :key="p.title" @click="$router.push('/portfolio')">
-            <img :alt="p.title" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" :src="p.img"/>
+          <div class="group relative overflow-hidden rounded-2xl aspect-[4/3] shadow-md cursor-pointer" v-for="p in portfolioProjects" :key="p.id" @click="$router.push('/portfolio')">
+            <img :alt="p.title" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" :src="getImageUrl(p.images?.[0])"/>
+            <span v-if="p.images?.length > 1" class="absolute top-3 right-3 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full z-10">📷 {{ p.images.length }}</span>
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <span class="text-amber-500 text-[10px] font-bold uppercase tracking-wider">{{ p.category }}</span>
               <h4 class="text-white font-bold text-base mt-1">{{ p.title }}</h4>
@@ -324,15 +325,26 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAppStore } from '../stores/app'
+import { useApi } from '../composables/useApi'
+import { getImageUrl } from '../utils/helpers'
 
 const appStore = useAppStore()
+const api = useApi()
 
 const contactName = ref('')
 const contactPhone = ref('')
 const contactMessage = ref('')
 const activeFaq = ref(null)
+const portfolioProjects = ref([])
+
+onMounted(async () => {
+  try {
+    const data = await api.get('/api/portfolio?status=published')
+    portfolioProjects.value = (data || []).slice(0, 6)
+  } catch (e) {}
+})
 
 const servicesList = [
   { icon: 'chair', title: 'Interior Design', desc: 'Desain interior hunian & kantor mewah dengan pemanfaatan ruang yang sangat efisien.' },
@@ -363,6 +375,6 @@ function sendWhatsappMessage() {
 
 <style scoped>
 .hero-bg {
-  background-image: linear-gradient(to right, rgba(26, 0, 0, 0.9) 0%, rgba(153, 27, 27, 0.4) 60%, rgba(26, 0, 0, 0.8) 100%), url('https://lh3.googleusercontent.com/aida-public/AB6AXuBT4VqcBNFcxdoSxuqnnYvQ95rnHPbgjiOA1yR_Ay-89ZGjBFOMXlPZfmrrwPpbqYtVSX_ahLsLomQ6-HCGl6YDJyMW5KBp20_mJ3--tdV7TGB0LkiR5UiHvbA0LkRaTkrsXhWpENBFUeyonIS_6_LRtHfwpTuPpfnbOYLoyvbGno5ePLOqCRpsVpwU9BMPA6ShD1oAvqYG6i7-FaA9GSnpdj-QMsYQvtTWAIonmtGtKCQQWnzJSqNkjA');
+  background-image: linear-gradient(to right, rgba(26, 0, 0, 0.9) 0%, rgba(153, 27, 27, 0.4) 60%, rgba(26, 0, 0, 0.8) 100%), url('/assets/images/hero-interior.jpg');
 }
 </style>

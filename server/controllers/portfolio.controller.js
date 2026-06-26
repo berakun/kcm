@@ -109,6 +109,20 @@ exports.updatePortfolio = async (req, res) => {
       });
     }
 
+    // Handle individual image deletion
+    if (req.body.deleted_images) {
+      const deletedPaths = req.body.deleted_images.split(',').filter(Boolean);
+      images = images.filter(img => !deletedPaths.includes(img));
+      deletedPaths.forEach(img => {
+        if (img !== 'assets/images/placeholder.jpg') {
+          const filePath = path.join(__dirname, '../../client/', img);
+          if (fs.existsSync(filePath)) {
+            try { fs.unlinkSync(filePath); } catch(e) {}
+          }
+        }
+      });
+    }
+
     if (images.length === 0) {
       images.push('assets/images/placeholder.jpg');
     }

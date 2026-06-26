@@ -14,6 +14,7 @@ router.get('/admin-list', authMiddleware, roleMiddleware(['admin', 'super_admin'
 router.get('/rekap', authMiddleware, roleMiddleware(['admin', 'super_admin']), attendanceController.getRekap);
 router.put('/:id', authMiddleware, roleMiddleware(['super_admin']), attendanceController.updateAttendance);
 router.delete('/:id', authMiddleware, roleMiddleware(['super_admin']), attendanceController.deleteAttendance);
+router.post('/set-type', authMiddleware, roleMiddleware(['admin', 'super_admin']), attendanceController.setType);
 
 router.post('/check-in', authMiddleware, attendanceController.checkIn);
 router.post('/check-out', authMiddleware, attendanceController.checkOut);

@@ -150,13 +150,13 @@
             <div class="grid grid-cols-3 divide-x divide-gray-150 dark:divide-gray-800 text-center py-4">
               <div>
                 <div class="text-[9px] font-bold text-gray-400 uppercase">Check-In</div>
-                <div class="text-xs font-black mt-1" :class="todayStatus.checkIn ? 'text-emerald-600' : 'text-gray-400'">
+                <div class="text-xs font-black mt-1" :class="todayStatus.checkedIn ? 'text-emerald-600' : 'text-gray-400'">
                   {{ todayStatus.checkIn || '--:--' }}
                 </div>
               </div>
               <div>
                 <div class="text-[9px] font-bold text-gray-400 uppercase">Check-Out</div>
-                <div class="text-xs font-black mt-1" :class="todayStatus.checkOut ? 'text-red-700' : 'text-gray-400'">
+                <div class="text-xs font-black mt-1" :class="todayStatus.checkedOut ? 'text-red-700' : 'text-gray-400'">
                   {{ todayStatus.checkOut || '--:--' }}
                 </div>
               </div>
@@ -167,13 +167,22 @@
                 </div>
               </div>
             </div>
+            <!-- Status text -->
+            <div class="text-center pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
+              <span class="text-[10px] font-bold uppercase tracking-wider" :class="
+                todayStatus.checkedOut ? 'text-emerald-600' :
+                todayStatus.checkedIn ? 'text-amber-600' : 'text-gray-400'
+              ">
+                {{ todayStatus.checkedOut ? 'Sudah clock-out' : todayStatus.checkedIn ? 'Sudah clock-in' : 'Belum absen' }}
+              </span>
+            </div>
           </div>
 
           <p v-if="absenMsg" :class="['text-xs mt-2 text-center', absenError ? 'text-red-500' : absenWarning ? 'text-amber-600' : 'text-emerald-600']">{{ absenMsg }}</p>
         </div>
 
         <!-- Graphs and Attendance Logs (superadmin only) -->
-        <div v-if="isSuperAdmin" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div v-if="isSuperAdmin" class="grid grid-cols-1 gap-8">
           <!-- Graph -->
           <div class="bg-white dark:bg-gray-850 p-6 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm lg:col-span-2">
             <h3 class="font-bold text-sm mb-6 text-gray-900 dark:text-white">Statistik Kehadiran Karyawan</h3>
@@ -182,36 +191,42 @@
             </div>
           </div>
 
-          <!-- Daily presence log list -->
-          <div class="bg-white dark:bg-gray-850 p-6 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm">
-            <h3 class="font-bold text-sm mb-6 text-gray-900 dark:text-white">Absensi Hari Ini</h3>
-            <div class="flow-root overflow-y-auto max-h-64 pr-2 space-y-3">
-              <div v-if="attendanceList.length === 0" class="text-center py-12 text-xs text-gray-400">
-                Belum ada karyawan yang absen hari ini.
-              </div>
-              <div 
-                v-else 
-                v-for="log in attendanceList" 
-                :key="log.id"
-                class="flex items-center space-x-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-b-0"
-              >
-                <div class="flex-grow min-w-0">
-                  <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">{{ log.employee_name }}</p>
-                  <p class="text-[10px] text-gray-400 truncate">{{ log.department || 'Staff' }}</p>
-                </div>
-                <div class="text-right text-[10px] font-medium text-gray-500">
-                  <div>In: {{ log.check_in ? formatTime(log.check_in) : '--:--' }}</div>
-                  <div>Out: {{ log.check_out ? formatTime(log.check_out) : '--:--' }}</div>
-                </div>
-                <span :class="[
-                  log.status === 'di_kantor' 
-                    ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20' 
-                    : 'text-amber-700 bg-amber-50 dark:bg-amber-950/20',
-                  'px-2.5 py-1 text-[10px] font-bold rounded-lg'
-                ]">
-                  {{ log.status === 'di_kantor' ? 'Di Kantor' : 'Di Luar' }}
-                </span>
-              </div>
+          <!-- Daily presence log list (last 7 days) -->
+          <div class="bg-white dark:bg-gray-850 p-6 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm lg:col-span-3">
+            <h3 class="font-bold text-sm mb-4 text-gray-900 dark:text-white">Absensi 7 Hari Terakhir</h3>
+            <div v-if="attendanceList.length === 0" class="text-center py-12 text-xs text-gray-400">
+              Belum ada data absensi.
+            </div>
+            <div v-else class="overflow-y-auto max-h-80">
+              <table class="w-full text-left text-[11px]">
+                <thead>
+                  <tr class="border-b border-gray-150 dark:border-gray-800 text-gray-400 uppercase tracking-wider text-[9px]">
+                    <th class="pb-2 font-bold">Nama</th>
+                    <th class="pb-2 font-bold">Tanggal</th>
+                    <th class="pb-2 font-bold">Clock In</th>
+                    <th class="pb-2 font-bold">Clock Out</th>
+                    <th class="pb-2 font-bold">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="log in attendanceList" :key="log.id" class="border-b border-gray-50 dark:border-gray-800/50 last:border-b-0">
+                    <td class="py-2 font-semibold text-gray-900 dark:text-white">{{ log.employee_name }}</td>
+                    <td class="py-2 text-gray-500">{{ formatAttendanceDate(log.date) }}</td>
+                    <td class="py-2 text-gray-500">{{ log.check_in ? formatTime(log.check_in) : '--:--' }}</td>
+                    <td class="py-2 text-gray-500">{{ log.check_out ? formatTime(log.check_out) : '--:--' }}</td>
+                    <td class="py-2">
+                      <span :class="[
+                        log.status === 'di_kantor' 
+                          ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20' 
+                          : 'text-amber-700 bg-amber-50 dark:bg-amber-950/20',
+                        'px-2 py-0.5 text-[10px] font-bold rounded-lg'
+                      ]">
+                        {{ log.status === 'di_kantor' ? 'Hadir' : 'Di Luar' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -248,6 +263,13 @@ const absenError = ref(false)
 const absenWarning = ref(false)
 const gpsResult = ref(null)
 
+function formatAttendanceDate(dateStr) {
+  if (!dateStr) return ''
+  // Handle both "2026-06-25" and "2026-06-25T17:00:00.000Z"
+  const d = dateStr.includes('T') ? new Date(dateStr) : new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' })
+}
+
 function updateClock() {
   const now = new Date()
   currentTime.value = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -260,10 +282,10 @@ async function loadTodayStatus() {
     const data = await api.get('/api/attendance/status')
     todayStatusRaw.value = data
     todayStatus.value = {
-      checkedIn: !!data.check_in,
-      checkedOut: !!data.check_out,
-      checkIn: data.check_in ? data.check_in.split(' ')[1]?.substring(0, 5) : null,
-      checkOut: data.check_out ? data.check_out.split(' ')[1]?.substring(0, 5) : null
+      checkedIn: data.has_checked_in,
+      checkedOut: data.has_checked_out,
+      checkIn: data.data?.check_in ? data.data.check_in.split(' ')[1]?.substring(0, 5) : null,
+      checkOut: data.data?.check_out ? data.data.check_out.split(' ')[1]?.substring(0, 5) : null
     }
   } catch (e) { /* ignore */ }
 }
@@ -336,11 +358,18 @@ onMounted(async () => {
     const portfolios = await api.get('/api/portfolio?status=published')
     stats.value[3].val = portfolios.length
 
-    // 4. Fetch Attendance list
-    const todayStr = new Date().toISOString().split('T')[0]
-    const logs = await api.get('/api/attendance/admin-list', { date: todayStr })
+    // 4. Fetch Attendance list (last 7 days)
+    const today = new Date()
+    const weekAgo = new Date(today)
+    weekAgo.setDate(today.getDate() - 6)
+    const fromStr = weekAgo.toISOString().split('T')[0]
+    const toStr = today.toISOString().split('T')[0]
+    const logs = await api.get('/api/attendance/admin-list', { from: fromStr, to: toStr })
     attendanceList.value = logs
-    stats.value[1].val = logs.length
+    // Count today's attendance only for the stat counter
+    const todayStr = toStr
+    const todayLogs = logs.filter(l => l.date === todayStr)
+    stats.value[1].val = todayLogs.length
 
     // Render chart
     renderChart()

@@ -5,7 +5,7 @@
     <header class="fixed top-0 left-0 w-full z-50 glass-effect border-b border-gray-200/40 dark:border-gray-800/40">
       <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <router-link to="/" class="flex items-center space-x-2">
-          <img src="/logo.png" alt="KCM Logo" class="w-10 h-10 rounded-lg object-contain shadow-sm">
+          <img src="/logo-transparent.png" alt="KCM Logo" class="w-10 h-10 rounded-lg object-contain shadow-sm">
           <span class="font-bold text-lg text-red-950 dark:text-white">Kurnia Cipta Mandiri</span>
         </router-link>
         
@@ -65,6 +65,7 @@
           >
             <div class="aspect-[4/3] overflow-hidden bg-gray-50 dark:bg-gray-900 relative">
               <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" :src="getImageUrl(p.images?.[0])" :alt="p.title"/>
+              <span v-if="p.images?.length > 1" class="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">📷 {{ p.images.length }}</span>
               <div class="absolute inset-0 bg-red-950/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 <span class="bg-white text-red-955 font-bold px-6 py-2.5 rounded-full text-xs shadow-md">Lihat Proyek</span>
               </div>
@@ -90,8 +91,21 @@
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
         <!-- Photo -->
-        <div class="md:w-3/5 h-64 md:h-full bg-gray-100 dark:bg-gray-800 relative">
-          <img class="w-full h-full object-cover" :src="getImageUrl(selectedProject.images?.[0])" alt="Project Detail"/>
+        <div class="md:w-3/5 h-64 md:h-full bg-gray-100 dark:bg-gray-800 relative flex flex-col">
+          <div class="flex-1 relative min-h-0">
+            <img class="w-full h-full object-cover" :src="getImageUrl(selectedProject.images?.[currentImageIndex])" alt="Project Detail"/>
+            <button v-if="selectedProject.images?.length > 1" @click="prevImage" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors">
+              <span class="material-symbols-outlined text-lg">chevron_left</span>
+            </button>
+            <button v-if="selectedProject.images?.length > 1" @click="nextImage" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors">
+              <span class="material-symbols-outlined text-lg">chevron_right</span>
+            </button>
+          </div>
+          <div v-if="selectedProject.images?.length > 1" class="flex gap-2 justify-center py-3 bg-gray-100 dark:bg-gray-800">
+            <button v-for="(_, i) in selectedProject.images" :key="i" @click="currentImageIndex = i"
+              :class="[i === currentImageIndex ? 'bg-red-800' : 'bg-gray-300 dark:bg-gray-600', 'w-2 h-2 rounded-full transition']"
+            />
+          </div>
         </div>
         <!-- Specs -->
         <div class="md:w-2/5 p-8 flex flex-col justify-between overflow-y-auto">
@@ -160,6 +174,7 @@ const activeCategory = ref('Semua')
 const portfolios = ref([])
 const showModal = ref(false)
 const selectedProject = ref(null)
+const currentImageIndex = ref(0)
 
 const categories = [
   { label: 'Semua', value: 'Semua' },
@@ -205,11 +220,23 @@ const waUrl = computed(() => {
 
 function openProjectModal(project) {
   selectedProject.value = project
+  currentImageIndex.value = 0
   showModal.value = true
 }
 
 function closeProjectModal() {
   showModal.value = false
   selectedProject.value = null
+}
+
+function prevImage() {
+  if (!selectedProject.value) return
+  const len = selectedProject.value.images?.length || 0
+  currentImageIndex.value = (currentImageIndex.value - 1 + len) % len
+}
+function nextImage() {
+  if (!selectedProject.value) return
+  const len = selectedProject.value.images?.length || 0
+  currentImageIndex.value = (currentImageIndex.value + 1) % len
 }
 </script>

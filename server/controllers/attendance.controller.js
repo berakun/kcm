@@ -105,13 +105,23 @@ exports.getHistory = async (req, res) => {
 };
 
 exports.getAdminList = async (req, res) => {
-  const date = req.query.date || new Date().toISOString().split('T')[0];
+  const { date, from, to } = req.query;
 
   try {
-    const [rows] = await db.query(
-      'SELECT a.*, u.name as employee_name, u.department FROM attendance a JOIN users u ON a.user_id = u.id WHERE a.date = ? ORDER BY a.check_in ASC',
-      [date]
-    );
+    let query = 'SELECT a.*, u.name as employee_name, u.department FROM attendance a JOIN users u ON a.user_id = u.id WHERE ';
+    const params = [];
+
+    if (from && to) {
+      query += 'a.date >= ? AND a.date <= ?';
+      params.push(from, to);
+    } else {
+      const d = date || new Date().toISOString().split('T')[0];
+      query += 'a.date = ?';
+      params.push(d);
+    }
+
+    query += ' ORDER BY a.date DESC, a.check_in ASC';
+    const [rows] = await db.query(query, params);
     return res.json(rows);
   } catch (err) {
     return res.status(500).json({ error: 'Gagal mengambil rekap harian absensi: ' + err.message });
@@ -278,7 +288,17 @@ exports.getRekap = async (req, res) => {
     }
     query += ' ORDER BY a.date DESC, a.check_in DESC';
     const [rows] = await db.query(query, params);
-    return res.json(rows);
+
+    // Flag incomplete days (check_in without check_out, excluding izin/cuti/libur_tahunan)
+    const incomplete = rows.filter(r => r.check_in && !r.check_out && (!r.type || r.type === 'check_in'));
+    const totalDeduction = incomplete.length * 40000;
+
+    return res.json({
+      records: rows,
+      incomplete_days: incomplete.map(r => ({ id: r.id, employee_name: r.employee_name, date: r.date })),
+      total_deduction: totalDeduction,
+      total_deduction_formatted: `Rp ${totalDeduction.toLocaleString('id-ID')}`
+    });
   } catch (err) {
     return res.status(500).json({ error: 'Gagal mengambil rekap absensi: ' + err.message });
   }
@@ -295,5 +315,34 @@ exports.updateAttendance = async (req, res) => {
     return res.json({ success: true, message: 'Data presensi berhasil diperbarui.' });
   } catch (err) {
     return res.status(500).json({ error: 'Gagal memperbarui data presensi: ' + err.message });
+  }
+};
+
+exports.setType = async (req, res) => {
+  const { user_id, date, type } = req.body;
+  const validTypes = ['check_in', 'izin', 'cuti', 'libur_tahunan'];
+  if (!user_id || !date || !validTypes.includes(type)) {
+    return res.status(400).json({ error: 'Parameter tidak valid. Diperlukan user_id, date, dan type.' });
+  }
+  try {
+    const [existing] = await db.query(
+      'SELECT id FROM attendance WHERE user_id = ? AND date = ? LIMIT 1',
+      [user_id, date]
+    );
+    if (existing.length > 0) {
+      if (type === 'check_in') {
+        await db.query('UPDATE attendance SET type = ? WHERE id = ?', [type, existing[0].id]);
+      } else {
+        await db.query('UPDATE attendance SET type = ?, check_in = NULL, check_out = NULL, duration = NULL WHERE id = ?', [type, existing[0].id]);
+      }
+    } else {
+      await db.query(
+        'INSERT INTO attendance (user_id, date, type) VALUES (?, ?, ?)',
+        [user_id, date, type]
+      );
+    }
+    return res.json({ success: true, message: `Tipe absensi berhasil diatur ke ${type}.` });
+  } catch (err) {
+    return res.status(500).json({ error: 'Gagal mengatur tipe absensi: ' + err.message });
   }
 };

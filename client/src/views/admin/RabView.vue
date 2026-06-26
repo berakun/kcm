@@ -48,30 +48,21 @@
                   />
                   <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-lg">search</span>
                 </div>
-                <select v-model="filterMonth" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500">
-                  <option value="0">Semua Bulan</option>
-                  <option v-for="(m, i) in monthNames" :key="i+1" :value="i+1">{{ m }}</option>
-                </select>
-                <select v-model="filterYear" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500">
-                  <option value="0">Semua Tahun</option>
-                  <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
-                </select>
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
+                  <input type="date" v-model="filterDateStart" class="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs dark:bg-gray-900 dark:text-white" placeholder="Dari tanggal"/>
+                  <span class="text-gray-400 text-xs">→</span>
+                  <input type="date" v-model="filterDateEnd" class="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs dark:bg-gray-900 dark:text-white" placeholder="Sampai tanggal"/>
+                  <button v-if="filterDateStart || filterDateEnd" @click="filterDateStart=''; filterDateEnd=''" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-200">
+                    <span class="material-symbols-outlined text-xs align-middle">restart_alt</span> Reset
+                  </button>
+                </div>
               </div>
               
-              <div class="flex items-center gap-2">
-                <button @click="downloadPDF" class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap no-print">
-                  <span class="material-symbols-outlined text-sm">visibility</span>
-                  Download PDF
-                </button>
-                <button @click="cetakRab" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap no-print">
-                  <span class="material-symbols-outlined text-sm">print</span>
-                  Cetak RAB
-                </button>
-                <button @click="startNewRab" class="bg-red-800 hover:bg-red-950 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap no-print">
-                  <span class="material-symbols-outlined text-sm">add</span>
-                  Buat RAB Baru
-                </button>
-              </div>
+              <button @click="startNewRab" class="bg-red-800 hover:bg-red-950 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap no-print">
+                <span class="material-symbols-outlined text-sm">add</span>
+                Buat RAB Baru
+              </button>
               </div>
             <!-- Stats Counters -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -139,11 +130,20 @@
                           {{ r.status }}
                         </span>
                       </td>
-                      <td class="py-4 px-6 text-center space-x-3">
-                        <button @click="editRab(r.id)" class="text-amber-600 hover:text-amber-800">
+                      <td class="py-4 px-6 text-center space-x-2">
+                        <button @click="viewRabDetail(r)" class="text-blue-600 hover:text-blue-800" title="Detail & PO">
+                          <span class="material-symbols-outlined text-base">visibility</span>
+                        </button>
+                        <button @click="printRabRow(r)" class="text-gray-600 hover:text-gray-800" title="Cetak RAB">
+                          <span class="material-symbols-outlined text-base">print</span>
+                        </button>
+                        <button @click="downloadRabRow(r)" class="text-gray-600 hover:text-gray-800" title="Download PDF">
+                          <span class="material-symbols-outlined text-base">download</span>
+                        </button>
+                        <button @click="editRab(r.id)" class="text-amber-600 hover:text-amber-800" title="Edit">
                           <span class="material-symbols-outlined text-base">edit_note</span>
                         </button>
-                        <button @click="deleteRab(r.id)" class="text-red-600 hover:text-red-800">
+                        <button @click="deleteRab(r.id)" class="text-red-600 hover:text-red-800" title="Hapus">
                           <span class="material-symbols-outlined text-base">delete</span>
                         </button>
                       </td>
@@ -204,45 +204,35 @@
                 <table class="w-full text-left border-collapse">
                   <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-xxs font-bold text-gray-400 uppercase border-b border-gray-150 dark:border-gray-800">
                     <tr>
-                      <th class="py-3 px-4 w-32">Kategori</th>
-                      <th class="py-3 px-4">Nama Barang/Pekerjaan</th>
-                      <th class="py-3 px-4 w-1/4">Deskripsi / Spesifikasi</th>
-                      <th class="py-3 px-4 w-20">Satuan</th>
-                      <th class="py-3 px-4 w-20 text-center">Qty</th>
-                      <th class="py-3 px-4 w-32">Harga Satuan</th>
-                      <th class="py-3 px-4 w-36">Subtotal</th>
+                      <th class="py-3 px-4 w-8 text-center">NO</th>
+                      <th class="py-3 px-4">Item Pekerjaan</th>
+                      <th class="py-3 px-4 w-1/4">Material</th>
+                      <th class="py-3 px-4 w-16 text-center">P</th>
+                      <th class="py-3 px-4 w-16 text-center">L</th>
+                      <th class="py-3 px-4 w-32 text-right">Harga</th>
                       <th class="py-3 px-4 w-12 text-center">#</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
                     <tr v-if="builderForm.items.length === 0">
-                      <td colspan="8" class="py-8 text-center text-gray-400 font-medium">Belum ada item ditambahkan. Silakan klik "Tambah Baris".</td>
+                      <td colspan="7" class="py-8 text-center text-gray-400 font-medium">Belum ada item ditambahkan. Silakan klik "Tambah Baris".</td>
                     </tr>
                     <tr v-else v-for="(item, idx) in builderForm.items" :key="idx" class="align-top">
+                      <td class="py-2.5 px-3 text-center text-gray-400">{{ idx + 1 }}</td>
                       <td class="py-2.5 px-3">
-                        <select v-model="item.section" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0">
-                          <option value="bahan">Bahan</option>
-                          <option value="pekerjaan">Pekerjaan</option>
-                          <option value="perlengkapan">Perlengkapan</option>
-                        </select>
+                        <input v-model="item.item_name" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Nama pekerjaan"/>
                       </td>
                       <td class="py-2.5 px-3">
-                        <input v-model="item.item_name" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Contoh: Triplek 9mm"/>
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <input v-model="item.description" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Opsional spec"/>
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <input v-model="item.unit" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Pcs/Mtr"/>
+                        <input v-model="item.description" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Material / deskripsi"/>
                       </td>
                       <td class="py-2.5 px-3 text-center">
                         <input v-model.number="item.qty" type="number" step="any" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center"/>
                       </td>
-                      <td class="py-2.5 px-3">
-                        <input v-model.number="item.unit_price" type="number" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0"/>
+                      <td class="py-2.5 px-3 text-center">
+                        <input v-model="item.unit" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center"/>
                       </td>
-                      <td class="py-2.5 px-3 font-mono font-semibold text-gray-800 dark:text-gray-300 pt-4">
-                        {{ formatCurrency(item.qty * item.unit_price) }}
+                      <td class="py-2.5 px-3">
+                        <input v-model.number="item.unit_price" type="number" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-right"/>
                       </td>
                       <td class="py-2.5 px-3 text-center pt-3">
                         <button @click="removeBuilderRow(idx)" type="button" class="text-red-500 hover:text-red-700">
@@ -295,25 +285,20 @@
                     <th class="py-4 px-6">Tanggal</th>
                     <th class="py-4 px-6">Deskripsi Belanja</th>
                     <th class="py-4 px-6">Estimasi RAB</th>
-                    <th class="py-4 px-6">Realisasi Aktual</th>
-                    <th class="py-4 px-6">Selisih</th>
                     <th class="py-4 px-6 text-center">Status</th>
                     <th class="py-4 px-6 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
                   <tr v-if="rembesList.length === 0">
-                    <td colspan="8" class="py-12 text-center text-gray-400">Data pengeluaran rembes belum ada.</td>
+                    <td colspan="6" class="py-12 text-center text-gray-400">Data pengeluaran rembes belum ada.</td>
                   </tr>
                   <tr v-else v-for="rem in rembesList" :key="rem.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                     <td class="py-4 px-6 font-bold text-gray-800 dark:text-gray-200">{{ rem.project_name }}</td>
                     <td class="py-4 px-6 text-gray-400">{{ formatDate(rem.date) }}</td>
                     <td class="py-4 px-6 font-semibold">{{ rem.description }}</td>
                     <td class="py-4 px-6 font-mono text-gray-500">{{ formatCurrency(rem.rab_amount) }}</td>
-                    <td class="py-4 px-6 font-mono font-semibold text-gray-900 dark:text-white">{{ formatCurrency(rem.actual_amount) }}</td>
-                    <td class="py-4 px-6 font-mono font-semibold" :class="rem.difference < 0 ? 'text-red-750' : 'text-emerald-700'">
-                      {{ formatCurrency(rem.difference) }}
-                    </td>
+
                     <td class="py-4 px-6 text-center">
                       <span :class="[
                         rem.status === 'aman' ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20' :
@@ -343,14 +328,13 @@
           <div class="bg-white dark:bg-gray-850 p-4 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
             <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Persetujuan Cashbon</span>
             <div class="flex items-center gap-3">
-              <select v-model="cashbonFilterMonth" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500">
-                <option value="0">Semua Bulan</option>
-                <option v-for="(m, i) in monthNames" :key="i+1" :value="i+1">{{ m }}</option>
-              </select>
-              <select v-model="cashbonFilterYear" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500">
-                <option value="0">Semua Tahun</option>
-                <option v-for="y in availableCashbonYears" :key="y" :value="y">{{ y }}</option>
-              </select>
+              <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
+              <input type="date" v-model="cashbonFilterDateStart" class="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs dark:bg-gray-900 dark:text-white" placeholder="Dari tanggal"/>
+              <span class="text-gray-400 text-xs">→</span>
+              <input type="date" v-model="cashbonFilterDateEnd" class="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs dark:bg-gray-900 dark:text-white" placeholder="Sampai tanggal"/>
+              <button v-if="cashbonFilterDateStart || cashbonFilterDateEnd" @click="cashbonFilterDateStart=''; cashbonFilterDateEnd=''" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-200">
+                <span class="material-symbols-outlined text-xs align-middle">restart_alt</span> Reset
+              </button>
             </div>
           </div>
 
@@ -455,15 +439,9 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="text-[10px] font-bold text-gray-400 block mb-1">Anggaran Awal RAB (Estimasi)</label>
-            <input v-model.number="rembesForm.rab_amount" type="number" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Rp"/>
-          </div>
-          <div>
-            <label class="text-[10px] font-bold text-gray-400 block mb-1">Jumlah Aktual Terpakai</label>
-            <input v-model.number="rembesForm.actual_amount" type="number" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Rp"/>
-          </div>
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">Anggaran Awal RAB (Estimasi)</label>
+          <input v-model.number="rembesForm.rab_amount" type="number" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Rp"/>
         </div>
 
         <div>
@@ -500,6 +478,114 @@
         </div>
       </div>
     </BaseModal>
+
+    <!-- Modal: RAB Detail & Linked POs -->
+    <BaseModal :show="showRabDetailModal" title="Detail RAB & PO Terkait" @close="closeRabDetailModal">
+      <div class="p-6 space-y-6">
+        <div v-if="rabDetail" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4 text-xs">
+            <div>
+              <span class="text-[10px] font-bold text-gray-400 uppercase">Kode RAB</span>
+              <p class="font-bold text-red-800 dark:text-red-500">{{ rabDetail.code }}</p>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold text-gray-400 uppercase">Status</span>
+              <p class="font-bold uppercase">{{ rabDetail.status }}</p>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold text-gray-400 uppercase">Nama Proyek</span>
+              <p class="font-semibold text-gray-900 dark:text-white">{{ rabDetail.project_name }}</p>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold text-gray-400 uppercase">Klien</span>
+              <p class="text-gray-600 dark:text-gray-300">{{ rabDetail.client || '-' }}</p>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold text-gray-400 uppercase">Tanggal</span>
+              <p class="text-gray-600 dark:text-gray-300">{{ formatDate(rabDetail.date) }}</p>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold text-gray-400 uppercase">Total Anggaran</span>
+              <p class="font-mono font-bold text-gray-900 dark:text-white">{{ formatCurrency(rabDetail.total_budget) }}</p>
+            </div>
+          </div>
+
+          <!-- RAB Items -->
+          <div>
+            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Rincian Item RAB</h4>
+            <div class="border border-gray-150 dark:border-gray-800 rounded-xl overflow-hidden">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-xxs font-bold text-gray-400 uppercase">
+                  <tr>
+                    <th class="py-3 px-4 w-8 text-center">No</th>
+                    <th class="py-3 px-4">Kategori</th>
+                    <th class="py-3 px-4">Nama Item</th>
+                    <th class="py-3 px-4">Deskripsi</th>
+                    <th class="py-3 px-4 w-16 text-center">Satuan</th>
+                    <th class="py-3 px-4 w-16 text-center">Qty</th>
+                    <th class="py-3 px-4 w-28 text-right">Harga Satuan</th>
+                    <th class="py-3 px-4 w-28 text-right">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tr v-if="!rabDetail.items || rabDetail.items.length === 0">
+                    <td colspan="8" class="py-6 text-center text-gray-400">Tidak ada item</td>
+                  </tr>
+                  <tr v-for="(item, idx) in (rabDetail.items || [])" :key="idx">
+                    <td class="py-2.5 px-4 text-center">{{ idx + 1 }}</td>
+                    <td class="py-2.5 px-4 uppercase">{{ item.section || '-' }}</td>
+                    <td class="py-2.5 px-4 font-semibold">{{ item.item_name || '-' }}</td>
+                    <td class="py-2.5 px-4 text-gray-500">{{ item.description || '-' }}</td>
+                    <td class="py-2.5 px-4 text-center">{{ item.unit || '-' }}</td>
+                    <td class="py-2.5 px-4 text-center">{{ item.qty }}</td>
+                    <td class="py-2.5 px-4 text-right font-mono">{{ formatCurrency(item.unit_price) }}</td>
+                    <td class="py-2.5 px-4 text-right font-mono font-semibold">{{ formatCurrency((item.qty || 0) * (item.unit_price || 0)) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Linked POs -->
+          <div>
+            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">PO Terkait</h4>
+            <div v-if="rabDetailPos.length === 0" class="text-xs text-gray-400 italic py-4">Belum ada PO terkait untuk RAB ini.</div>
+            <div v-else class="border border-gray-150 dark:border-gray-800 rounded-xl overflow-hidden">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-xxs font-bold text-gray-400 uppercase">
+                  <tr>
+                    <th class="py-3 px-4">No PO</th>
+                    <th class="py-3 px-4">Supplier</th>
+                    <th class="py-3 px-4">Tanggal</th>
+                    <th class="py-3 px-4 text-right">Total</th>
+                    <th class="py-3 px-4 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tr v-for="po in rabDetailPos" :key="po.id">
+                    <td class="py-2.5 px-4 font-bold text-red-800 dark:text-red-500">{{ po.code || po.po_number || '-' }}</td>
+                    <td class="py-2.5 px-4">{{ po.supplier_name || '-' }}</td>
+                    <td class="py-2.5 px-4 text-gray-400">{{ formatDate(po.date) }}</td>
+                    <td class="py-2.5 px-4 text-right font-mono font-semibold">{{ formatCurrency(po.total_amount) }}</td>
+                    <td class="py-2.5 px-4 text-center">
+                      <span :class="[
+                        po.status === 'completed' ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20' :
+                        po.status === 'approved' ? 'text-blue-700 bg-blue-50 dark:bg-blue-950/20' :
+                        'text-gray-600 bg-gray-50 dark:bg-gray-800/40',
+                        'px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase'
+                      ]">{{ po.status || '-' }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-100 dark:border-gray-800 pt-4 flex justify-end">
+          <button @click="closeRabDetailModal" class="px-5 py-2.5 rounded-xl border border-gray-250 text-gray-500 font-semibold text-xs hover:bg-gray-50">Tutup</button>
+        </div>
+      </div>
+    </BaseModal>
   </div>
 </template>
 
@@ -527,10 +613,8 @@ const tabs = [
 const rabsList = ref([])
 const searchQuery = ref('')
 const builderMode = ref(false)
-const filterMonth = ref(0)
-const filterYear = ref(0)
-
-const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
+const filterDateStart = ref('')
+const filterDateEnd = ref('')
 
 // Builder Form states
 const builderForm = ref({
@@ -541,6 +625,11 @@ const builderForm = ref({
   status: 'draft',
   items: []
 })
+
+// RAB Detail modal states
+const showRabDetailModal = ref(false)
+const rabDetail = ref(null)
+const rabDetailPos = ref([])
 
 // Rembes states
 const rembesList = ref([])
@@ -557,8 +646,8 @@ const rembesForm = ref({
 // Cashbon states
 const cashbonList = ref([])
 const showActionModal = ref(false)
-const cashbonFilterMonth = ref(0)
-const cashbonFilterYear = ref(0)
+const cashbonFilterDateStart = ref('')
+const cashbonFilterDateEnd = ref('')
 const actionModalTitle = ref('Tindakan Persetujuan')
 const actionTargetType = ref('') // 'cashbon'
 const actionTargetId = ref(null)
@@ -584,24 +673,24 @@ async function loadAllData() {
   }
 }
 
+
 // ==========================================
 // RAB ACTIONS
 // ==========================================
-const availableYears = computed(() => {
-  const years = [...new Set(rabsList.value.map(r => r.date ? new Date(r.date).getFullYear() : null).filter(Boolean))]
-  return years.sort((a, b) => b - a)
-})
-
 const filteredRabs = computed(() => {
   const q = searchQuery.value.toLowerCase().trim()
-  const m = filterMonth.value
-  const y = filterYear.value
+  const ds = filterDateStart.value
+  const de = filterDateEnd.value
   return rabsList.value.filter(r => {
-    if (m || y) {
+    if (ds || de) {
       if (!r.date) return false
       const d = new Date(r.date)
-      if (m && (d.getMonth() + 1) !== m) return false
-      if (y && d.getFullYear() !== y) return false
+      if (ds && d < new Date(ds)) return false
+      if (de) {
+        const deDate = new Date(de)
+        deDate.setHours(23,59,59,999)
+        if (d > deDate) return false
+      }
     }
     return r.project_name.toLowerCase().includes(q) || 
       r.code.toLowerCase().includes(q) ||
@@ -651,7 +740,7 @@ async function deleteRab(id) {
 
 const builderTotalBudget = computed(() => {
   return builderForm.value.items.reduce((sum, item) => {
-    return sum + ((parseFloat(item.qty) || 0) * (parseFloat(item.unit_price) || 0))
+    return sum + (parseFloat(item.unit_price) || 0)
   }, 0)
 })
 
@@ -660,7 +749,7 @@ function addBuilderRow() {
     section: 'bahan',
     item_name: '',
     description: '',
-    unit: 'pcs',
+    unit: '1',
     qty: 1,
     unit_price: 0
   })
@@ -737,20 +826,19 @@ async function deleteRembes(id) {
 // ==========================================
 // PERSETUJUAN CASHBON
 // ==========================================
-const availableCashbonYears = computed(() => {
-  const years = [...new Set(cashbonList.value.map(c => c.date ? new Date(c.date).getFullYear() : null).filter(Boolean))]
-  return years.sort((a, b) => b - a)
-})
-
 const filteredCashbon = computed(() => {
-  const m = cashbonFilterMonth.value
-  const y = cashbonFilterYear.value
+  const ds = cashbonFilterDateStart.value
+  const de = cashbonFilterDateEnd.value
   return cashbonList.value.filter(c => {
-    if (m || y) {
+    if (ds || de) {
       if (!c.date) return false
       const d = new Date(c.date)
-      if (m && (d.getMonth() + 1) !== m) return false
-      if (y && d.getFullYear() !== y) return false
+      if (ds && d < new Date(ds)) return false
+      if (de) {
+        const deDate = new Date(de)
+        deDate.setHours(23,59,59,999)
+        if (d > deDate) return false
+      }
     }
     return true
   })
@@ -767,180 +855,196 @@ const cashbonUserSummary = computed(() => {
   return Object.values(map).sort((a, b) => b.total - a.total)
 })
 
-function generateRabPrintHTML() {
-  // Page 1: RAB Table for all filtered items
+function generateRabPrintHTML(rabData) {
+  const r = rabData || builderForm.value
+  const rabDate = r.date || new Date().toISOString().split('T')[0]
   let rabRows = ''
-  let no = 1
   let totalHarga = 0
-  filteredRabs.value.forEach(r => {
-    const items = r.items || []
-    if (items.length === 0) {
-      const t = parseFloat(r.total_budget) || 0
-      totalHarga += t
-      rabRows += `<tr>
-        <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">${no++}</td>
-        <td style="border:1px solid #333;padding:5px;font-size:10px;">${r.project_name}</td>
-        <td style="border:1px solid #333;padding:5px;font-size:10px;">-</td>
-        <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">-</td>
-        <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">-</td>
-        <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">-</td>
-        <td style="text-align:right;border:1px solid #333;padding:5px;font-size:10px;font-family:monospace;">Rp ${Number(t).toLocaleString('id-ID')}</td>
-      </tr>`
-    } else {
-      items.forEach(item => {
-        const harga = (parseFloat(item.qty) || 0) * (parseFloat(item.unit_price) || 0)
-        totalHarga += harga
-        rabRows += `<tr>
-          <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">${no++}</td>
-          <td style="border:1px solid #333;padding:5px;font-size:10px;">${item.item_name || '-'}</td>
-          <td style="border:1px solid #333;padding:5px;font-size:10px;">${item.description || '-'}</td>
-          <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">${item.qty || '-'}</td>
-          <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">${item.unit || '-'}</td>
-          <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">-</td>
-          <td style="text-align:right;border:1px solid #333;padding:5px;font-size:10px;font-family:monospace;">Rp ${Number(harga).toLocaleString('id-ID')}</td>
-        </tr>`
-      })
-    }
+  const items = r.items || []
+  let no = 1
+  // Build rows: qty=P, unit=L, unit_price=Harga
+  items.forEach(item => {
+    const p = parseFloat(item.qty) || 0
+    const l = parseFloat(item.unit) || 0
+    const v = p * l
+    const harga = parseFloat(item.unit_price) || 0
+    totalHarga += harga
+    rabRows += `<tr>
+      <td style="text-align:center;border:1px solid #333;padding:4px 6px;font-size:10px;">${no++}</td>
+      <td style="border:1px solid #333;padding:4px 6px;font-size:10px;text-align:left;">${item.item_name || '-'}</td>
+      <td style="border:1px solid #333;padding:4px 6px;font-size:10px;text-align:left;">${item.description || '-'}</td>
+      <td style="text-align:center;border:1px solid #333;padding:4px 6px;font-size:10px;">${p ? p.toLocaleString('id-ID', {minimumFractionDigits:1, maximumFractionDigits:2}) : '-'}</td>
+      <td style="text-align:center;border:1px solid #333;padding:4px 6px;font-size:10px;">${l ? l.toLocaleString('id-ID', {minimumFractionDigits:1, maximumFractionDigits:2}) : '-'}</td>
+      <td style="text-align:center;border:1px solid #333;padding:4px 6px;font-size:10px;">${v ? v.toLocaleString('id-ID', {minimumFractionDigits:1, maximumFractionDigits:2}) : '-'}</td>
+      <td style="text-align:right;border:1px solid #333;padding:4px 6px;font-size:10px;font-family:monospace;">${Number(harga).toLocaleString('id-ID')}</td>
+    </tr>`
   })
 
-  // Page 1 header info from first RAB
-  const firstRab = filteredRabs.value[0] || {}
+  const officeFooter = `<div style="margin-top:24px;text-align:center;font-size:9px;color:#888;border-top:2px double #333;padding-top:10px;">
+    <p><strong>OFFICE:</strong></p>
+    <p>Jl. Kaliurang Km. 12, Candiwinangun RT 6/ RW 13 No. 24</p>
+    <p>Sardonoharjo, Ngaglik, Sleman, Yogyakarta</p>
+    <p>Telp/Wa: 0858.6800.0012</p>
+    <p>Email: kcm_production@ymail.com | IG: @pengrajin_interiorkcm</p>
+  </div>`
 
+  if (items.length === 0) {
+    rabRows = `<tr><td colspan="7" style="text-align:center;border:1px solid #333;padding:8px;font-size:10px;">-</td></tr>`
+  }
   return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-<title>RAB - KCM</title>
+<title>Surat Penawaran - ${r.project_name || 'KCM'}</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; padding: 15mm; color:#333; font-size:11px; }
-  @media print {
-    body { padding: 10mm 12mm; }
-    @page { size: A4; margin: 10mm; }
-    .page-break { page-break-before: always; }
-  }
-  .header-info { margin-bottom:12px; font-size:11px; }
-  .header-info table td { padding:2px 8px 2px 0; }
-  .header-info .lbl { font-weight:bold; width:100px; }
-  table.rab { width:100%; border-collapse:collapse; margin-top:8px; }
-  table.rab th, table.rab td { border:1px solid #333; padding:5px 7px; font-size:10px; }
-  table.rab th { background:#f0f0f0; font-weight:bold; text-transform:uppercase; font-size:9px; }
-  .total-bar { text-align:right; font-weight:900; font-size:12px; padding:8px; border:1px solid #333; background:#fef2f2; margin-top:4px; }
-  .footer { margin-top:20px; text-align:center; font-size:9px; color:#888; border-top:2px double #333; padding-top:10px; }
-  .sp-header { text-align:center; margin-bottom:16px; }
-  .sp-header h2 { font-size:14px; letter-spacing:2px; text-transform:uppercase; border-bottom:2px solid #333; display:inline-block; padding-bottom:4px; }
-  .sp-body { font-size:11px; line-height:1.6; }
-  .sp-body p { margin-bottom:8px; }
-  .sp-body .indent { padding-left:40px; }
-  .bank-info { border:1px solid #999; padding:10px 14px; margin:12px 0; font-size:10px; }
-  .sig-area { text-align:right; margin-top:30px; font-size:10px; }
-  .sig-line { display:inline-block; width:160px; border-bottom:1px solid #333; height:40px; margin-bottom:2px; }
-  .terbilang-box { background:#f9f9f9; padding:6px 10px; font-size:10px; margin:10px 0; font-style:italic; }
+  body { font-family:'Segoe UI',Arial,Helvetica,sans-serif; padding:12mm; color:#333; font-size:11px; }
+  @media print { @page { size:A4; margin:10mm; } .page-break{page-break-before:always;} }
+  table.rab{width:100%;border-collapse:collapse;margin-top:10px;}
+  table.rab th,table.rab td{border:1px solid #333;padding:4px 6px;font-size:10px;}
+  table.rab th{background:#f0f0f0;font-weight:bold;text-transform:uppercase;font-size:9px;}
+  .footer{margin-top:24px;text-align:center;font-size:9px;color:#888;border-top:2px double #333;padding-top:10px;}
 </style>
 </head>
 <body>
 
-<!-- PAGE 1: RAB TABLE -->
-<div class="header-info">
-  <table>
-    <tr><td class="lbl">Nomor Ref</td><td>: ${firstRab.code || '-'}</td></tr>
-    <tr><td class="lbl">Pekerjaan</td><td>: ${firstRab.project_name || '-'}</td></tr>
-    <tr><td class="lbl">Lokasi</td><td>: Yogyakarta</td></tr>
-    <tr><td class="lbl">Nama Customer</td><td>: ${firstRab.client || '-'}</td></tr>
-  </table>
+<div style="margin-bottom:14px;font-size:11px;">
+  <p><strong>Nomor Ref</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ${r.code || '-'}</p>
+  <p><strong>Pekerjaan</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ${r.project_name || '-'}</p>
+  <p><strong>Lokasi</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ${r.client || 'Yogyakarta'}</p>
+  <p><strong>Nama Customer</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ${r.client || '-'}</p>
 </div>
 
 <table class="rab">
   <thead>
     <tr>
-      <th style="width:30px; text-align:center;">NO</th>
+      <th style="width:30px;text-align:center;">NO</th>
       <th style="text-align:left;">ITEM PEKERJAAN</th>
       <th style="text-align:left;">Material</th>
-      <th style="width:35px; text-align:center;">P</th>
-      <th style="width:35px; text-align:center;">L</th>
-      <th style="width:35px; text-align:center;">V</th>
-      <th style="width:130px; text-align:right;">Harga</th>
+      <th style="width:50px;text-align:center;">P</th>
+      <th style="width:50px;text-align:center;">L</th>
+      <th style="width:55px;text-align:center;">V</th>
+      <th style="width:100px;text-align:right;">HARGA</th>
     </tr>
   </thead>
   <tbody>
     ${rabRows}
   </tbody>
 </table>
-<div class="total-bar">TOTAL &nbsp;&nbsp; Rp ${Number(totalHarga).toLocaleString('id-ID')}</div>
 
-<div class="footer">
-  <p><strong>OFFICE:</strong></p>
-  <p>Jl. Kaliurang Km. 12, Candiwinangun RT 6/ RW 13 No. 24</p>
-  <p>Sardonoharjo, Ngaglik, Sleman, Yogyakarta</p>
-  <p>Telp/Wa: 0858.6800.0012 | Email: kcm_production@ymail.com | IG: @pengrajin_interiorkcm</p>
+<div style="margin-top:6px;text-align:right;font-size:11px;">
+  <strong>TOTAL &nbsp;&nbsp; ${Number(totalHarga).toLocaleString('id-ID')}</strong>
 </div>
 
-<!-- PAGE 2: SURAT PENAWARAN (SP) -->
+${officeFooter}
+
+<!-- PAGE 2: SURAT PENAWARAN -->
 <div class="page-break"></div>
 
-<div style="text-align:right; font-size:11px; margin-bottom:12px;">
-  <p><strong>${formatDate(firstRab.date || new Date().toISOString().split('T')[0])}</strong></p>
-  <p>Ref. No: ${firstRab.code || '-'}</p>
+<div style="text-align:right;font-size:11px;margin-bottom:10px;">
+  <p><strong>${formatDate(rabDate)}</strong></p>
+  <p>Ref.No: ${r.code || '-'}</p>
 </div>
 
-<p style="font-size:11px; margin-bottom:4px;"><strong>Perihal : Rencana Anggaran Biaya</strong></p>
+<p style="font-size:11px;margin-bottom:2px;"><strong>Perihal : Penawaran ${r.project_name || '-'}</strong></p>
 
-<div class="sp-body">
+<div style="font-size:11px;line-height:1.6;margin-top:10px;">
   <p>Kepada Yth.</p>
-  <p><strong>${firstRab.client || '_________________'}</strong></p>
-  <p>di Tempat</p>
+  <p><strong>${r.client || '_________________'}</strong></p>
+  <p>di ${r.client || 'Yogyakarta'}</p>
 
-  <p style="margin-top:16px;">Dengan hormat,</p>
-  <p>Bersama ini kami dari CV. KURNIA CIPTA MANDIRI bermaksud menawarkan Rencana Anggaran Biaya (RAB) untuk pekerjaan:</p>
-  <p class="indent"><strong>${firstRab.project_name || '-'}</strong></p>
+  <p style="margin-top:14px;">Dengan hormat,</p>
+  <p>Bersama ini kami sampaikan penawaran untuk Pekerjaan <strong>${r.project_name || '-'}</strong> dengan penawaran sebagai berikut (rincian terlampir),</p>
 
-  <div class="terbilang-box">
+  <div style="margin:8px 0;padding:6px 10px;border:1px solid #ddd;background:#f9f9f9;font-size:10px;">
+    <strong>${r.project_name || '-'}</strong> &nbsp;&nbsp; <span style="float:right;font-family:monospace;font-weight:bold;">${Number(totalHarga).toLocaleString('id-ID')}</span>
+  </div>
+
+  <div style="background:#f9f9f9;padding:6px 10px;font-size:10px;margin-bottom:10px;font-style:italic;border:1px solid #ddd;">
     Terbilang: <strong>${terbilang(totalHarga)}</strong>
   </div>
 
-  <p style="margin-top:12px;"><strong>Sistem Pembayaran :</strong></p>
-  <p class="indent">- Uang Muka (DP) sebesar 50% dari total RAB setelah surat diterima.</p>
-  <p class="indent">- Pelunasan sebesar 50% setelah pekerjaan selesai 100%.</p>
+  <p><strong>Sistem Pembayaran :</strong></p>
+  <p style="padding-left:20px;">DP 50% sebelum pekerjaan dimulai.</p>
+  <p style="padding-left:20px;">Pelunasan 100% setelah pekerjaan selesai.</p>
 
-  <p style="margin-top:12px;"><strong>Masa berlaku penawaran ini adalah 21 hari sejak tanggal surat.</strong></p>
+  <p style="margin-top:10px;"><strong>Masa berlaku penawaran ini adalah 21 hari sejak tanggal surat.</strong></p>
+  <p style="padding-left:20px;font-size:10px;color:#666;">Harga dapat berubah sewaktu-waktu tanpa pemberitahuan terlebih dahulu.</p>
 
-  <div class="bank-info">
-    <p><strong>Rekening Pembayaran:</strong></p>
+  <div style="border:1px solid #999;padding:8px 12px;margin:10px 0;font-size:10px;">
+    <p><strong>No. Rekening Pembayaran:</strong></p>
     <p>Bank BCA &nbsp; a.n. <strong>Anriko K</strong> &nbsp; No. <strong>0151 343 642</strong></p>
   </div>
 
   <p>Demikian surat penawaran ini kami buat dengan sebenar-benarnya. Atas perhatian dan kerjasamanya, kami ucapkan terima kasih.</p>
 
-  <div class="sig-area">
+  <div style="text-align:right;margin-top:24px;font-size:10px;">
     <p>Hormat kami,</p>
-    <div class="sig-line"></div>
+    <div style="display:inline-block;width:140px;border-bottom:1px solid #333;height:36px;margin-bottom:2px;"></div>
     <p><strong>Anriko K, ST.</strong></p>
     <p>CV. KURNIA CIPTA MANDIRI</p>
   </div>
 </div>
 
-<div class="footer">
-  <p><strong>OFFICE:</strong></p>
-  <p>Jl. Kaliurang Km. 12, Candiwinangun RT 6/ RW 13 No. 24</p>
-  <p>Sardonoharjo, Ngaglik, Sleman, Yogyakarta</p>
-  <p>Telp/Wa: 0858.6800.0012 | Email: kcm_production@ymail.com | IG: @pengrajin_interiorkcm</p>
-</div>
+${officeFooter}
 
 </body>
 </html>`
 }
 
-function downloadPDF() {
+
+// Load a RAB from the list into builderForm for print/download operations
+async function loadRabIntoBuilder(rab) {
+  // If builderForm already has this RAB loaded, skip
+  if (builderForm.value.id === rab.id && builderForm.value.items.length > 0) return
+  try {
+    const full = await api.get('/api/rab', { id: rab.id })
+    builderForm.value = {
+      id: full.id,
+      code: full.code,
+      project_name: full.project_name,
+      client: full.client || '',
+      status: full.status,
+      items: full.items || []
+    }
+  } catch (err) {
+    appStore.showAlert('Gagal memuat data RAB.', 'error')
+    throw err
+  }
+}
+
+async function printRabRow(rab) {
+  await loadRabIntoBuilder(rab)
   const w = window.open('', '_blank')
-  w.document.write(generateRabPrintHTML())
+  w.document.write(generateRabPrintHTML(builderForm.value))
+  w.document.close()
+  setTimeout(() => { w.print() }, 500)
+}
+
+async function downloadRabRow(rab) {
+  await loadRabIntoBuilder(rab)
+  const w = window.open('', '_blank')
+  w.document.write(generateRabPrintHTML(builderForm.value))
   w.document.close()
 }
 
-function cetakRab() {
-  const w = window.open('', '_blank')
-  w.document.write(generateRabPrintHTML())
-  w.document.close()
-  setTimeout(() => { w.print() }, 500)
+async function viewRabDetail(rab) {
+  rabDetail.value = rab
+  rabDetailPos.value = []
+  showRabDetailModal.value = true
+  try {
+    const pos = await api.get('/api/po', { rab_id: rab.id })
+    rabDetailPos.value = Array.isArray(pos) ? pos : (pos.data || [])
+  } catch (err) {
+    // PO endpoint might not exist yet — show empty list silently
+    rabDetailPos.value = []
+  }
+}
+
+function closeRabDetailModal() {
+  showRabDetailModal.value = false
+  rabDetail.value = null
+  rabDetailPos.value = []
 }
 
 // Terbilang: number to Indonesian words

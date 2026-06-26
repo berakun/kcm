@@ -4,9 +4,16 @@ const bcrypt = require('bcryptjs');
 
 async function seed() {
   try {
-    console.log('[Seeder] Starting database seeding with dummy data v2...');
+    console.log('[Seeder] Starting database seeding...');
 
-    // Disable foreign key checks to truncate tables
+    // Skip if users already exist (idempotent — don't truncate on restart)
+    const [existing] = await db.query('SELECT COUNT(*) as cnt FROM users');
+    if (existing[0].cnt > 0) {
+      console.log('[Seeder] Database already seeded (' + existing[0].cnt + ' users). Skipping.');
+      return;
+    }
+
+    // First run only: truncate and seed everything
     await db.query('SET FOREIGN_KEY_CHECKS = 0');
     await db.query('TRUNCATE TABLE financial_reports');
     await db.query('TRUNCATE TABLE office_settings');
@@ -241,4 +248,221 @@ async function seed() {
   }
 }
 
+// Task 7: Seed May 2026 attendance data
+async function seedAttendanceMay() {
+  try {
+    console.log('[Seeder] Seeding May 2026 attendance...');
+
+    // Check if May 2026 attendance already exists
+    const [existing] = await db.query(
+      "SELECT COUNT(*) as cnt FROM attendance WHERE date BETWEEN '2026-05-01' AND '2026-05-31'"
+    );
+    if (existing[0].cnt > 0) {
+      console.log(`[Seeder] May 2026 attendance already exists (${existing[0].cnt} records). Skipping.`);
+      return;
+    }
+
+    // Get staff users (budi=3, dewi=4, eko=5)
+    const [users] = await db.query("SELECT id, username FROM users WHERE role = 'staff' ORDER BY id");
+    if (users.length === 0) {
+      console.log('[Seeder] No staff users found. Run main seed first.');
+      return;
+    }
+    console.log(`[Seeder] Found ${users.length} staff users: ${users.map(u => u.username).join(', ')}`);
+
+    // Generate working days for May 2026 (Mon-Sat)
+    const workingDays = [];
+    for (let day = 1; day <= 31; day++) {
+      const date = new Date(2026, 4, day); // May = month index 4
+      const dow = date.getDay(); // 0=Sun, 6=Sat
+      if (dow === 0) continue; // Skip Sunday
+      const dateStr = `2026-05-${String(day).padStart(2, '0')}`;
+      workingDays.push({ date: dateStr, day, dow });
+    }
+    console.log(`[Seeder] May 2026 has ${workingDays.length} working days (Mon-Sat).`);
+
+    // Special scenario assignments per user
+    // For each user: 2 days only check_in (absenSetengah), 1 day late, 2 days missing (tidakHadir)
+    const scenarios = users.map((u, idx) => {
+      const shuffled = [...workingDays].sort(() => Math.random() - 0.5);
+      const missingDays = new Set(shuffled.slice(0, 2).map(d => d.date));     // 2 days absent
+      const incompleteDays = new Set(shuffled.slice(2, 4).map(d => d.date));  // 2 days check_in only
+      const lateDay = shuffled[4].date;                                        // 1 day late check_in
+      return { userId: u.id, username: u.username, missingDays, incompleteDays, lateDay };
+    });
+
+    const records = [];
+
+    for (const user of users) {
+      const sc = scenarios.find(s => s.userId === user.id);
+
+      for (const wd of workingDays) {
+        // Skip missing days (tidakHadir scenario)
+        if (sc.missingDays.has(wd.date)) {
+          continue; // No record at all
+        }
+
+        // Random check-in between 07:50 and 08:20
+        const inMin = Math.floor(Math.random() * 30) + 470; // 470=7:50, 500=8:20
+        let inH = Math.floor(inMin / 60);
+        let inM = inMin % 60;
+
+        // Late scenario: force check-in after 08:15
+        if (sc.lateDay === wd.date) {
+          inH = 8;
+          inM = Math.floor(Math.random() * 30) + 16; // 08:16 to 08:45
+        }
+
+        const checkIn = `${wd.date} ${String(inH).padStart(2, '0')}:${String(inM).padStart(2, '0')}:00`;
+
+        // Random check-out between 16:45 and 17:15
+        let checkOut = null;
+        if (!sc.incompleteDays.has(wd.date)) {
+          const outMin = Math.floor(Math.random() * 30) + 1005; // 1005=16:45, 1035=17:15
+          const outH = Math.floor(outMin / 60);
+          const outM = outMin % 60;
+          checkOut = `${wd.date} ${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}:00`;
+        }
+
+        // Duration
+        let duration = null;
+        if (checkOut) {
+          const ciMin = inH * 60 + inM;
+          const coMin = parseInt(checkOut.split(' ')[1].split(':')[0]) * 60 + parseInt(checkOut.split(' ')[1].split(':')[1]);
+          const dur = coMin - ciMin;
+          const dh = Math.floor(dur / 60);
+          const dm = dur % 60;
+          duration = `${String(dh).padStart(2, '0')}:${String(dm).padStart(2, '0')}:00`;
+        }
+
+        const lat = -7.7326 + (Math.random() * 0.001 - 0.0005);
+        const lng = 110.3988 + (Math.random() * 0.001 - 0.0005);
+        const dist = Math.round((Math.random() * 15 + 1) * 10) / 10;
+        const status = 'di_kantor';
+        const ip = `192.168.100.${50 + user.id}`;
+
+        records.push([user.id, checkIn, checkOut, lat, lng, dist, status, ip, wd.date, 'check_in', duration]);
+      }
+    }
+
+    console.log(`[Seeder] Inserting ${records.length} attendance records for May 2026...`);
+
+    for (const r of records) {
+      await db.query(
+        'INSERT INTO attendance (user_id, check_in, check_out, latitude, longitude, distance, status, ip_address, date, type, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        r
+      );
+    }
+
+    // Print summary
+    for (const sc of scenarios) {
+      const u = users.find(u => u.id === sc.userId);
+      console.log(`  ${u.username}: ${sc.missingDays.size} absent, ${sc.incompleteDays.size} incomplete, 1 late`);
+    }
+    console.log(`[Seeder] May 2026 attendance seeded successfully!`);
+  } catch (err) {
+    console.error('[ERROR] Seeding May attendance failed:', err.message);
+    throw err;
+  }
+}
+
+// Seed attendance for ALL users across April, May, June 2026
+async function seedAttendanceFull() {
+  try {
+    console.log('[Seeder] Seeding April-June 2026 attendance for ALL users...');
+
+    const [users] = await db.query("SELECT id, username, role FROM users ORDER BY id");
+    if (users.length === 0) {
+      console.log('[Seeder] No users found. Run main seed first.');
+      return;
+    }
+
+    const months = [
+      { year: 2026, month: 4, label: 'April 2026' },   // month index 3 = April
+      { year: 2026, month: 5, label: 'Mei 2026' },     // month index 4 = May
+      { year: 2026, month: 6, label: 'Juni 2026', maxDay: 26 }  // month index 5 = June, up to today
+    ];
+
+    for (const m of months) {
+      // Check existing
+      const [existing] = await db.query(
+        `SELECT COUNT(*) as cnt FROM attendance WHERE date BETWEEN ? AND ?`,
+        [`${m.year}-${String(m.month).padStart(2,'0')}-01`,
+         `${m.year}-${String(m.month).padStart(2,'0')}-${String(m.maxDay || 30).padStart(2,'0')}`]
+      );
+      if (existing[0].cnt > 0) {
+        console.log(`[Seeder] ${m.label} already has ${existing[0].cnt} records. Skipping.`);
+        continue;
+      }
+
+      const maxDay = m.maxDay || new Date(m.year, m.month, 0).getDate();
+
+      // Working days (Mon-Sat)
+      const workingDays = [];
+      for (let day = 1; day <= maxDay; day++) {
+        const date = new Date(m.year, m.month - 1, day);
+        if (date.getDay() === 0) continue; // Skip Sunday
+        workingDays.push({ date: `${m.year}-${String(m.month).padStart(2,'0')}-${String(day).padStart(2,'0')}`, day });
+      }
+
+      const records = [];
+      for (const user of users) {
+        // Each user gets: ~3 days absent, ~3 days incomplete (check-in only), ~1 day late
+        const shuffled = [...workingDays].sort(() => Math.random() - 0.5);
+        const missing = new Set(shuffled.slice(0, 3).map(d => d.date));
+        const incomplete = new Set(shuffled.slice(3, 6).map(d => d.date));
+        const lateDay = shuffled[6]?.date;
+
+        for (const wd of workingDays) {
+          if (missing.has(wd.date)) continue;
+
+          // Check-in
+          let inH = 7, inM = Math.floor(Math.random() * 25) + 50; // 07:50-08:15
+          if (inM >= 60) { inH = 8; inM -= 60; }
+          if (lateDay === wd.date) { inH = 8; inM = Math.floor(Math.random() * 30) + 16; }
+
+          const checkIn = `${wd.date} ${String(inH).padStart(2,'0')}:${String(inM).padStart(2,'0')}:00`;
+
+          let checkOut = null;
+          if (!incomplete.has(wd.date)) {
+            const outMin = Math.floor(Math.random() * 30) + 1005; // 16:45-17:15
+            checkOut = `${wd.date} ${String(Math.floor(outMin/60)).padStart(2,'0')}:${String(outMin%60).padStart(2,'0')}:00`;
+          }
+
+          let duration = null;
+          if (checkOut) {
+            const ciMin = inH * 60 + inM;
+            const coMin = parseInt(checkOut.split(' ')[1].split(':')[0]) * 60 + parseInt(checkOut.split(' ')[1].split(':')[1]);
+            const dur = coMin - ciMin;
+            duration = `${String(Math.floor(dur/60)).padStart(2,'0')}:${String(dur%60).padStart(2,'0')}:00`;
+          }
+
+          const lat = -7.7326 + (Math.random() * 0.001 - 0.0005);
+          const lng = 110.3988 + (Math.random() * 0.001 - 0.0005);
+          const dist = Math.round((Math.random() * 15 + 1) * 10) / 10;
+
+          records.push([user.id, checkIn, checkOut, lat, lng, dist, 'di_kantor', `192.168.100.${50 + user.id}`, wd.date, 'check_in', duration]);
+        }
+      }
+
+      if (records.length > 0) {
+        console.log(`[Seeder] Inserting ${records.length} attendance records for ${m.label}...`);
+        for (const r of records) {
+          await db.query(
+            'INSERT INTO attendance (user_id, check_in, check_out, latitude, longitude, distance, status, ip_address, date, type, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            r
+          );
+        }
+      }
+      console.log(`[Seeder] ${m.label} seeded!`);
+    }
+    console.log('[Seeder] All attendance seeded successfully!');
+  } catch (err) {
+    console.error('[ERROR] Seeding attendance failed:', err.message);
+    throw err;
+  }
+}
+
 module.exports = seed;
+module.exports.seedAttendanceMay = seedAttendanceMay;
+module.exports.seedAttendanceFull = seedAttendanceFull;

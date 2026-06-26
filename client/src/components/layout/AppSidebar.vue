@@ -16,7 +16,7 @@
     <div>
       <!-- Brand Logo Header -->
       <div class="flex items-center space-x-3 px-6 py-5 border-b border-red-900/60 bg-red-900/10">
-        <img src="/logo.png" alt="KCM Logo" class="w-12 h-12 rounded-lg object-contain">
+        <img src="/logo-transparent.png" alt="KCM Logo" class="w-12 h-12 rounded-lg object-contain">
         <div>
           <h2 class="font-bold text-sm tracking-wide leading-none text-white">Kurnia Cipta Mandiri</h2>
           <span class="text-[9px] text-amber-500 font-medium tracking-widest uppercase block mt-0.5">Interior & Renov</span>

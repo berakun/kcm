@@ -88,11 +88,11 @@
 
           <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex items-center justify-between">
             <div>
-              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Cuti / Dinas</p>
-              <h3 class="text-2xl font-black mt-2 text-gray-500">0</h3>
+              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Izin / Cuti / Libur</p>
+              <h3 class="text-2xl font-black mt-2 text-blue-600">{{ summary.izinCuti }}</h3>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 flex items-center justify-center">
-              <span class="material-symbols-outlined text-xl">hotel_class</span>
+            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/20 text-blue-600 flex items-center justify-center">
+              <span class="material-symbols-outlined text-xl">event_available</span>
             </div>
           </div>
         </div>
@@ -175,11 +175,14 @@
                   <div 
                     v-for="log in day.logs" 
                     :key="log.id" 
-                    :title="log.employee_name + ': ' + (log.check_in ? 'Hadir' : 'Tidak Hadir')"
+                    :title="log.employee_name + ': ' + typeLabel(log.type || 'check_in')"
                     :class="[
-                      log.check_in 
-                        ? (isLate(log.check_in) ? 'bg-amber-500' : 'bg-emerald-500') 
-                        : 'bg-red-500',
+                      log.type === 'izin' ? 'bg-blue-500' 
+                        : log.type === 'cuti' ? 'bg-purple-500' 
+                        : log.type === 'libur_tahunan' ? 'bg-orange-500'
+                        : log.check_in 
+                          ? (isLate(log.check_in) ? 'bg-amber-500' : 'bg-emerald-500') 
+                          : 'bg-red-500',
                       'w-2 h-2 rounded-full'
                     ]"
                   ></div>
@@ -270,12 +273,13 @@
                     <th class="py-4 px-6 text-center">Durasi</th>
                     <th class="py-4 px-6 text-center">Jarak</th>
                     <th class="py-4 px-6 text-center">Status</th>
+                    <th class="py-4 px-6 text-center">Tipe</th>
                     <th class="py-4 px-6 text-center" v-if="user?.role === 'super_admin'">Aksi</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
                   <tr v-if="paginatedTableLogs.length === 0">
-                    <td colspan="9" class="py-12 text-center text-gray-400">Tidak ada rekap absensi ditemukan.</td>
+                    <td colspan="10" class="py-12 text-center text-gray-400">Tidak ada rekap absensi ditemukan.</td>
                   </tr>
                   <tr v-else v-for="log in paginatedTableLogs" :key="log.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors cursor-pointer" @click="showDetailModal(log)">
                     <td class="py-4 px-6 font-medium text-gray-400">{{ formatDate(log.date) }}</td>
@@ -301,7 +305,19 @@
                         {{ log.status === 'di_kantor' ? 'Di Kantor' : 'Remote' }}
                       </span>
                     </td>
+                    <td class="py-4 px-6 text-center">
+                      <span :class="typeBadgeClass(log.type)" class="px-2 py-1 text-[10px] font-bold rounded-lg uppercase">
+                        {{ typeLabel(log.type) }}
+                      </span>
+                    </td>
                     <td class="py-4 px-6 text-center space-x-2" v-if="user?.role === 'super_admin'" @click.stop>
+                      <select @change="setType(log, $event.target.value); $event.target.value = ''" class="text-[10px] font-bold border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 dark:bg-gray-900 dark:text-white focus:ring-0 focus:border-red-500">
+                        <option value="">Set Tipe...</option>
+                        <option value="check_in">Check In</option>
+                        <option value="izin">Izin</option>
+                        <option value="cuti">Cuti</option>
+                        <option value="libur_tahunan">Libur Tahunan</option>
+                      </select>
                       <button @click="openEditModal(log)" class="text-amber-600 hover:text-amber-800">
                         <span class="material-symbols-outlined text-base">edit</span>
                       </button>
@@ -519,7 +535,8 @@ async function loadRekap() {
       params.user_id = user.value.id
     }
     const logs = await api.get('/api/attendance/rekap', params)
-    rekapLogs.value = logs
+    // Server may return { records: [...] } or flat array
+    rekapLogs.value = Array.isArray(logs) ? logs : (logs.records || [])
   } catch (err) {
     console.error('Failed to load attendance logs:', err)
   }
@@ -538,11 +555,13 @@ function resetFilters() {
 const summary = computed(() => {
   const present = rekapLogs.value.filter(l => l.check_in !== null)
   const late = present.filter(l => isLate(l.check_in))
-  const absent = rekapLogs.value.filter(l => l.check_in === null)
+  const absent = rekapLogs.value.filter(l => l.check_in === null && (!l.type || l.type === 'check_in'))
+  const izinCuti = rekapLogs.value.filter(l => l.type && l.type !== 'check_in').length
   return {
     hadir: present.length,
     terlambat: late.length,
-    tidak_hadir: absent.length
+    tidak_hadir: absent.length,
+    izinCuti
   }
 })
 
@@ -571,7 +590,8 @@ function exportToCsv() {
     'Jam Keluar': row.check_out ? formatTime(row.check_out) : '--:--',
     'Durasi': row.duration || '-',
     'Jarak (m)': row.distance !== null ? row.distance : '-',
-    'Status': row.status === 'di_kantor' ? 'Di Kantor' : 'Remote'
+    'Status': row.status === 'di_kantor' ? 'Di Kantor' : 'Remote',
+    'Tipe': typeLabel(row.type || 'check_in')
   }))
 
   const ws = XLSX.utils.json_to_sheet(rows)
@@ -731,6 +751,35 @@ async function deleteLog(id) {
     await loadRekap()
   } catch (err) {
     alert('Gagal menghapus log presensi.')
+  }
+}
+
+function typeLabel(type) {
+  const labels = { check_in: 'Hadir', izin: 'Izin', cuti: 'Cuti', libur_tahunan: 'Libur' }
+  return labels[type] || 'Hadir'
+}
+
+function typeBadgeClass(type) {
+  const classes = {
+    check_in: 'text-gray-400 bg-gray-50 dark:bg-gray-800',
+    izin: 'text-blue-700 bg-blue-50 dark:bg-blue-950/20',
+    cuti: 'text-purple-700 bg-purple-50 dark:bg-purple-950/20',
+    libur_tahunan: 'text-orange-700 bg-orange-50 dark:bg-orange-950/20'
+  }
+  return classes[type] || classes.check_in
+}
+
+async function setType(log, type) {
+  if (!type) return
+  try {
+    await api.post('/api/attendance/set-type', {
+      user_id: log.user_id,
+      date: log.date ? new Date(log.date).toISOString().split('T')[0] : log.date,
+      type
+    })
+    await loadRekap()
+  } catch (err) {
+    alert(err.response?.data?.error || 'Gagal mengatur tipe absensi.')
   }
 }
 </script>

@@ -3,7 +3,7 @@
     <!-- Top App Bar -->
     <header class="bg-white dark:bg-gray-850 text-red-950 dark:text-red-500 w-full sticky top-0 border-b border-gray-200/60 dark:border-gray-800 shadow-sm flex items-center justify-between px-6 h-16 z-50">
       <div class="flex items-center gap-3">
-        <img src="/logo.png" alt="KCM Logo" class="w-12 h-12 rounded-lg object-contain border border-amber-500/20">
+        <img src="/logo-transparent.png" alt="KCM Logo" class="w-12 h-12 rounded-lg object-contain border border-amber-500/20">
         <div class="flex flex-col">
           <span class="text-sm font-bold text-gray-800 dark:text-white leading-none">Portal Kehadiran</span>
           <span class="text-[9px] font-bold tracking-widest text-amber-500 uppercase mt-0.5">Kurnia Cipta Mandiri</span>
@@ -132,7 +132,16 @@
             </div>
           </div>
         </div>
-      </div>
+        <!-- Status text -->
+        <div class="text-center px-4 py-2 border-t border-gray-100 dark:border-gray-800">
+          <span class="text-[10px] font-bold uppercase tracking-wider" :class="
+            attendanceStatus.has_checked_out ? 'text-emerald-600' :
+            attendanceStatus.has_checked_in ? 'text-amber-600' : 'text-gray-400'
+          ">
+            {{ attendanceStatus.has_checked_out ? 'Sudah clock-out' : attendanceStatus.has_checked_in ? 'Sudah clock-in' : 'Belum absen' }}
+          </span>
+        </div>
+        </div>
 
       <!-- History List -->
       <section class="space-y-3">

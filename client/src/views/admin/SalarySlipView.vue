@@ -9,7 +9,16 @@
         <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <div class="flex flex-col md:flex-row gap-4 items-end">
             <div class="flex-1">
-              <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Bulan</label>
+              <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Tanggal Mulai</label>
+              <input v-model="filterDateStart" type="date" @change="onDateRangeChange" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0"/>
+            </div>
+            <div class="flex items-center pb-1"><span class="text-gray-400 text-xs">→</span></div>
+            <div class="flex-1">
+              <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Tanggal Selesai</label>
+              <input v-model="filterDateEnd" type="date" @change="onDateRangeChange" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0"/>
+            </div>
+            <div class="flex-1">
+              <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Bulan (Shortcut)</label>
               <select v-model="selectedMonth" @change="loadData" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0">
                 <option v-for="m in months" :key="m.value" :value="m.value">{{ m.label }}</option>
               </select>
@@ -234,6 +243,8 @@ const now = new Date()
 const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
 const months = ref(monthNames.map((m, i) => ({ value: `${now.getFullYear()}-${String(i+1).padStart(2,'0')}`, label: `${m} ${now.getFullYear()}` })))
 const selectedMonth = ref(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`)
+const filterDateStart = ref('')
+const filterDateEnd = ref('')
 const users = ref([])
 const currentUser = ref(null)
 const tableRows = ref([]) // computed rows for the table
@@ -401,8 +412,26 @@ async function loadUsers() {
   } catch (e) { console.error(e) }
 }
 
+function onDateRangeChange() {
+  // When user picks date range, keep it; month dropdown is a shortcut
+  loadData()
+}
+
+// Count working days (Mon-Sat) between two date strings
+function countWorkingDays(start, end) {
+  let count = 0
+  const d = new Date(start)
+  const endD = new Date(end)
+  while (d <= endD) {
+    const dow = d.getDay()
+    if (dow >= 1 && dow <= 6) count++ // Mon-Sat
+    d.setDate(d.getDate() + 1)
+  }
+  return count
+}
+
 async function loadData() {
-  if (!selectedMonth.value) return
+  if (!selectedMonth.value && !filterDateStart.value) return
   loading.value = true
   tableRows.value = []
 
@@ -410,25 +439,48 @@ async function loadData() {
   const rates = getRates()
   const overrides = loadOverrides()
 
-  const [year, month] = selectedMonth.value.split('-')
-  const startDate = `${year}-${month}-01`
-  const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate()
-  const endDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`
+  let startDate, endDate
+  if (filterDateStart.value && filterDateEnd.value) {
+    startDate = filterDateStart.value
+    endDate = filterDateEnd.value
+  } else {
+    const [year, month] = selectedMonth.value.split('-')
+    startDate = `${year}-${month}-01`
+    const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate()
+    endDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`
+  }
+
+  const totalWorkingDays = countWorkingDays(startDate, endDate)
 
   for (const u of targetUsers) {
     try {
-      const logs = await api.get('/api/attendance/rekap', { user_id: u.id, start: startDate, end: endDate })
+      const res = await api.get('/api/attendance/rekap', { user_id: u.id, start: startDate, end: endDate })
+      const logs = res.records || res || [] // API returns { records: [...] }
 
-      const terlambat = logs.filter(l => {
+      // Separate: normal attendance (check_in type or no type) vs izin/cuti/libur
+      const normalLogs = logs.filter(l => !l.type || l.type === 'check_in')
+
+      // Hari hadir lengkap: check_in + check_out
+      const hadirLengkap = normalLogs.filter(l => l.check_in && l.check_out).length
+
+      // Absen setengah: check_in tapi tidak check_out
+      const absenSetengah = normalLogs.filter(l => l.check_in && !l.check_out).length
+
+      // Hari dengan any record (including izin/cuti/libur — these are NOT counted as absent)
+      const daysWithAnyRecord = new Set(logs.map(l => l.date)).size
+
+      // Tidak hadir = totalWorkingDays - days with any attendance record
+      const tidakHadir = Math.max(0, totalWorkingDays - daysWithAnyRecord)
+
+      // Terlambat: check_in after 08:15 (hour > 8 or hour === 8 && minute > 15)
+      const terlambat = normalLogs.filter(l => {
         if (!l.check_in) return false
         const t = l.check_in.includes(' ') ? l.check_in.split(' ')[1] : l.check_in
         const parts = t.split(':')
         const h = parseInt(parts[0])
         const m = parseInt(parts[1])
-        return h > 8 || (h === 8 && m > 0)
+        return h > 8 || (h === 8 && m > 15)
       }).length
-      const tidakHadir = logs.filter(l => l.check_in === null).length
-      const absenSetengah = logs.filter(l => l.check_in !== null && l.check_out === null).length
 
       const config = getConfig(u.role)
       const ov = overrides[u.id] || {}
@@ -448,7 +500,7 @@ async function loadData() {
       const potonganAbsen = absenSetengah * absenSetengahRate
       const totalPotongan = potonganTerlambat + potonganTidakHadir + potonganAbsen
 
-      // Total Diterima = Pokok + Makan + Tunjangan - Potongan + Lembur (lembur 0 by default)
+      // Total Diterima = Pokok + Makan + Tunjangan - Potongan
       const totalDiterima = gajiPokok + makanTransport + tunjangan - totalPotongan
 
       tableRows.value.push({
@@ -462,7 +514,9 @@ async function loadData() {
         tunjanganJabatan,
         tunjanganHariRaya,
         tunjangan,
-        // Attendance details for slip generation
+        // Attendance breakdown
+        totalWorkingDays,
+        hadirLengkap,
         potonganTerlambatCount: terlambat,
         potonganTidakHadirCount: tidakHadir,
         potonganAbsenCount: absenSetengah,
