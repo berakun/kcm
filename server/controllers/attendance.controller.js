@@ -121,7 +121,10 @@ exports.getAdminList = async (req, res) => {
 exports.checkIn = async (req, res) => {
   const { latitude, longitude } = req.body;
 
-  if (!latitude || !longitude) {
+  // Admin/super_admin can check in without GPS (from dashboard)
+  const isAdminRole = ['admin', 'super_admin'].includes(req.user.role);
+
+  if (!isAdminRole && (!latitude || !longitude)) {
     return res.status(400).json({ error: 'Koordinat GPS wajib disediakan.' });
   }
 
@@ -135,32 +138,43 @@ exports.checkIn = async (req, res) => {
       return res.status(400).json({ error: 'Anda sudah check-in hari ini.' });
     }
 
-    // Get settings
-    const [settingsRows] = await db.query('SELECT setting_key, setting_value FROM office_settings');
-    const settings = {};
-    settingsRows.forEach(r => settings[r.setting_key] = r.setting_value);
-    
-    const oLat = parseFloat(settings.office_latitude || '-7.7326');
-    const oLng = parseFloat(settings.office_longitude || '110.3988');
-    const oRad = parseFloat(settings.office_radius || '20');
+    let distance = 0;
+    let status = 'di_kantor';
+    let warning = null;
 
-    // Distance
-    const distance = calculateDistance(latitude, longitude, oLat, oLng);
-    if (distance > oRad) {
-      return res.status(400).json({ error: `Anda berada di luar radius kantor. Jarak Anda: ${Math.round(distance)} meter dari kantor` });
+    if (latitude && longitude) {
+      // Get GPS settings for distance calculation
+      const [settingsRows] = await db.query('SELECT setting_key, setting_value FROM office_settings');
+      const settings = {};
+      settingsRows.forEach(r => settings[r.setting_key] = r.setting_value);
+      
+      const oLat = parseFloat(settings.office_latitude || '-7.7326');
+      const oLng = parseFloat(settings.office_longitude || '110.3988');
+      const oRad = parseFloat(settings.office_radius || '20');
+
+      distance = calculateDistance(latitude, longitude, oLat, oLng);
+      if (distance > oRad) {
+        if (isAdminRole) {
+          // Admin gets warning but still allowed to check in
+          status = 'di_luar_kantor';
+          warning = `Anda berada di luar radius kantor (${Math.round(distance)}m). Check-in tetap dicatat.`;
+        } else {
+          return res.status(400).json({ error: `Anda berada di luar radius kantor. Jarak Anda: ${Math.round(distance)} meter dari kantor` });
+        }
+      }
     }
-    const status = 'di_kantor';
 
     await db.query(
       'INSERT INTO attendance (user_id, check_in, latitude, longitude, distance, status, ip_address, date) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)',
-      [req.user.id, latitude, longitude, distance, status, ip, today]
+      [req.user.id, latitude || null, longitude || null, distance, status, ip, today]
     );
 
     return res.json({
       success: true,
-      message: 'Check-in berhasil disimpan!',
+      message: warning || 'Check-in berhasil disimpan!',
       distance: Math.round(distance),
-      status
+      status,
+      warning
     });
   } catch (err) {
     return res.status(500).json({ error: 'Gagal menyimpan check-in: ' + err.message });
@@ -170,7 +184,10 @@ exports.checkIn = async (req, res) => {
 exports.checkOut = async (req, res) => {
   const { latitude, longitude } = req.body;
 
-  if (!latitude || !longitude) {
+  // Admin/super_admin can check out without GPS (from dashboard)
+  const isAdminRole = ['admin', 'super_admin'].includes(req.user.role);
+
+  if (!isAdminRole && (!latitude || !longitude)) {
     return res.status(400).json({ error: 'Koordinat GPS wajib disediakan.' });
   }
 
@@ -188,21 +205,24 @@ exports.checkOut = async (req, res) => {
       return res.status(400).json({ error: 'Anda belum check-in hari ini, atau sudah melakukan check-out.' });
     }
 
-    // Get settings
-    const [settingsRows] = await db.query('SELECT setting_key, setting_value FROM office_settings');
-    const settings = {};
-    settingsRows.forEach(r => settings[r.setting_key] = r.setting_value);
-    
-    const oLat = parseFloat(settings.office_latitude || '-7.7326');
-    const oLng = parseFloat(settings.office_longitude || '110.3988');
-    const oRad = parseFloat(settings.office_radius || '20');
+    let distance = 0;
+    let status = 'di_kantor';
 
-    // Distance
-    const distance = calculateDistance(latitude, longitude, oLat, oLng);
-    if (distance > oRad) {
-      return res.status(400).json({ error: `Anda berada di luar radius kantor. Jarak Anda: ${Math.round(distance)} meter dari kantor` });
+    if (!isAdminRole && latitude && longitude) {
+      // Get settings for GPS validation (staff only)
+      const [settingsRows] = await db.query('SELECT setting_key, setting_value FROM office_settings');
+      const settings = {};
+      settingsRows.forEach(r => settings[r.setting_key] = r.setting_value);
+      
+      const oLat = parseFloat(settings.office_latitude || '-7.7326');
+      const oLng = parseFloat(settings.office_longitude || '110.3988');
+      const oRad = parseFloat(settings.office_radius || '20');
+
+      distance = calculateDistance(latitude, longitude, oLat, oLng);
+      if (distance > oRad) {
+        return res.status(400).json({ error: `Anda berada di luar radius kantor. Jarak Anda: ${Math.round(distance)} meter dari kantor` });
+      }
     }
-    const status = 'di_kantor';
 
     // Calculate duration
     const checkInTime = new Date(check[0].check_in);
@@ -219,7 +239,7 @@ exports.checkOut = async (req, res) => {
 
     await db.query(
       'UPDATE attendance SET check_out = NOW(), duration = ?, latitude = ?, longitude = ?, distance = ?, status = ?, ip_address = ? WHERE id = ?',
-      [duration, latitude, longitude, distance, status, ip, check[0].id]
+      [duration, latitude || null, longitude || null, distance, status, ip, check[0].id]
     );
 
     return res.json({

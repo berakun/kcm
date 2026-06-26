@@ -7,9 +7,12 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+      },
       colors: {
-        primary: '#991B1B', // Maroon
-        accent: '#B45309', // Gold
+        primary: '#991B1B',
+        accent: '#B45309',
         'gray-850': '#1f2937',
         'gray-855': '#111827',
       }

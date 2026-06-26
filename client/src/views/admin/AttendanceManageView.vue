@@ -159,7 +159,7 @@ function formatTime(dateStr) {
   if (!dateStr) return '-'
   try {
     const date = new Date(dateStr)
-    return date.toTimeString().split(' ')[0].substring(0, 5)
+    return date.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' }).split('.').slice(0, 2).join(':')
   } catch (e) {
     return '-'
   }

@@ -13,6 +13,8 @@ import FinancialView from '../views/admin/FinancialView.vue'
 import AttendanceManageView from '../views/admin/AttendanceManageView.vue'
 import AttendanceRekapView from '../views/admin/AttendanceRekapView.vue'
 import SettingsView from '../views/admin/SettingsView.vue'
+import POBelanjaView from '../views/admin/POBelanjaView.vue'
+import SalarySlipView from '../views/admin/SalarySlipView.vue'
 import StaffAttendanceView from '../views/user/StaffAttendanceView.vue'
 
 const routes = [
@@ -42,11 +44,21 @@ const routes = [
     component: FinancialView, 
     meta: { requiresAuth: true, roles: ['super_admin', 'admin'] } 
   },
+  { 
+    path: '/admin/po-belanja', 
+    component: POBelanjaView, 
+    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] } 
+  },
   
   // Super Admin Only Routes
   { 
     path: '/admin/users', 
     component: UsersView, 
+    meta: { requiresAuth: true, roles: ['super_admin'] } 
+  },
+  { 
+    path: '/admin/salary', 
+    component: SalarySlipView, 
     meta: { requiresAuth: true, roles: ['super_admin'] } 
   },
   { 

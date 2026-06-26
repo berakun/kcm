@@ -3,9 +3,7 @@
     <!-- Top App Bar -->
     <header class="bg-white dark:bg-gray-850 text-red-950 dark:text-red-500 w-full sticky top-0 border-b border-gray-200/60 dark:border-gray-800 shadow-sm flex items-center justify-between px-6 h-16 z-50">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full bg-red-900/10 text-red-800 font-extrabold flex items-center justify-center text-sm uppercase border border-amber-500/20">
-          {{ user?.name ? user.name.charAt(0) : 'U' }}
-        </div>
+        <img src="/logo.png" alt="KCM Logo" class="w-12 h-12 rounded-lg object-contain border border-amber-500/20">
         <div class="flex flex-col">
           <span class="text-sm font-bold text-gray-800 dark:text-white leading-none">Portal Kehadiran</span>
           <span class="text-[9px] font-bold tracking-widest text-amber-500 uppercase mt-0.5">Kurnia Cipta Mandiri</span>
@@ -338,9 +336,8 @@ async function performCheckOut() {
 }
 
 function handleLogout() {
-  if (confirm('Apakah Anda yakin ingin logout?')) {
-    logout()
-  }
+  if (!window.confirm('Apakah Anda yakin ingin logout?')) return
+  logout()
 }
 
 // ==========================================
@@ -396,7 +393,7 @@ function formatTime(dateStr) {
   if (!dateStr) return '--:--'
   try {
     const d = new Date(dateStr)
-    return d.toTimeString().split(' ')[0].substring(0, 5)
+    return d.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' }).split('.').slice(0, 2).join(':')
   } catch (e) {
     return '--:--'
   }

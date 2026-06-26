@@ -39,7 +39,7 @@
               <label class="text-[10px] font-bold text-gray-400 block mb-1">Tanggal Selesai</label>
               <input v-model="filter.end" type="date" @change="loadRekap" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs px-3 py-2 focus:border-red-500 focus:ring-0"/>
             </div>
-            <div>
+            <div v-if="user?.role === 'super_admin'">
               <label class="text-[10px] font-bold text-gray-400 block mb-1">Karyawan</label>
               <select v-model="filter.user_id" @change="loadRekap" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs px-3 py-2 focus:border-red-500 focus:ring-0">
                 <option value="">-- Semua Karyawan --</option>
@@ -453,18 +453,19 @@ import BaseModal from '../../components/ui/BaseModal.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useApi } from '../../composables/useApi'
 import { formatDate, formatTime } from '../../utils/helpers'
+import * as XLSX from 'xlsx'
 
 const { user } = useAuth()
 const api = useApi()
 
 const activeTab = ref('calendar')
 
-// Date filters defaulting to last 14 days
+// Date filters defaulting to last 30 days
 const todayStr = new Date().toISOString().split('T')[0]
-const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
 const filter = ref({
-  start: twoWeeksAgo,
+  start: thirtyDaysAgo,
   end: todayStr,
   user_id: ''
 })
@@ -512,7 +513,12 @@ async function fetchEmployees() {
 
 async function loadRekap() {
   try {
-    const logs = await api.get('/api/attendance/rekap', filter.value)
+    const params = { ...filter.value }
+    // Admin only sees own attendance
+    if (user.value?.role === 'admin') {
+      params.user_id = user.value.id
+    }
+    const logs = await api.get('/api/attendance/rekap', params)
     rekapLogs.value = logs
   } catch (err) {
     console.error('Failed to load attendance logs:', err)
@@ -521,7 +527,7 @@ async function loadRekap() {
 
 function resetFilters() {
   filter.value = {
-    start: twoWeeksAgo,
+    start: thirtyDaysAgo,
     end: todayStr,
     user_id: ''
   }
@@ -553,28 +559,25 @@ function isLate(checkInStr) {
   }
 }
 
-// Export CSV Function
+// Export XLS Function
 function exportToCsv() {
   if (rekapLogs.value.length === 0) return alert('Tidak ada data untuk diekspor.')
   
-  let csvContent = 'data:text/csv;charset=utf-8,' 
-    + 'Tanggal,Karyawan,Departemen,Jam Masuk,Jam Keluar,Durasi,Jarak (m),Status\n';
+  const rows = rekapLogs.value.map(row => ({
+    'Tanggal': formatDate(row.date),
+    'Karyawan': row.employee_name,
+    'Departemen': row.department || 'Staff',
+    'Jam Masuk': row.check_in ? formatTime(row.check_in) : '--:--',
+    'Jam Keluar': row.check_out ? formatTime(row.check_out) : '--:--',
+    'Durasi': row.duration || '-',
+    'Jarak (m)': row.distance !== null ? row.distance : '-',
+    'Status': row.status === 'di_kantor' ? 'Di Kantor' : 'Remote'
+  }))
 
-  rekapLogs.value.forEach(row => {
-    const checkIn = row.check_in ? formatTime(row.check_in) : '--:--';
-    const checkOut = row.check_out ? formatTime(row.check_out) : '--:--';
-    const distance = row.distance !== null ? `${row.distance}` : '-';
-    const status = row.status === 'di_kantor' ? 'Di Kantor' : 'Remote';
-    csvContent += `"${formatDate(row.date)}","${row.employee_name}","${row.department || 'Staff'}","${checkIn}","${checkOut}","${row.duration || '-'}","${distance}","${status}"\n`;
-  });
-
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `rekap-presensi-kcm-${filter.value.start}-s-d-${filter.value.end}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const ws = XLSX.utils.json_to_sheet(rows)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Rekap Absensi')
+  XLSX.writeFile(wb, `rekap-presensi-kcm-${filter.value.start}-s-d-${filter.value.end}.xlsx`)
 }
 
 // Calendar Calculation

@@ -16,9 +16,7 @@
     <div>
       <!-- Brand Logo Header -->
       <div class="flex items-center space-x-3 px-6 py-5 border-b border-red-900/60 bg-red-900/10">
-        <div class="bg-amber-600 rounded-full p-2 flex items-center justify-center">
-          <span class="material-symbols-outlined text-white font-semibold">architecture</span>
-        </div>
+        <img src="/logo.png" alt="KCM Logo" class="w-12 h-12 rounded-lg object-contain">
         <div>
           <h2 class="font-bold text-sm tracking-wide leading-none text-white">Kurnia Cipta Mandiri</h2>
           <span class="text-[9px] text-amber-500 font-medium tracking-widest uppercase block mt-0.5">Interior & Renov</span>
@@ -124,11 +122,18 @@ const allLinks = [
     roles: ['admin', 'super_admin']
   },
   {
+    id: 'po-belanja',
+    label: 'PO Belanja',
+    icon: 'receipt_long',
+    url: '/admin/po-belanja',
+    roles: ['admin', 'super_admin']
+  },
+  {
     id: 'financial',
     label: 'Keuangan',
     icon: 'payments',
     url: '/admin/financial',
-    roles: ['admin', 'super_admin']
+    roles: ['super_admin']
   },
   {
     id: 'attendance',
@@ -145,6 +150,13 @@ const allLinks = [
     roles: ['admin']
   },
   {
+    id: 'salary',
+    label: 'Slip Gaji',
+    icon: 'paid',
+    url: '/admin/salary',
+    roles: ['super_admin']
+  },
+  {
     id: 'settings',
     label: 'Pengaturan',
     icon: 'settings',
@@ -159,8 +171,7 @@ const filterLinks = computed(() => {
 })
 
 function onLogout() {
-  if (confirm('Apakah Anda yakin ingin logout?')) {
-    logout()
-  }
+  if (!window.confirm('Apakah Anda yakin ingin logout?')) return
+  logout()
 }
 </script>

@@ -144,6 +144,36 @@ CREATE TABLE IF NOT EXISTS office_settings (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Purchase Orders
+CREATE TABLE IF NOT EXISTS purchase_orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    po_number VARCHAR(50) UNIQUE NOT NULL,
+    to_supplier VARCHAR(200),
+    date DATE,
+    phone VARCHAR(20),
+    attn VARCHAR(100),
+    rab_id INT,
+    items JSON,
+    projects TEXT,
+    material_ref TEXT,
+    total DECIMAL(15,2) DEFAULT 0,
+    ppn DECIMAL(15,2) DEFAULT 0,
+    grand_total DECIMAL(15,2) DEFAULT 0,
+    in_words TEXT,
+    note TEXT,
+    deliver_by DATE,
+    deliver_to VARCHAR(200),
+    ordered_by VARCHAR(100),
+    purchasing VARCHAR(100),
+    prepared_by VARCHAR(100),
+    approved_by VARCHAR(100) DEFAULT 'Anriko K, ST.',
+    term_of_payment VARCHAR(200) DEFAULT 'Anriko K, ST.',
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (rab_id) REFERENCES rab(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- Insert default office GPS coordinates (from Google Maps link, centered around KCM Yogyakarta: -7.7326, 110.3988)
 INSERT INTO office_settings (setting_key, setting_value) VALUES
 ('office_latitude', '-7.7326'),

@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Font family override */
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
 /* Custom Scrollbar for premium feel */
 ::-webkit-scrollbar {
   width: 6px;
@@ -45,4 +50,46 @@
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;
+}
+
+/* Better spacing for tables and cards */
+.table-container {
+  @apply overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700;
+}
+
+.table-container table {
+  @apply w-full text-sm;
+}
+
+.table-container th {
+  @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50;
+}
+
+.table-container td {
+  @apply px-4 py-3 border-t border-gray-100 dark:border-gray-800;
+}
+
+/* Card spacing */
+.panel-card {
+  @apply bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6;
+}
+
+/* Print styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+  }
+  .no-print {
+    display: none !important;
+  }
 }

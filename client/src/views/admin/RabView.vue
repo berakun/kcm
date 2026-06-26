@@ -38,22 +38,41 @@
           <div v-if="!builderMode" class="space-y-6">
             <!-- Search & Actions -->
             <div class="bg-white dark:bg-gray-850 p-4 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div class="relative w-full sm:w-80">
-                <input 
-                  v-model="searchQuery" 
-                  class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 pl-10 pr-4 text-xs focus:ring-2 focus:ring-red-500" 
-                  placeholder="Cari nama proyek..." 
-                  type="text"
-                />
-                <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-lg">search</span>
+              <div class="flex items-center gap-3 flex-wrap">
+                <div class="relative w-full sm:w-80">
+                  <input 
+                    v-model="searchQuery" 
+                    class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 pl-10 pr-4 text-xs focus:ring-2 focus:ring-red-500" 
+                    placeholder="Cari nama proyek..." 
+                    type="text"
+                  />
+                  <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-lg">search</span>
+                </div>
+                <select v-model="filterMonth" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500">
+                  <option value="0">Semua Bulan</option>
+                  <option v-for="(m, i) in monthNames" :key="i+1" :value="i+1">{{ m }}</option>
+                </select>
+                <select v-model="filterYear" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500">
+                  <option value="0">Semua Tahun</option>
+                  <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
+                </select>
               </div>
               
-              <button @click="startNewRab" class="bg-red-800 hover:bg-red-950 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap">
-                <span class="material-symbols-outlined text-sm">add</span>
-                Buat RAB Baru
-              </button>
-            </div>
-
+              <div class="flex items-center gap-2">
+                <button @click="downloadPDF" class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap no-print">
+                  <span class="material-symbols-outlined text-sm">visibility</span>
+                  Download PDF
+                </button>
+                <button @click="cetakRab" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap no-print">
+                  <span class="material-symbols-outlined text-sm">print</span>
+                  Cetak RAB
+                </button>
+                <button @click="startNewRab" class="bg-red-800 hover:bg-red-950 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap no-print">
+                  <span class="material-symbols-outlined text-sm">add</span>
+                  Buat RAB Baru
+                </button>
+              </div>
+              </div>
             <!-- Stats Counters -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex items-center gap-4">
@@ -321,6 +340,29 @@
         <!-- TAB 3:Persentujuan Cashbon -->
         <!-- ========================================== -->
         <div v-if="activeTab === 'cashbon'" class="space-y-6">
+          <div class="bg-white dark:bg-gray-850 p-4 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Persetujuan Cashbon</span>
+            <div class="flex items-center gap-3">
+              <select v-model="cashbonFilterMonth" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500">
+                <option value="0">Semua Bulan</option>
+                <option v-for="(m, i) in monthNames" :key="i+1" :value="i+1">{{ m }}</option>
+              </select>
+              <select v-model="cashbonFilterYear" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500">
+                <option value="0">Semua Tahun</option>
+                <option v-for="y in availableCashbonYears" :key="y" :value="y">{{ y }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Cashbon Summary Per User -->
+          <div v-if="cashbonUserSummary.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div v-for="item in cashbonUserSummary" :key="item.name" class="bg-white dark:bg-gray-850 p-4 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800">
+              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">{{ item.name }}</p>
+              <p class="text-sm font-black text-red-800 dark:text-red-500 font-mono">{{ formatCurrency(item.total) }}</p>
+              <p class="text-[10px] text-gray-400 mt-1">{{ item.count }} pengajuan</p>
+            </div>
+          </div>
+
           <div class="bg-white dark:bg-gray-850 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 overflow-hidden">
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
@@ -338,10 +380,10 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
-                  <tr v-if="cashbonList.length === 0">
+                  <tr v-if="filteredCashbon.length === 0">
                     <td colspan="9" class="py-12 text-center text-gray-400">Belum ada pengajuan cashbon.</td>
                   </tr>
-                  <tr v-else v-for="c in cashbonList" :key="c.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                  <tr v-else v-for="c in filteredCashbon" :key="c.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                     <td class="py-4 px-6 text-gray-400">{{ formatDate(c.date) }}</td>
                     <td class="py-4 px-6 font-semibold text-gray-800 dark:text-gray-200">{{ c.employee_name }}</td>
                     <td class="py-4 px-6">{{ c.recipient }}</td>
@@ -370,7 +412,7 @@
                         <button @click="openActionModal('cashbon', c.id, 'approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded text-[10px] font-bold shadow-sm">
                           Setuju
                         </button>
-                        <button @click="openActionModal('cashbon', c.id, 'rejected')" class="bg-red-650 hover:bg-red-750 text-white px-2.5 py-1 rounded text-[10px] font-bold shadow-sm">
+                        <button @click="openActionModal('cashbon', c.id, 'rejected')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-[10px] font-bold shadow-sm">
                           Tolak
                         </button>
                       </div>
@@ -485,6 +527,10 @@ const tabs = [
 const rabsList = ref([])
 const searchQuery = ref('')
 const builderMode = ref(false)
+const filterMonth = ref(0)
+const filterYear = ref(0)
+
+const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
 
 // Builder Form states
 const builderForm = ref({
@@ -511,6 +557,8 @@ const rembesForm = ref({
 // Cashbon states
 const cashbonList = ref([])
 const showActionModal = ref(false)
+const cashbonFilterMonth = ref(0)
+const cashbonFilterYear = ref(0)
 const actionModalTitle = ref('Tindakan Persetujuan')
 const actionTargetType = ref('') // 'cashbon'
 const actionTargetId = ref(null)
@@ -539,13 +587,26 @@ async function loadAllData() {
 // ==========================================
 // RAB ACTIONS
 // ==========================================
+const availableYears = computed(() => {
+  const years = [...new Set(rabsList.value.map(r => r.date ? new Date(r.date).getFullYear() : null).filter(Boolean))]
+  return years.sort((a, b) => b - a)
+})
+
 const filteredRabs = computed(() => {
   const q = searchQuery.value.toLowerCase().trim()
-  return rabsList.value.filter(r => 
-    r.project_name.toLowerCase().includes(q) || 
-    r.code.toLowerCase().includes(q) ||
-    (r.client && r.client.toLowerCase().includes(q))
-  )
+  const m = filterMonth.value
+  const y = filterYear.value
+  return rabsList.value.filter(r => {
+    if (m || y) {
+      if (!r.date) return false
+      const d = new Date(r.date)
+      if (m && (d.getMonth() + 1) !== m) return false
+      if (y && d.getFullYear() !== y) return false
+    }
+    return r.project_name.toLowerCase().includes(q) || 
+      r.code.toLowerCase().includes(q) ||
+      (r.client && r.client.toLowerCase().includes(q))
+  })
 })
 
 function startNewRab() {
@@ -674,8 +735,243 @@ async function deleteRembes(id) {
 }
 
 // ==========================================
-// PERSUTUJUAN CASHBON
+// PERSETUJUAN CASHBON
 // ==========================================
+const availableCashbonYears = computed(() => {
+  const years = [...new Set(cashbonList.value.map(c => c.date ? new Date(c.date).getFullYear() : null).filter(Boolean))]
+  return years.sort((a, b) => b - a)
+})
+
+const filteredCashbon = computed(() => {
+  const m = cashbonFilterMonth.value
+  const y = cashbonFilterYear.value
+  return cashbonList.value.filter(c => {
+    if (m || y) {
+      if (!c.date) return false
+      const d = new Date(c.date)
+      if (m && (d.getMonth() + 1) !== m) return false
+      if (y && d.getFullYear() !== y) return false
+    }
+    return true
+  })
+})
+
+const cashbonUserSummary = computed(() => {
+  const map = {}
+  filteredCashbon.value.forEach(c => {
+    const name = c.employee_name || 'Tidak Diketahui'
+    if (!map[name]) map[name] = { name, total: 0, count: 0 }
+    map[name].total += parseFloat(c.amount) || 0
+    map[name].count++
+  })
+  return Object.values(map).sort((a, b) => b.total - a.total)
+})
+
+function generateRabPrintHTML() {
+  // Page 1: RAB Table for all filtered items
+  let rabRows = ''
+  let no = 1
+  let totalHarga = 0
+  filteredRabs.value.forEach(r => {
+    const items = r.items || []
+    if (items.length === 0) {
+      const t = parseFloat(r.total_budget) || 0
+      totalHarga += t
+      rabRows += `<tr>
+        <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">${no++}</td>
+        <td style="border:1px solid #333;padding:5px;font-size:10px;">${r.project_name}</td>
+        <td style="border:1px solid #333;padding:5px;font-size:10px;">-</td>
+        <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">-</td>
+        <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">-</td>
+        <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">-</td>
+        <td style="text-align:right;border:1px solid #333;padding:5px;font-size:10px;font-family:monospace;">Rp ${Number(t).toLocaleString('id-ID')}</td>
+      </tr>`
+    } else {
+      items.forEach(item => {
+        const harga = (parseFloat(item.qty) || 0) * (parseFloat(item.unit_price) || 0)
+        totalHarga += harga
+        rabRows += `<tr>
+          <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">${no++}</td>
+          <td style="border:1px solid #333;padding:5px;font-size:10px;">${item.item_name || '-'}</td>
+          <td style="border:1px solid #333;padding:5px;font-size:10px;">${item.description || '-'}</td>
+          <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">${item.qty || '-'}</td>
+          <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">${item.unit || '-'}</td>
+          <td style="text-align:center;border:1px solid #333;padding:5px;font-size:10px;">-</td>
+          <td style="text-align:right;border:1px solid #333;padding:5px;font-size:10px;font-family:monospace;">Rp ${Number(harga).toLocaleString('id-ID')}</td>
+        </tr>`
+      })
+    }
+  })
+
+  // Page 1 header info from first RAB
+  const firstRab = filteredRabs.value[0] || {}
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>RAB - KCM</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; padding: 15mm; color:#333; font-size:11px; }
+  @media print {
+    body { padding: 10mm 12mm; }
+    @page { size: A4; margin: 10mm; }
+    .page-break { page-break-before: always; }
+  }
+  .header-info { margin-bottom:12px; font-size:11px; }
+  .header-info table td { padding:2px 8px 2px 0; }
+  .header-info .lbl { font-weight:bold; width:100px; }
+  table.rab { width:100%; border-collapse:collapse; margin-top:8px; }
+  table.rab th, table.rab td { border:1px solid #333; padding:5px 7px; font-size:10px; }
+  table.rab th { background:#f0f0f0; font-weight:bold; text-transform:uppercase; font-size:9px; }
+  .total-bar { text-align:right; font-weight:900; font-size:12px; padding:8px; border:1px solid #333; background:#fef2f2; margin-top:4px; }
+  .footer { margin-top:20px; text-align:center; font-size:9px; color:#888; border-top:2px double #333; padding-top:10px; }
+  .sp-header { text-align:center; margin-bottom:16px; }
+  .sp-header h2 { font-size:14px; letter-spacing:2px; text-transform:uppercase; border-bottom:2px solid #333; display:inline-block; padding-bottom:4px; }
+  .sp-body { font-size:11px; line-height:1.6; }
+  .sp-body p { margin-bottom:8px; }
+  .sp-body .indent { padding-left:40px; }
+  .bank-info { border:1px solid #999; padding:10px 14px; margin:12px 0; font-size:10px; }
+  .sig-area { text-align:right; margin-top:30px; font-size:10px; }
+  .sig-line { display:inline-block; width:160px; border-bottom:1px solid #333; height:40px; margin-bottom:2px; }
+  .terbilang-box { background:#f9f9f9; padding:6px 10px; font-size:10px; margin:10px 0; font-style:italic; }
+</style>
+</head>
+<body>
+
+<!-- PAGE 1: RAB TABLE -->
+<div class="header-info">
+  <table>
+    <tr><td class="lbl">Nomor Ref</td><td>: ${firstRab.code || '-'}</td></tr>
+    <tr><td class="lbl">Pekerjaan</td><td>: ${firstRab.project_name || '-'}</td></tr>
+    <tr><td class="lbl">Lokasi</td><td>: Yogyakarta</td></tr>
+    <tr><td class="lbl">Nama Customer</td><td>: ${firstRab.client || '-'}</td></tr>
+  </table>
+</div>
+
+<table class="rab">
+  <thead>
+    <tr>
+      <th style="width:30px; text-align:center;">NO</th>
+      <th style="text-align:left;">ITEM PEKERJAAN</th>
+      <th style="text-align:left;">Material</th>
+      <th style="width:35px; text-align:center;">P</th>
+      <th style="width:35px; text-align:center;">L</th>
+      <th style="width:35px; text-align:center;">V</th>
+      <th style="width:130px; text-align:right;">Harga</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${rabRows}
+  </tbody>
+</table>
+<div class="total-bar">TOTAL &nbsp;&nbsp; Rp ${Number(totalHarga).toLocaleString('id-ID')}</div>
+
+<div class="footer">
+  <p><strong>OFFICE:</strong></p>
+  <p>Jl. Kaliurang Km. 12, Candiwinangun RT 6/ RW 13 No. 24</p>
+  <p>Sardonoharjo, Ngaglik, Sleman, Yogyakarta</p>
+  <p>Telp/Wa: 0858.6800.0012 | Email: kcm_production@ymail.com | IG: @pengrajin_interiorkcm</p>
+</div>
+
+<!-- PAGE 2: SURAT PENAWARAN (SP) -->
+<div class="page-break"></div>
+
+<div style="text-align:right; font-size:11px; margin-bottom:12px;">
+  <p><strong>${formatDate(firstRab.date || new Date().toISOString().split('T')[0])}</strong></p>
+  <p>Ref. No: ${firstRab.code || '-'}</p>
+</div>
+
+<p style="font-size:11px; margin-bottom:4px;"><strong>Perihal : Rencana Anggaran Biaya</strong></p>
+
+<div class="sp-body">
+  <p>Kepada Yth.</p>
+  <p><strong>${firstRab.client || '_________________'}</strong></p>
+  <p>di Tempat</p>
+
+  <p style="margin-top:16px;">Dengan hormat,</p>
+  <p>Bersama ini kami dari CV. KURNIA CIPTA MANDIRI bermaksud menawarkan Rencana Anggaran Biaya (RAB) untuk pekerjaan:</p>
+  <p class="indent"><strong>${firstRab.project_name || '-'}</strong></p>
+
+  <div class="terbilang-box">
+    Terbilang: <strong>${terbilang(totalHarga)}</strong>
+  </div>
+
+  <p style="margin-top:12px;"><strong>Sistem Pembayaran :</strong></p>
+  <p class="indent">- Uang Muka (DP) sebesar 50% dari total RAB setelah surat diterima.</p>
+  <p class="indent">- Pelunasan sebesar 50% setelah pekerjaan selesai 100%.</p>
+
+  <p style="margin-top:12px;"><strong>Masa berlaku penawaran ini adalah 21 hari sejak tanggal surat.</strong></p>
+
+  <div class="bank-info">
+    <p><strong>Rekening Pembayaran:</strong></p>
+    <p>Bank BCA &nbsp; a.n. <strong>Anriko K</strong> &nbsp; No. <strong>0151 343 642</strong></p>
+  </div>
+
+  <p>Demikian surat penawaran ini kami buat dengan sebenar-benarnya. Atas perhatian dan kerjasamanya, kami ucapkan terima kasih.</p>
+
+  <div class="sig-area">
+    <p>Hormat kami,</p>
+    <div class="sig-line"></div>
+    <p><strong>Anriko K, ST.</strong></p>
+    <p>CV. KURNIA CIPTA MANDIRI</p>
+  </div>
+</div>
+
+<div class="footer">
+  <p><strong>OFFICE:</strong></p>
+  <p>Jl. Kaliurang Km. 12, Candiwinangun RT 6/ RW 13 No. 24</p>
+  <p>Sardonoharjo, Ngaglik, Sleman, Yogyakarta</p>
+  <p>Telp/Wa: 0858.6800.0012 | Email: kcm_production@ymail.com | IG: @pengrajin_interiorkcm</p>
+</div>
+
+</body>
+</html>`
+}
+
+function downloadPDF() {
+  const w = window.open('', '_blank')
+  w.document.write(generateRabPrintHTML())
+  w.document.close()
+}
+
+function cetakRab() {
+  const w = window.open('', '_blank')
+  w.document.write(generateRabPrintHTML())
+  w.document.close()
+  setTimeout(() => { w.print() }, 500)
+}
+
+// Terbilang: number to Indonesian words
+function terbilang(num) {
+  if (!num || num === 0) return 'Nol Rupiah'
+  const ones = ['','Satu','Dua','Tiga','Empat','Lima','Enam','Tujuh','Delapan','Sembilan']
+  const teens = ['Sepuluh','Sebelas','Dua Belas','Tiga Belas','Empat Belas','Lima Belas','Enam Belas','Tujuh Belas','Delapan Belas','Sembilan Belas']
+  const tens = ['','','Dua Puluh','Tiga Puluh','Empat Puluh','Lima Puluh','Enam Puluh','Tujuh Puluh','Delapan Puluh','Sembilan Puluh']
+  function convertGroup(n) {
+    if (n === 0) return ''
+    if (n < 10) return ones[n]
+    if (n < 20) return teens[n - 10]
+    if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '')
+    const h = Math.floor(n / 100), rest = n % 100
+    return (h === 1 ? 'Seratus' : ones[h] + ' Ratus') + (rest ? ' ' + convertGroup(rest) : '')
+  }
+  const groups = []
+  let r = Math.floor(num)
+  while (r > 0) { groups.unshift(r % 1000); r = Math.floor(r / 1000) }
+  const suffixes = ['','Ribu','Juta','Milyar','Triliun']
+  let result = ''
+  for (let i = 0; i < groups.length; i++) {
+    const idx = groups.length - 1 - i
+    if (groups[i] === 0) continue
+    let part = convertGroup(groups[i])
+    if (idx === 1 && groups[i] === 1) part = 'Se'
+    result += (result ? ' ' : '') + part + ' ' + suffixes[idx]
+  }
+  return result.trim() + ' Rupiah'
+}
+
 function openActionModal(type, id, status) {
   actionTargetType.value = type
   actionTargetId.value = id
@@ -712,3 +1008,9 @@ async function submitActionForm() {
 }
 
 </script>
+
+<style scoped>
+@media print {
+  .no-print { display: none !important; }
+}
+</style>

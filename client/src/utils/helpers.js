@@ -11,20 +11,18 @@ export function formatCurrency(value) {
 export function formatDate(dateStr, includeTime = false) {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
-  const options = { year: 'numeric', month: 'long', day: 'numeric' }
+  const tz = { timeZone: 'Asia/Jakarta' }
   if (includeTime) {
-    options.hour = '2-digit'
-    options.minute = '2-digit'
-    options.second = '2-digit'
+    return date.toLocaleString('id-ID', { ...tz, year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
   }
-  return date.toLocaleDateString('id-ID', options)
+  return date.toLocaleDateString('id-ID', { ...tz, year: 'numeric', month: 'long', day: 'numeric' })
 }
 
 export function formatTime(dateStr) {
   if (!dateStr) return '-'
   try {
     const date = new Date(dateStr)
-    return date.toTimeString().split(' ')[0].substring(0, 5)
+    return date.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' }).split('.').slice(0, 2).join(':')
   } catch (e) {
     return '-'
   }

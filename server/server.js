@@ -32,6 +32,15 @@ app.use('/api', generalLimiter);
 const apiRoutes = require('./routes');
 app.use('/api', apiRoutes);
 
+// Serve frontend build (production)
+const clientDistPath = path.join(__dirname, '../client/dist');
+app.use(express.static(clientDistPath));
+
+// SPA fallback — all non-API routes serve index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientDistPath, 'index.html'));
+});
+
 // Error Handler Middleware
 app.use((err, req, res, next) => {
   console.error('Express error log:', err);

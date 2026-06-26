@@ -5,7 +5,7 @@
     <header class="fixed top-0 left-0 w-full z-50 glass-effect border-b border-gray-200/40 dark:border-gray-800/40">
       <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <router-link to="/" class="flex items-center space-x-2">
-          <span class="w-9 h-9 rounded-full bg-red-800 flex items-center justify-center text-white font-bold text-base shadow-sm">K</span>
+          <img src="/logo.png" alt="KCM Logo" class="w-10 h-10 rounded-lg object-contain shadow-sm">
           <span class="font-bold text-lg text-red-950 dark:text-white">Kurnia Cipta Mandiri</span>
         </router-link>
         

@@ -7,8 +7,8 @@
       
       <!-- Top Left Logo Link -->
       <div class="absolute top-6 left-6 flex items-center gap-2">
-        <router-link to="/" class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md hover:scale-105 transition-transform">
-          <span class="font-bold text-red-800 text-lg">KCM</span>
+        <router-link to="/" class="w-[60px] h-[60px] rounded-full bg-white flex items-center justify-center shadow-md hover:scale-105 transition-transform overflow-hidden">
+          <img src="/logo.png" alt="KCM Logo" class="w-15 h-15 rounded-lg object-contain shadow-md">
         </router-link>
       </div>
       

@@ -22,7 +22,7 @@
 
         <!-- Quick Action Links -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <router-link to="/admin/users" v-if="user?.role === 'super_admin'" class="flex items-center justify-between bg-white dark:bg-gray-850 p-6 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm hover:shadow-md transition-all group">
+          <router-link to="/admin/users" v-if="isSuperAdmin" class="flex items-center justify-between bg-white dark:bg-gray-850 p-6 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm hover:shadow-md transition-all group">
             <div class="flex items-center space-x-4">
               <div class="p-3.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 rounded-xl">
                 <span class="material-symbols-outlined text-2xl">person_add</span>
@@ -73,8 +73,107 @@
           </div>
         </div>
 
-        <!-- Graphs and Attendance Logs -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Admin Attendance Check-in/out (admin only, not superadmin) - styled like staff version -->
+        <div v-if="isAdminOnly" class="space-y-4">
+          <!-- Welcome-style header for attendance -->
+          <div class="bg-gradient-to-r from-red-900 to-red-950 text-white rounded-3xl p-6 shadow-md relative overflow-hidden">
+            <div class="relative z-10 space-y-1">
+              <span class="text-[9px] uppercase font-bold tracking-widest text-amber-500">Kehadiran Harian</span>
+              <h2 class="text-xl font-bold">Absensi Hari Ini</h2>
+              <p class="text-xs text-gray-200">{{ todayDate }}</p>
+            </div>
+            <div class="absolute -right-16 -bottom-16 w-44 h-44 bg-red-800/20 rounded-full blur-2xl"></div>
+          </div>
+
+          <!-- Clock & Check-in/out Buttons -->
+          <div class="bg-white dark:bg-gray-850 p-6 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm flex flex-col items-center justify-center text-center space-y-4">
+            <div class="font-mono text-3xl font-black text-gray-800 dark:text-white tracking-tight tabular-nums">
+              {{ currentTime }}
+            </div>
+
+            <button 
+              v-if="!todayStatus.checkedIn"
+              @click="checkIn" 
+              :disabled="loadingAbsen || gpsLoading"
+              class="w-28 h-28 rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200"
+            >
+              <span class="material-symbols-outlined text-[40px]">login</span>
+              <span class="text-[10px] font-bold tracking-wider mt-0.5">CHECK IN</span>
+            </button>
+            <button 
+              v-else-if="!todayStatus.checkedOut"
+              @click="checkOut"
+              :disabled="loadingAbsen || gpsLoading"
+              class="w-28 h-28 rounded-full bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200"
+            >
+              <span class="material-symbols-outlined text-[40px]">logout</span>
+              <span class="text-[10px] font-bold tracking-wider mt-0.5">CHECK OUT</span>
+            </button>
+            <div v-else class="w-28 h-28 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 flex flex-col items-center justify-center shadow-inner border border-gray-150 dark:border-gray-800">
+              <span class="material-symbols-outlined text-[40px]">check_circle</span>
+              <span class="text-[9px] font-bold tracking-wider uppercase mt-1">SELESAI</span>
+            </div>
+
+            <p class="text-[10px] text-gray-400">
+              {{ gpsLoading ? 'Sedang mengakses lokasi GPS...' : 'Pastikan Anda berada dalam radius kantor.' }}
+            </p>
+          </div>
+
+          <!-- GPS Geofence Status -->
+          <div class="bg-white dark:bg-gray-850 border border-gray-150 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-500">
+                <span class="material-symbols-outlined text-lg">location_on</span>
+              </div>
+              <div>
+                <div class="text-[10px] font-bold text-gray-400 uppercase">Geofencing Status</div>
+                <div class="text-xs font-bold mt-0.5 flex items-center gap-1" :class="gpsResult?.status === 'di_kantor' ? 'text-emerald-700' : 'text-amber-700'">
+                  <span class="material-symbols-outlined text-sm">{{ gpsResult?.status === 'di_kantor' ? 'verified' : 'warning' }}</span>
+                  <span>{{ gpsResult?.status === 'di_kantor' ? 'Di Area Kantor' : gpsResult ? 'Di Luar Area' : 'Memuat...' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-[9px] font-bold text-gray-400 uppercase">Jarak</div>
+              <div class="text-sm font-black text-gray-850 dark:text-white">
+                {{ gpsResult?.distance !== undefined ? gpsResult.distance + ' m' : '-- m' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Today's Attendance Detail -->
+          <div class="bg-white dark:bg-gray-850 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div class="px-4 py-3 bg-gray-50/60 dark:bg-gray-900/10 border-b border-gray-150 dark:border-gray-800 flex justify-between items-center">
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Detail Presensi Hari Ini</span>
+              <span class="material-symbols-outlined text-sm text-red-800 dark:text-red-500">info</span>
+            </div>
+            <div class="grid grid-cols-3 divide-x divide-gray-150 dark:divide-gray-800 text-center py-4">
+              <div>
+                <div class="text-[9px] font-bold text-gray-400 uppercase">Check-In</div>
+                <div class="text-xs font-black mt-1" :class="todayStatus.checkIn ? 'text-emerald-600' : 'text-gray-400'">
+                  {{ todayStatus.checkIn || '--:--' }}
+                </div>
+              </div>
+              <div>
+                <div class="text-[9px] font-bold text-gray-400 uppercase">Check-Out</div>
+                <div class="text-xs font-black mt-1" :class="todayStatus.checkOut ? 'text-red-700' : 'text-gray-400'">
+                  {{ todayStatus.checkOut || '--:--' }}
+                </div>
+              </div>
+              <div>
+                <div class="text-[9px] font-bold text-gray-400 uppercase">Durasi Kerja</div>
+                <div class="text-xs font-black mt-1" :class="todayStatusRaw?.duration ? 'text-emerald-600' : 'text-gray-400'">
+                  {{ todayStatusRaw?.duration || '0j' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p v-if="absenMsg" :class="['text-xs mt-2 text-center', absenError ? 'text-red-500' : absenWarning ? 'text-amber-600' : 'text-emerald-600']">{{ absenMsg }}</p>
+        </div>
+
+        <!-- Graphs and Attendance Logs (superadmin only) -->
+        <div v-if="isSuperAdmin" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <!-- Graph -->
           <div class="bg-white dark:bg-gray-850 p-6 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm lg:col-span-2">
             <h3 class="font-bold text-sm mb-6 text-gray-900 dark:text-white">Statistik Kehadiran Karyawan</h3>
@@ -101,8 +200,8 @@
                   <p class="text-[10px] text-gray-400 truncate">{{ log.department || 'Staff' }}</p>
                 </div>
                 <div class="text-right text-[10px] font-medium text-gray-500">
-                  <div>In: {{ log.check_in ? log.check_in.split(' ')[1].substring(0, 5) : '--:--' }}</div>
-                  <div>Out: {{ log.check_out ? log.check_out.split(' ')[1].substring(0, 5) : '--:--' }}</div>
+                  <div>In: {{ log.check_in ? formatTime(log.check_in) : '--:--' }}</div>
+                  <div>Out: {{ log.check_out ? formatTime(log.check_out) : '--:--' }}</div>
                 </div>
                 <span :class="[
                   log.status === 'di_kantor' 
@@ -122,15 +221,90 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useApi } from '../../composables/useApi'
+import { useGps } from '../../composables/useGps'
+import { formatTime, formatDate } from '../../utils/helpers'
 import Chart from 'chart.js/auto'
 
 const { user } = useAuth()
 const api = useApi()
+const { getCurrentPosition, loading: gpsLoading } = useGps()
+
+const isSuperAdmin = computed(() => user.value?.role === 'super_admin')
+const isAdminOnly = computed(() => user.value?.role === 'admin')
+
+// Admin attendance state
+const currentTime = ref('')
+const todayDate = ref('')
+const todayStatus = ref({ checkedIn: false, checkedOut: false, checkIn: null, checkOut: null })
+const todayStatusRaw = ref(null)
+const loadingAbsen = ref(false)
+const absenMsg = ref('')
+const absenError = ref(false)
+const absenWarning = ref(false)
+const gpsResult = ref(null)
+
+function updateClock() {
+  const now = new Date()
+  currentTime.value = now.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  todayDate.value = formatDate(now)
+}
+
+async function loadTodayStatus() {
+  if (!isAdminOnly.value) return
+  try {
+    const data = await api.get('/api/attendance/status')
+    todayStatusRaw.value = data
+    todayStatus.value = {
+      checkedIn: !!data.check_in,
+      checkedOut: !!data.check_out,
+      checkIn: data.check_in ? data.check_in.split(' ')[1]?.substring(0, 5) : null,
+      checkOut: data.check_out ? data.check_out.split(' ')[1]?.substring(0, 5) : null
+    }
+  } catch (e) { /* ignore */ }
+}
+
+async function checkIn() {
+  loadingAbsen.value = true
+  absenMsg.value = ''
+  absenWarning.value = false
+  try {
+    const pos = await getCurrentPosition().catch(() => null)
+    const payload = pos ? { latitude: pos.latitude, longitude: pos.longitude } : {}
+    if (pos) gpsResult.value = pos
+    const res = await api.post('/api/attendance/check-in', payload)
+    absenMsg.value = res.message || 'Berhasil check-in!'
+    absenError.value = false
+    absenWarning.value = !!res.warning
+    await loadTodayStatus()
+  } catch (e) {
+    absenMsg.value = e.response?.data?.error || 'Gagal check-in'
+    absenError.value = true
+  }
+  loadingAbsen.value = false
+}
+
+async function checkOut() {
+  loadingAbsen.value = true
+  absenMsg.value = ''
+  try {
+    const pos = await getCurrentPosition().catch(() => null)
+    const payload = pos ? { latitude: pos.latitude, longitude: pos.longitude } : {}
+    if (pos) gpsResult.value = pos
+    await api.post('/api/attendance/check-out', payload)
+    absenMsg.value = 'Berhasil check-out!'
+    absenError.value = false
+    await loadTodayStatus()
+  } catch (e) {
+    absenMsg.value = e.response?.data?.error || 'Gagal check-out'
+    absenError.value = true
+  }
+  loadingAbsen.value = false
+}
 
 const stats = ref([
   { label: 'TOTAL KARYAWAN', val: 0, icon: 'groups' },
@@ -142,6 +316,13 @@ const stats = ref([
 const attendanceList = ref([])
 
 onMounted(async () => {
+  // Start clock for admin attendance
+  updateClock()
+  setInterval(updateClock, 1000)
+  loadTodayStatus()
+  // Scan GPS on load for geofence display
+  getCurrentPosition().then(pos => { gpsResult.value = pos }).catch(() => {})
+
   try {
     // 1. Fetch Total Users
     const users = await api.get('/api/users')

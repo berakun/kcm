@@ -157,30 +157,51 @@ async function seed() {
     }
     console.log('[Seeder] Seeded 5 cashbon records.');
 
-    // 7. Seed Attendance
-    const attendances = [
-      [3, '2025-06-23 08:02:00', '2025-06-23 17:05:00', -7.7326, 110.3988, 5.2, 'di_kantor', '192.168.100.50', '2025-06-23'],
-      [4, '2025-06-23 07:58:00', '2025-06-23 17:10:00', -7.7325, 110.3987, 8.1, 'di_kantor', '192.168.100.51', '2025-06-23'],
-      [5, '2025-06-23 08:30:00', '2025-06-23 17:02:00', -7.7327, 110.3989, 12.3, 'di_kantor', '192.168.100.52', '2025-06-23'],
-      [3, '2025-06-24 08:05:00', '2025-06-24 17:00:00', -7.7326, 110.3988, 3.5, 'di_kantor', '192.168.100.50', '2025-06-24'],
-      [4, '2025-06-24 08:15:00', '2025-06-24 17:30:00', -7.7330, 110.3990, 48.7, 'luar_kantor', '192.168.100.51', '2025-06-24'],
-      [5, '2025-06-24 07:55:00', '2025-06-24 16:58:00', -7.7326, 110.3988, 2.1, 'di_kantor', '192.168.100.52', '2025-06-24'],
-      [3, '2025-06-16 08:00:00', '2025-06-16 17:00:00', -7.7326, 110.3988, 4.0, 'di_kantor', '192.168.100.50', '2025-06-16'],
-      [4, '2025-06-16 08:10:00', '2025-06-16 17:15:00', -7.7325, 110.3987, 7.5, 'di_kantor', '192.168.100.51', '2025-06-16'],
-      [5, null, null, null, null, null, 'luar_kantor', null, '2025-06-16'],
-      [3, '2025-06-17 08:02:00', '2025-06-17 17:05:00', -7.7326, 110.3988, 5.0, 'di_kantor', '192.168.100.50', '2025-06-17'],
-      [4, '2025-06-17 08:05:00', '2025-06-17 17:10:00', -7.7325, 110.3987, 9.0, 'di_kantor', '192.168.100.51', '2025-06-17'],
-      [5, '2025-06-17 07:50:00', '2025-06-17 16:55:00', -7.7326, 110.3988, 3.0, 'di_kantor', '192.168.100.52', '2025-06-17'],
-      [3, '2025-06-18 08:08:00', '2025-06-18 17:02:00', -7.7326, 110.3988, 6.2, 'di_kantor', '192.168.100.50', '2025-06-18'],
-      [4, '2025-06-18 08:20:00', '2025-06-18 17:20:00', -7.7328, 110.3989, 25.3, 'luar_kantor', '192.168.100.51', '2025-06-18'],
-      [5, '2025-06-18 08:00:00', '2025-06-18 17:00:00', -7.7326, 110.3988, 4.5, 'di_kantor', '192.168.100.52', '2025-06-18'],
-      [3, '2025-06-19 07:55:00', '2025-06-19 16:50:00', -7.7326, 110.3988, 3.8, 'di_kantor', '192.168.100.50', '2025-06-19'],
-      [4, '2025-06-19 08:02:00', '2025-06-19 17:05:00', -7.7325, 110.3987, 7.0, 'di_kantor', '192.168.100.51', '2025-06-19'],
-      [5, '2025-06-19 08:12:00', '2025-06-19 17:12:00', -7.7327, 110.3989, 15.0, 'di_kantor', '192.168.100.52', '2025-06-19'],
-      [3, '2025-06-20 08:00:00', '2025-06-20 17:00:00', -7.7326, 110.3988, 5.5, 'di_kantor', '192.168.100.50', '2025-06-20'],
-      [4, '2025-06-20 08:30:00', '2025-06-20 17:30:00', -7.7330, 110.3990, 52.0, 'luar_kantor', '192.168.100.51', '2025-06-20'],
-      [5, '2025-06-20 07:58:00', '2025-06-20 16:58:00', -7.7326, 110.3988, 2.8, 'di_kantor', '192.168.100.52', '2025-06-20']
-    ];
+    // 7. Seed Attendance (2 months: May + June 2025)
+    const attendances = [];
+    // Generate attendance for May and June 2025, weekdays only
+    const staffIds = [3, 4, 5]; // budi, dewi, eko
+    const staffNames = { 3: 'Budi', 4: 'Dewi', 5: 'Eko' };
+    
+    for (let month = 5; month <= 6; month++) {
+      const daysInMonth = new Date(2025, month, 0).getDate();
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(2025, month - 1, day);
+        const dow = date.getDay(); // 0=Sun, 6=Sat
+        if (dow === 0) continue; // Skip Sunday
+        
+        const dateStr = `2025-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        
+        for (const uid of staffIds) {
+          // Random: 85% chance present, 15% absent
+          const present = Math.random() > 0.15;
+          if (!present) {
+            // Absent record
+            attendances.push([uid, null, null, null, null, null, 'luar_kantor', null, dateStr]);
+          } else {
+            // Random check-in between 07:50 and 08:20
+            const inMin = Math.floor(Math.random() * 30) + 470; // 470 = 7:50, 500 = 8:20
+            const inH = Math.floor(inMin / 60);
+            const inM = inMin % 60;
+            const checkIn = `${dateStr} ${String(inH).padStart(2,'0')}:${String(inM).padStart(2,'0')}:00`;
+            
+            // Random check-out between 16:50 and 17:15
+            const outMin = Math.floor(Math.random() * 25) + 1010; // 1010=16:50, 1035=17:15
+            const outH = Math.floor(outMin / 60);
+            const outM = outMin % 60;
+            const checkOut = `${dateStr} ${String(outH).padStart(2,'0')}:${String(outM).padStart(2,'0')}:00`;
+            
+            const lat = -7.7326 + (Math.random() * 0.001 - 0.0005);
+            const lng = 110.3988 + (Math.random() * 0.001 - 0.0005);
+            const dist = Math.round((Math.random() * 15 + 1) * 10) / 10;
+            const status = dist <= 20 ? 'di_kantor' : 'luar_kantor';
+            const ip = `192.168.100.${50 + uid}`;
+            
+            attendances.push([uid, checkIn, checkOut, lat, lng, dist, status, ip, dateStr]);
+          }
+        }
+      }
+    }
 
     for (const a of attendances) {
       await db.query(
@@ -188,7 +209,7 @@ async function seed() {
         a
       );
     }
-    console.log('[Seeder] Seeded 20+ attendance records.');
+    console.log(`[Seeder] Seeded ${attendances.length} attendance records (2 months).`);
 
     // 8. Seed Financial Reports
     const financials = [
