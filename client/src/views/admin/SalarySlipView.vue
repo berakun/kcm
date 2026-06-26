@@ -50,11 +50,11 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div>
                 <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Gaji Pokok</label>
-                <input type="number" v-model.number="salarySettings[role.key].gajiPokok" class="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm dark:bg-gray-900 dark:text-white">
+                <input type="number" v-model.number="salarySettings[role.key].gajiPokok" class="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0">
               </div>
               <div>
                 <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Makan & Transport</label>
-                <input type="number" v-model.number="salarySettings[role.key].makanTransport" class="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm dark:bg-gray-900 dark:text-white">
+                <input type="number" v-model.number="salarySettings[role.key].makanTransport" class="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0">
               </div>
               <div>
                 <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Tunjangan Kesehatan</label>
@@ -662,7 +662,7 @@ function buildSlipData(row, slipNo) {
   const pemotonganCicilanKe = 0
   const jumlahPotonganCicilan = 0
   const sisaPinjaman = jumlahPinjaman - jumlahPotonganCicilan
-  const totalDiterima = row.gajiPokok + row.makanTransport + row.tunjangan - totalPotongan + totalLembur
+  const totalDiterima = (row.gajiPokok + row.makanTransport + row.tunjangan) - totalPotongan + totalLembur
 
   return {
     no: slipNo,
