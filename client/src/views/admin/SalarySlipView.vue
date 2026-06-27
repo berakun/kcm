@@ -882,7 +882,7 @@ function buildSlipHTML(slip) {
         <tr><td>PEMOTONGAN CICILAN S/D KE-</td><td class="text-right">: Rp ${slip.pemotonganCicilanKe > 0 ? slip.pemotonganCicilanKe : '-'}</td></tr>
         <tr><td>JUMLAH POTONGAN CICILAN KE-</td><td class="text-right">: Rp ${slip.jumlahPotonganCicilan > 0 ? formatNumber(slip.jumlahPotonganCicilan) : '-'}</td></tr>
         <tr><td>LEMBUR KERJA</td><td class="text-right">: Rp ${slip.totalLembur > 0 ? formatNumber(slip.totalLembur) : '-'}</td></tr>
-        <tr class="border-t"><td class="font-bold" style="padding-top:4px;">SISA PINJAMAN KAS BON</td><td class="text-right font-bold" style="padding-top:4px;">: Rp ${slip.sisaPinjaman > 0 ? formatNumber(slip.sisaPinjaman) : '1.710.000'}</td></tr>
+        <tr class="border-t"><td class="font-bold" style="padding-top:4px;">SISA PINJAMAN KAS BON</td><td class="text-right font-bold" style="padding-top:4px;">: Rp ${slip.sisaPinjaman > 0 ? formatNumber(slip.sisaPinjaman) : '-'}</td></tr>
       </table>
  
       <div class="flex-between border-double-top mt-4 pt-3">
