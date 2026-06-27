@@ -100,7 +100,12 @@
         <div class="relative group">
           <div class="absolute -top-6 -left-6 w-32 h-32 bg-amber-500/10 rounded-full -z-10 animate-pulse"></div>
           <div class="relative overflow-hidden rounded-3xl shadow-lg border border-gray-200/50 dark:border-gray-800/50">
-            <img class="w-full h-[450px] object-cover transition-transform duration-1000 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz4RphZ_Rvgy_TJNAmnx1VVnHWlkZcfo8R2Ej3FsAAcdhMHMxLy9hqCgrLzjFBc4W5OYR1GTFqJqt2YBVUevaRCta2NOLi8D4mUC_PdUlRurDxQT_fGpszIYwMEiIFXBwvE6Yi06--_rTq3X3ik-CfY1gxkQt5CgR87e4p-ELXX0BnuKdkQ2frQkn4pb5WT8EL8cpiEFIuC1S6YHZVdV75JJ7ML8M6ffAy6b8AxATnjFePT7-_YjmE7w" alt="KCM Interior Studio"/>
+            <img 
+              src="/assets/images/about-kcm.jpg" 
+              alt="Tim KCM Interior Studio sedang bekerja di workshop produksi mebel" 
+              loading="lazy"
+              class="w-full h-[450px] object-cover transition-transform duration-1000 group-hover:scale-105"
+            />
           </div>
         </div>
         <div class="space-y-6">
@@ -163,7 +168,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div class="group relative overflow-hidden rounded-2xl aspect-[4/3] shadow-md cursor-pointer" v-for="p in portfolioProjects" :key="p.id" @click="$router.push('/portfolio')">
-            <img :alt="p.title" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" :src="getImageUrl(p.images?.[0])"/>
+            <img :alt="p.title" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" :src="getImageUrl(p.images?.[0])"/>
             <span v-if="p.images?.length > 1" class="absolute top-3 right-3 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full z-10">📷 {{ p.images.length }}</span>
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <span class="text-amber-500 text-[10px] font-bold uppercase tracking-wider">{{ formatCategory(p.category) }}</span>
@@ -277,15 +282,15 @@
           <form @submit.prevent="sendWhatsappMessage" class="space-y-4">
             <div>
               <label class="text-xxs font-bold text-gray-400 block mb-1">Nama Lengkap</label>
-              <input type="text" v-model="contactName" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 focus:border-red-800 focus:ring focus:ring-red-200 text-xs" placeholder="Nama Anda..."/>
+              <input type="text" name="nama" v-model="contactName" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 focus:border-red-800 focus:ring focus:ring-red-200 text-xs" placeholder="Nama Anda..."/>
             </div>
             <div>
               <label class="text-xxs font-bold text-gray-400 block mb-1">Nomor WhatsApp</label>
-              <input type="tel" v-model="contactPhone" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 focus:border-red-800 focus:ring focus:ring-red-200 text-xs" placeholder="0812xxxx..."/>
+              <input type="tel" name="telepon" v-model="contactPhone" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 focus:border-red-800 focus:ring focus:ring-red-200 text-xs" placeholder="0812xxxx..."/>
             </div>
             <div>
               <label class="text-xxs font-bold text-gray-400 block mb-1">Pesan / Rencana Proyek</label>
-              <textarea rows="4" v-model="contactMessage" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 focus:border-red-800 focus:ring focus:ring-red-200 text-xs" placeholder="Tulis rencana kebutuhan renovasi/interior Anda di sini..."></textarea>
+              <textarea name="pesan" rows="4" v-model="contactMessage" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 focus:border-red-800 focus:ring focus:ring-red-200 text-xs" placeholder="Tulis rencana kebutuhan renovasi/interior Anda di sini..."></textarea>
             </div>
             <button type="submit" class="w-full bg-red-800 hover:bg-red-950 text-white font-bold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-xs">
               Hubungi via WhatsApp <span class="material-symbols-outlined text-sm">chat</span>

@@ -11,7 +11,7 @@
       <!-- Content Body -->
       <div class="p-8 flex-grow space-y-6 overflow-y-auto max-h-[calc(100vh-80px)]">
         <!-- Navigation Tabs -->
-        <div class="flex space-x-2 border-b border-gray-200 dark:border-gray-800 pb-px">
+        <div class="flex space-x-2 border-b border-gray-200 dark:border-gray-800 pb-2 overflow-x-auto scrollbar-hide">
           <button 
             v-for="tab in tabs" 
             :key="tab.id"

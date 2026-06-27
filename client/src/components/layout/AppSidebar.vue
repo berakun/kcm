@@ -1,16 +1,17 @@
 <template>
   <div>
-    <!-- Overlay for mobile drawer -->
+    <!-- Backdrop overlay — muncul saat sidebar open di mobile -->
     <div 
-      v-if="appStore.sidebarOpen" 
-      @click="appStore.closeSidebar" 
-      class="fixed inset-0 bg-black/40 z-40 lg:hidden"
+      v-if="sidebarOpen" 
+      @click="sidebarOpen = false"
+      class="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300"
     ></div>
 
+    <!-- Sidebar -->
     <aside 
       :class="[
-        'fixed inset-y-0 left-0 z-50 lg:static lg:translate-x-0 h-screen lg:h-full flex flex-col justify-between bg-red-950 text-white w-64 shadow-xl select-none transition-transform duration-300',
-        appStore.sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        'fixed inset-y-0 left-0 z-50 lg:static h-screen lg:h-full flex flex-col justify-between bg-red-950 text-white w-64 shadow-xl select-none transition-transform duration-300',
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
     <div>
@@ -85,6 +86,13 @@ import { useAppStore } from '../../stores/app'
 
 const appStore = useAppStore()
 const route = useRoute()
+
+const sidebarOpen = computed({
+  get: () => appStore.sidebarOpen,
+  set: (val) => {
+    if (!val) appStore.closeSidebar()
+  }
+})
 
 watch(() => route.path, () => {
   appStore.closeSidebar()

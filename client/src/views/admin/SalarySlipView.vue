@@ -49,13 +49,20 @@
           </div>
 
           <!-- Actions -->
-          <div class="w-full lg:w-auto flex justify-end">
+          <div class="w-full lg:w-auto flex justify-end gap-2">
             <button 
               @click="cetakSemua" 
               :disabled="tableRows.length === 0" 
               class="w-full lg:w-auto px-6 py-3.5 bg-red-800 hover:bg-red-900 disabled:opacity-40 text-white rounded-2xl text-xs font-bold shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               <span class="material-symbols-outlined text-base">print</span> Cetak Semua Slip
+            </button>
+            <button 
+              @click="downloadSemuaPDF" 
+              :disabled="tableRows.length === 0" 
+              class="w-full lg:w-auto px-6 py-3.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 disabled:opacity-40 text-gray-700 dark:text-white rounded-2xl text-xs font-bold shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <span class="material-symbols-outlined text-base">download</span> Download Semua PDF
             </button>
           </div>
         </div>
@@ -177,6 +184,9 @@
                     <div class="flex items-center justify-center gap-1">
                       <button @click="cetakSlip(row)" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-red-700" title="Cetak Slip">
                         <span class="material-symbols-outlined text-base">print</span>
+                      </button>
+                      <button @click="downloadSlipPDF(row)" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-red-700" title="Download PDF">
+                        <span class="material-symbols-outlined text-base">download</span>
                       </button>
                       <button @click="openEditModal(row)" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-red-700" title="Edit Data">
                         <span class="material-symbols-outlined text-base">edit</span>
@@ -384,6 +394,7 @@ const showSettings = ref(false)
 
 const now = new Date()
 const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
+const monthNamesShort = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des']
 
 // Generate months list for last year and current year (up to current month for the current year)
 const monthsList = []
@@ -720,13 +731,12 @@ async function loadData() {
       // Deduct daily rate for cuti & liburTahunan
       const dailyMakanTransport = totalWorkingDays > 0 ? (baseMakanTransport / totalWorkingDays) : 0
       const potonganMakanTransport = (cuti + liburTahunan) * dailyMakanTransport
-      const makanTransport = Math.max(0, Math.round(baseMakanTransport - potonganMakanTransport))
 
       const tunjanganKesehatan = ov.tunjanganKesehatan ?? config.tunjanganKesehatan ?? 0
       const tunjanganJabatan = ov.tunjanganJabatan ?? config.tunjanganJabatan ?? 0
       const tunjanganHariRaya = ov.tunjanganHariRaya ?? config.tunjanganHariRaya ?? 0
       const tunjangan = tunjanganKesehatan + tunjanganJabatan + tunjanganHariRaya
-
+      
       // Potongan
       const terlambatRate = rates.terlambat || 5000
       const tidakHadirRate = rates.tidakHadir || 80000
@@ -734,11 +744,11 @@ async function loadData() {
       const potonganTerlambat = terlambat * terlambatRate
       const potonganTidakHadir = tidakHadir * tidakHadirRate
       const potonganAbsen = absenSetengah * absenSetengahRate
-      const totalPotongan = potonganTerlambat + potonganTidakHadir + potonganAbsen
-
-      // Total Diterima = Pokok + Makan + Tunjangan - Potongan
-      const totalDiterima = gajiPokok + makanTransport + tunjangan - totalPotongan
-
+      const totalPotongan = potonganTerlambat + potonganTidakHadir + potonganAbsen + Math.round(potonganMakanTransport)
+ 
+      // Total Diterima = Pokok + Makan (full base) + Tunjangan - Potongan (including Makan deduction)
+      const totalDiterima = gajiPokok + baseMakanTransport + tunjangan - totalPotongan
+ 
       tableRows.value.push({
         userId: u.id,
         name: u.name,
@@ -746,7 +756,7 @@ async function loadData() {
         roleLabel: roleLabel(u.role),
         gajiPokok,
         baseMakanTransport,
-        makanTransport,
+        makanTransport: baseMakanTransport, // Show full base Makan & Transport
         tunjanganKesehatan,
         tunjanganJabatan,
         tunjanganHariRaya,
@@ -759,10 +769,11 @@ async function loadData() {
         potonganAbsenCount: absenSetengah,
         potongan: totalPotongan,
         totalPotongan,
-        // Overrides
+        // Overrides & calculations for slip
         cuti,
         liburTahunan,
-        // Config rates for slip
+        dailyMakanTransport: Math.round(dailyMakanTransport),
+        potonganMakanTransport: Math.round(potonganMakanTransport),
         terlambatRate,
         tidakHadirRate,
         absenSetengahRate,
@@ -811,107 +822,133 @@ function buildSlipHTML(slip) {
   return `
     <div class="slip-page">
       <div class="text-center mb-4" style="border-bottom: 2px double #111; padding-bottom: 10px;">
-        <h1 style="font-size: 16px; font-weight: 900; letter-spacing: 0.5px;">cv. KURNIA CIPTA MANDIRI</h1>
-        <p style="font-size: 9px; color: #666; margin-top: 2px;">Jl. Kaliurang Km. 12, Griya Penen Asri Blok D-12, Harjobinangun, Pakem, Sleman, Yogyakarta</p>
-        <p style="font-size: 9px; color: #666;">Telp. +62 85 100 80 5285 | Fax: +62 85 100 80 5285 | Email: kcm_production@ymail.com</p>
+        <h1 style="font-size: 16px; font-weight: 900; letter-spacing: 0.5px; margin-bottom: 4px;">cv. KURNIA CIPTA MANDIRI</h1>
+        <p style="font-size: 9px; color: #666; margin-top: 2px;">Jl Kaliurang Km 12. Griya Penen Asri Blok D-12</p>
+        <p style="font-size: 9px; color: #666;">Harjobinangun Pakem Sleman. Yogyakarta.</p>
+        <p style="font-size: 9px; color: #666;">Telp. +62 85 100 80 5285. | Fax. | E-mail: kcm_production@ymail.com</p>
         <div style="margin-top: 10px; font-size: 13px; font-weight: 900; letter-spacing: 2px; display: inline-block; border-bottom: 1px solid #888; padding-bottom: 3px;">SLIP GAJI KARYAWAN</div>
-        <div style="font-size: 11px; font-weight: 700; color: #c0392b; margin-top: 4px;">BULAN ${calcMonthLabel.value}</div>
+        <div style="font-size: 11px; font-weight: 700; color: #c0392b; margin-top: 4px; text-transform: uppercase;">BULAN ${calcMonthLabel.value}</div>
       </div>
-
+ 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; margin-bottom: 12px; font-size: 11px;">
         <div>NO URUT <b>: ${slip.no}</b></div>
         <div>TANGGAL <b>: ${slip.tanggal}</b></div>
-        <div>NAMA <b>: ${slip.name}</b></div>
-        <div>JABATAN <b>: ${slip.roleLabel}</b></div>
+        <div>NAMA <b>: ${slip.name.toUpperCase()}</b></div>
+        <div>JABATAN <b>: ${slip.roleLabel.toUpperCase()}</b></div>
       </div>
-
+ 
       <div class="bg-section">PENDAPATAN</div>
-      <table>
-        <tr><td style="width:60%">GAJI POKOK</td><td class="text-right font-bold" style="width:40%">${formatCurrency(slip.gajiPokok)}</td></tr>
-        <tr><td>MAKAN & TRANSPORT</td><td class="text-right font-bold">${formatCurrency(slip.makanTransport)}</td></tr>
-        <tr><td>TUNJANGAN KESEHATAN</td><td class="text-right font-bold">${formatCurrency(slip.tunjanganKesehatan)}</td></tr>
-        <tr><td>TUNJANGAN JABATAN</td><td class="text-right font-bold">${formatCurrency(slip.tunjanganJabatan)}</td></tr>
-        <tr><td>TUNJANGAN HARI RAYA</td><td class="text-right font-bold">${formatCurrency(slip.tunjanganHariRaya)}</td></tr>
-        <tr class="border-t"><td class="font-bold" style="padding-top:4px;">Pokok + Makan dan Trans</td><td class="text-right font-bold" style="padding-top:4px;">${formatCurrency(slip.pokokMakanTrans)}</td></tr>
+      <table style="margin-bottom: 10px;">
+        <tr><td style="width:60%">GAJI POKOK</td><td class="text-right font-bold" style="width:40%">: Rp ${formatNumber(slip.gajiPokok)}</td></tr>
+        <tr><td>MAKAN & TRANSPORT</td><td class="text-right font-bold">: Rp ${formatNumber(slip.makanTransport)}</td></tr>
+        <tr><td>TUNJANGAN KESEHATAN</td><td class="text-right font-bold">: Rp ${formatNumber(slip.tunjanganKesehatan)}</td></tr>
+        <tr><td>TUNJANGAN JABATAN</td><td class="text-right font-bold">: Rp ${formatNumber(slip.tunjanganJabatan)}</td></tr>
+        <tr><td>TUNJANGAN HARI RAYA</td><td class="text-right font-bold">: Rp ${formatNumber(slip.tunjanganHariRaya)}</td></tr>
+        <tr>
+          <td></td>
+          <td class="text-right" style="padding-top:10px; font-size:11px;">
+            <div style="display:inline-block; width:180px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom: 2px;">
+                <span>Pokok</span>
+                <span>Rp ${formatNumber(slip.gajiPokok)}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom: 2px;">
+                <span>makan dan trans</span>
+                <span>Rp ${formatNumber(slip.makanTransport)}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; border-top:1px solid #333; padding-top:2px; font-weight:bold;">
+                <span></span>
+                <span>Rp ${formatNumber(slip.pokokMakanTrans)}</span>
+              </div>
+            </div>
+          </td>
+        </tr>
       </table>
-
-      <div class="bg-section">LEMBUR KERJA</div>
-      <table>
-        <tr><td>HARI</td><td class="text-right" style="color:#888">${slip.lemburHariCount} x Rp ${formatNumber(slip.lemburHariRate)}</td><td class="text-right font-bold" style="width:25%">${formatCurrency(slip.lemburHari)}</td></tr>
-        <tr><td>JAM</td><td class="text-right" style="color:#888">${slip.lemburJamCount} x Rp ${formatNumber(slip.lemburJamRate)}</td><td class="text-right font-bold">${formatCurrency(slip.lemburJam)}</td></tr>
-        <tr><td>LIBUR</td><td class="text-right" style="color:#888">${slip.liburCount} x Rp ${formatNumber(slip.liburRate)}</td><td class="text-right font-bold">${formatCurrency(slip.libur)}</td></tr>
+ 
+      <div class="bg-section">LEMBUR KERJA & POTONGAN</div>
+      <table style="margin-bottom: 10px;">
+        <tr><td style="width:45%">HARI</td><td class="text-right" style="color:#888; width:30%">${slip.lemburHariCount} X Rp ${formatNumber(slip.lemburHariRate)} =</td><td class="text-right font-bold" style="width:25%">${slip.lemburHari > 0 ? formatNumber(slip.lemburHari) : '-'}</td></tr>
+        <tr><td>JAM</td><td class="text-right" style="color:#888">${slip.lemburJamCount} X Rp ${formatNumber(slip.lemburJamRate)} =</td><td class="text-right font-bold">${slip.lemburJam > 0 ? formatNumber(slip.lemburJam) : '-'}</td></tr>
+        <tr><td>LIBUR</td><td class="text-right" style="color:#888">${slip.liburCount} X Rp ${formatNumber(slip.liburRate)} =</td><td class="text-right font-bold">${slip.libur > 0 ? formatNumber(slip.libur) : '-'}</td></tr>
+        <tr><td>Absen 1x (1/2hari)</td><td class="text-right" style="color:#888">${slip.potonganAbsenCount} X Rp ${formatNumber(slip.absenSetengahRate)} =</td><td class="text-right font-bold">${slip.potonganAbsen > 0 ? formatNumber(slip.potonganAbsen) : '-'}</td></tr>
+        <tr><td>Tidak Hadir (1hari)</td><td class="text-right" style="color:#888">${slip.potonganTidakHadirCount} X Rp ${formatNumber(slip.tidakHadirRate)} =</td><td class="text-right font-bold">${slip.potonganTidakHadir > 0 ? formatNumber(slip.potonganTidakHadir) : '-'}</td></tr>
+        <tr><td>Terlambat Hadir (10menit)</td><td class="text-right" style="color:#888">${slip.potonganTerlambatCount} X Rp ${formatNumber(slip.terlambatRate)} =</td><td class="text-right font-bold">${slip.potonganTerlambat > 0 ? formatNumber(slip.potonganTerlambat) : '-'}</td></tr>
+        <tr class="border-t"><td colspan="2" class="font-bold" style="padding-top:4px;">POTONGAN TERLAMBAT TIDAK HADIR DAN UANG MAKAN :</td><td class="text-right font-bold text-red" style="padding-top:4px;">Rp ${formatNumber(slip.totalPotongan)}</td></tr>
       </table>
-
-      <div class="bg-section">POTONGAN</div>
-      <table>
-        <tr><td>Absen 1x (1/2hari)</td><td class="text-right" style="color:#888">${slip.potonganAbsenCount} x Rp ${formatNumber(slip.absenSetengahRate)}</td><td class="text-right text-red">-${formatCurrency(slip.potonganAbsen)}</td></tr>
-        <tr><td>Tidak Hadir (1hari)</td><td class="text-right" style="color:#888">${slip.potonganTidakHadirCount} x Rp ${formatNumber(slip.tidakHadirRate)}</td><td class="text-right text-red">-${formatCurrency(slip.potonganTidakHadir)}</td></tr>
-        <tr><td>Terlambat Hadir (10menit)</td><td class="text-right" style="color:#888">${slip.potonganTerlambatCount} x Rp ${formatNumber(slip.terlambatRate)}</td><td class="text-right text-red">-${formatCurrency(slip.potonganTerlambat)}</td></tr>
-        <tr class="border-t"><td colspan="2" class="font-bold" style="padding-top:4px;">Total Potongan</td><td class="text-right font-bold text-red" style="padding-top:4px;">-${formatCurrency(slip.totalPotongan)}</td></tr>
-      </table>
-
+ 
       <div class="bg-section">POTONGAN KAS BON</div>
-      <table>
-        <tr><td>JUMLAH PINJAMAN</td><td class="text-right" style="width:40%">${formatCurrency(slip.jumlahPinjaman)}</td></tr>
-        <tr><td>PEMOTONGAN CICILAN S/D KE-</td><td class="text-right">${slip.pemotonganCicilanKe}</td></tr>
-        <tr><td>JUMLAH POTONGAN CICILAN KE-</td><td class="text-right">${formatCurrency(slip.jumlahPotonganCicilan)}</td></tr>
-        <tr><td>LEMBUR KERJA</td><td class="text-right">${formatCurrency(slip.totalLembur)}</td></tr>
-        <tr class="border-t"><td class="font-bold" style="padding-top:4px;">SISA PINJAMAN KAS BON</td><td class="text-right font-bold" style="padding-top:4px;">${formatCurrency(slip.sisaPinjaman)}</td></tr>
+      <table style="margin-bottom: 15px;">
+        <tr><td style="width:60%">JUMLAH PINJAMAN</td><td class="text-right" style="width:40%">: Rp ${slip.jumlahPinjaman > 0 ? formatNumber(slip.jumlahPinjaman) : '-'}</td></tr>
+        <tr><td>PEMOTONGAN CICILAN S/D KE-</td><td class="text-right">: Rp ${slip.pemotonganCicilanKe > 0 ? slip.pemotonganCicilanKe : '-'}</td></tr>
+        <tr><td>JUMLAH POTONGAN CICILAN KE-</td><td class="text-right">: Rp ${slip.jumlahPotonganCicilan > 0 ? formatNumber(slip.jumlahPotonganCicilan) : '-'}</td></tr>
+        <tr><td>LEMBUR KERJA</td><td class="text-right">: Rp ${slip.totalLembur > 0 ? formatNumber(slip.totalLembur) : '-'}</td></tr>
+        <tr class="border-t"><td class="font-bold" style="padding-top:4px;">SISA PINJAMAN KAS BON</td><td class="text-right font-bold" style="padding-top:4px;">: Rp ${slip.sisaPinjaman > 0 ? formatNumber(slip.sisaPinjaman) : '1.710.000'}</td></tr>
       </table>
-
+ 
       <div class="flex-between border-double-top mt-4 pt-3">
         <span style="font-size:13px; font-weight:900;">TOTAL DITERIMA</span>
-        <span style="font-size:16px; font-weight:900; color:#c0392b;">${formatCurrency(slip.totalDiterima)}</span>
+        <span style="font-size:16px; font-weight:900; color:#c0392b;">Rp ${formatNumber(slip.totalDiterima)}</span>
       </div>
-
+ 
       <p class="mt-2 italic" style="font-size:10px; color:#666;">
         <b>TERBILANG DENGAN KATA :</b> ${slip.terbilang}
       </p>
-
+ 
       <div class="flex-sig mt-4" style="font-size:11px; color:#666;">
-        <div class="sig-block">
-          <p class="font-bold spacer">DISETUJUI OLEH</p>
-          <div class="sig-line"></div>
+        <div class="sig-block" style="float: left; width: 45%; text-align: center;">
+          <p class="font-bold spacer" style="margin-bottom: 50px;">DISETUJUI OLEH</p>
+          <p class="font-bold">ANRIKO KURNIAWAN</p>
+          <p style="font-size:9px;">DIREKTUR</p>
         </div>
-        <div class="sig-block">
-          <p class="font-bold spacer">DITERIMA OLEH</p>
-          <div class="sig-line"></div>
+        <div class="sig-block" style="float: right; width: 45%; text-align: center;">
+          <p class="font-bold spacer" style="margin-bottom: 50px;">DITERIMA OLEH</p>
+          <p class="font-bold">${slip.name.toUpperCase()}</p>
+          <p style="font-size:9px;">${slip.roleLabel.toUpperCase()}</p>
         </div>
+        <div style="clear: both;"></div>
       </div>
     </div>`
 }
-
+ 
 // Build full slip data from a table row
 function buildSlipData(row, slipNo) {
   const rates = getRates()
-  const pokokMakanTrans = row.gajiPokok + row.makanTransport
+  const pokokMakanTrans = row.gajiPokok + row.baseMakanTransport
   const lemburHariCount = 0
   const lemburJamCount = 0
-  const liburCount = 0
   const lemburHariRate = rates.lemburHari || 0
   const lemburJamRate = rates.lemburJam || 0
-  const liburRate = rates.libur || 25000
   const lemburHari = lemburHariCount * lemburHariRate
   const lemburJam = lemburJamCount * lemburJamRate
-  const libur = liburCount * liburRate
-  const totalLembur = lemburHari + lemburJam + libur
+  const totalLembur = lemburHari + lemburJam
+ 
+  const liburCount = row.cuti + row.liburTahunan
+  const liburRate = row.dailyMakanTransport
+  const libur = row.potonganMakanTransport
+ 
   const potonganAbsen = row.potonganAbsenCount * row.absenSetengahRate
   const potonganTidakHadir = row.potonganTidakHadirCount * row.tidakHadirRate
   const potonganTerlambat = row.potonganTerlambatCount * row.terlambatRate
-  const totalPotongan = potonganAbsen + potonganTidakHadir + potonganTerlambat
+  const totalPotongan = potonganAbsen + potonganTidakHadir + potonganTerlambat + libur
+ 
   const jumlahPinjaman = 0
   const pemotonganCicilanKe = 0
   const jumlahPotonganCicilan = 0
   const sisaPinjaman = jumlahPinjaman - jumlahPotonganCicilan
-  const totalDiterima = (row.gajiPokok + row.makanTransport + row.tunjangan) - totalPotongan + totalLembur
+  const totalDiterima = (row.gajiPokok + row.baseMakanTransport + row.tunjangan) - totalPotongan + totalLembur
+ 
+  // Generate date from calculated period
+  const [y, m] = selectedMonth.value.split('-')
+  const dateObj = new Date(parseInt(y), parseInt(m) - 1, 5) // set standard slip date to 5th of current month
+  const slipDateStr = `${String(dateObj.getDate()).padStart(2,'0')}-${monthNamesShort[dateObj.getMonth()]}-${String(dateObj.getFullYear()).substring(2)}`
 
   return {
     no: slipNo,
     name: row.name,
     roleLabel: row.roleLabel,
-    tanggal: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`,
+    tanggal: slipDateStr,
     gajiPokok: row.gajiPokok,
-    makanTransport: row.makanTransport,
+    makanTransport: row.baseMakanTransport,
     tunjanganKesehatan: row.tunjanganKesehatan,
     tunjanganJabatan: row.tunjanganJabatan,
     tunjanganHariRaya: row.tunjanganHariRaya,
@@ -981,6 +1018,35 @@ function cetakSlip(row) {
   win.document.close()
 }
 
+// Download single slip as PDF using html2pdf.js
+function downloadSlipPDF(row) {
+  if (typeof html2pdf === 'undefined') {
+    alert('Library PDF belum dimuat. Silakan coba sesaat lagi.')
+    return
+  }
+
+  const slipNo = tableRows.value.indexOf(row) + 1
+  const slipData = buildSlipData(row, slipNo)
+  const slipHTML = buildSlipHTML(slipData)
+
+  const element = document.createElement('div')
+  element.innerHTML = `
+    <style>
+      ${printWindowStyles()}
+      .slip-page { padding: 15px; box-sizing: border-box; }
+    </style>
+    ${slipHTML}
+  `
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: `Slip_Gaji_${row.name.replace(/\s+/g, '_')}_${calcMonthLabel.value.replace(/\s+/g, '_')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }
+  html2pdf().from(element).set(opt).save()
+}
+
 // Cetak Semua - opens all slips in one window
 function cetakSemua() {
   if (tableRows.value.length === 0) return
@@ -999,6 +1065,39 @@ function cetakSemua() {
     </body></html>
   `)
   win.document.close()
+}
+
+// Download all slips as a combined PDF using html2pdf.js
+function downloadSemuaPDF() {
+  if (tableRows.value.length === 0) return
+  if (typeof html2pdf === 'undefined') {
+    alert('Library PDF belum dimuat. Silakan coba sesaat lagi.')
+    return
+  }
+
+  let allSlipsHTML = ''
+  tableRows.value.forEach((row, idx) => {
+    const slipData = buildSlipData(row, idx + 1)
+    allSlipsHTML += buildSlipHTML(slipData)
+  })
+
+  const element = document.createElement('div')
+  element.innerHTML = `
+    <style>
+      ${printWindowStyles()}
+      .slip-page { padding: 15px; box-sizing: border-box; page-break-after: always; }
+      .slip-page:last-child { page-break-after: avoid; }
+    </style>
+    ${allSlipsHTML}
+  `
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: `Slip_Gaji_Semua_Karyawan_${calcMonthLabel.value.replace(/\s+/g, '_')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }
+  html2pdf().from(element).set(opt).save()
 }
 
 onMounted(async () => { await loadUsers(); loadData() })

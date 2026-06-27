@@ -545,7 +545,7 @@ onMounted(async () => {
 async function fetchEmployees() {
   try {
     const list = await api.get('/api/users')
-    employeesList.value = list.filter(u => u.role === 'staff')
+    employeesList.value = list
   } catch (err) {
     console.error('Failed to load employee list:', err)
   }

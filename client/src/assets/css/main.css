@@ -93,3 +93,7 @@ body {
     display: none !important;
   }
 }
+
+/* Scrollbar hide untuk tab container */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

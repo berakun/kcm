@@ -8,7 +8,7 @@
       <!-- Top Left Logo Link -->
       <div class="absolute top-6 left-6 flex items-center gap-2">
         <router-link to="/" class="w-[60px] h-[60px] rounded-full bg-white flex items-center justify-center shadow-md hover:scale-105 transition-transform overflow-hidden">
-          <img src="/logo-transparent.png" alt="KCM Logo" class="w-15 h-15 rounded-lg object-contain shadow-md">
+          <img src="/logo-transparent.png" alt="KCM Interior Studio — Logo" class="w-15 h-15 rounded-lg object-contain shadow-md">
         </router-link>
       </div>
       
@@ -37,7 +37,7 @@
           <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 block ml-1">Username</label>
           <div class="relative flex items-center border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 px-4 py-3 input-focus transition-all">
             <span class="material-symbols-outlined text-gray-400 mr-3">person</span>
-            <input v-model="username" class="w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-gray-800 dark:text-white outline-none" placeholder="Masukkan username" required type="text"/>
+            <input autocomplete="username" v-model="username" class="w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-gray-800 dark:text-white outline-none" placeholder="Masukkan username" required type="text"/>
           </div>
         </div>
         
@@ -46,7 +46,7 @@
           <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 block ml-1">Password</label>
           <div class="relative flex items-center border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 px-4 py-3 input-focus transition-all">
             <span class="material-symbols-outlined text-gray-400 mr-3">lock</span>
-            <input :type="showPassword ? 'text' : 'password'" v-model="password" class="w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-gray-800 dark:text-white outline-none" placeholder="••••••••" required/>
+            <input autocomplete="current-password" :type="showPassword ? 'text' : 'password'" v-model="password" class="w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-gray-800 dark:text-white outline-none" placeholder="••••••••" required/>
             <button class="ml-2 flex items-center text-gray-400 hover:text-red-700 transition-colors" @click="showPassword = !showPassword" type="button">
               <span class="material-symbols-outlined text-lg">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
             </button>
@@ -59,7 +59,8 @@
             <input v-model="rememberMe" class="h-4.5 w-4.5 cursor-pointer rounded border border-gray-300 text-red-800 focus:ring-0 transition-all" type="checkbox"/>
             <span class="ml-2 text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-750 transition-colors">Ingat saya</span>
           </label>
-          <a class="text-xs font-semibold text-red-800 hover:text-red-900 transition-colors" href="#" @click.prevent="forgotPassword">Lupa password?</a>
+          <!-- TODO: Implement password reset flow -->
+          <!-- <a class="text-xs font-semibold text-red-800 hover:text-red-900 transition-colors" href="#" @click.prevent="forgotPassword">Lupa password?</a> -->
         </div>
         
         <!-- Main Action Button -->

@@ -121,55 +121,86 @@ async function forceSeed() {
     await db.query("INSERT INTO office_settings (setting_key, setting_value) VALUES ('office_longitude', '110.3988')");
     await db.query("INSERT INTO office_settings (setting_key, setting_value) VALUES ('office_radius', '20')");
 
-    // 3. Seed Rina Wati's Attendance for June 2026 based on Screenshot
-    console.log('[Force Seeder] Seeding Rina Wati attendance (June 2026)...');
-    const ssData = {
-      2: { in: '09:20', out: '17:08' },
-      3: { in: '08:18', out: '15:44' },
-      5: { in: '08:27', out: '17:38' },
-      6: { in: '08:31', out: '15:08' },
-      7: { in: '08:18', out: '17:34' },
-      8: { in: '08:30', out: '16:22' },
-      9: { in: '08:43', out: '17:33' },
-      10: { in: '08:27', out: '16:05' },
-      12: { in: '09:04', out: '17:06' },
-      13: { in: '08:57', out: '17:18' },
-      14: { in: '08:46', out: '17:34' },
-      16: { in: '07:57', out: '17:21' },
-      18: { in: '08:47', out: '20:34' },
-      19: { in: '08:55', out: '15:39' },
-      20: { in: '09:30', out: '16:55' },
-      21: { in: '08:55', out: '17:49' },
-      22: { in: '08:45', out: '15:29' },
-      24: { in: '08:54', out: '18:28' },
-      25: { in: '08:56', out: '16:49' },
-      26: { in: '09:02', out: '16:33' },
-      27: { in: '08:32', out: '16:01' },
-      28: { in: '08:46', out: null } // Clock-in only
-    };
-
-    for (let day = 1; day <= 30; day++) {
-      const dateStr = `2026-06-${day.toString().padStart(2, '0')}`;
-      if (ssData[day]) {
-        const inTime = ssData[day].in;
-        const outTime = ssData[day].out;
-
-        const checkIn = `${dateStr} ${inTime}:00`;
-        const checkOut = outTime ? `${dateStr} ${outTime}:00` : null;
-        const duration = outTime ? getDuration(checkIn, checkOut) : null;
-
-        // Generate realistic GPS and distance
-        const lat = -7.7326 + (Math.random() * 0.0002 - 0.0001);
-        const lng = 110.3988 + (Math.random() * 0.0002 - 0.0001);
-        const distance = Math.round((Math.random() * 10 + 2) * 10) / 10; // 2m - 12m from office
-
-        await db.query(
-          'INSERT INTO attendance (user_id, check_in, check_out, latitude, longitude, distance, status, ip_address, date, duration) VALUES (?, ?, ?, ?, ?, ?, "di_kantor", "192.168.1.10", ?, ?)',
-          [rinaId, checkIn, checkOut, lat, lng, distance, dateStr, duration]
-        );
+    // 3. Seed Attendance for 5 Users (May & June 2026)
+    console.log('[Force Seeder] Seeding attendance for 5 users (May & June 2026)...');
+    
+    // We target the 5 original users
+    const targetStaffs = userIds.filter(u => ['super_admin', 'admin', 'staff'].includes(u.role)).slice(0, 5);
+    
+    const attendancePeriods = [
+      {
+        year: 2026,
+        month: 5,
+        days: [1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30]
+      },
+      {
+        year: 2026,
+        month: 6,
+        days: [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 29, 30]
+      }
+    ];
+    
+    for (const period of attendancePeriods) {
+      for (const user of targetStaffs) {
+        for (let idx = 0; idx < period.days.length; idx++) {
+          const day = period.days[idx];
+          const dateStr = `${period.year}-${period.month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+          
+          // 2 days absent: no records inserted
+          if (idx === 8 || idx === 18) {
+            continue;
+          }
+          
+          // 1 day cuti, 1 day izin
+          if (idx === 4) {
+            // cuti
+            await db.query(
+              'INSERT INTO attendance (user_id, check_in, check_out, latitude, longitude, distance, status, ip_address, date, duration, type) VALUES (?, null, null, null, null, null, "di_kantor", "192.168.1.10", ?, null, "cuti")',
+              [user.id, dateStr]
+            );
+            continue;
+          }
+          if (idx === 14) {
+            // izin
+            await db.query(
+              'INSERT INTO attendance (user_id, check_in, check_out, latitude, longitude, distance, status, ip_address, date, duration, type) VALUES (?, null, null, null, null, null, "di_kantor", "192.168.1.10", ?, null, "izin")',
+              [user.id, dateStr]
+            );
+            continue;
+          }
+          
+          // Present days
+          // On time: <= 08:00 (approx 35%) -> idx % 3 === 0
+          let inHour = 8;
+          let inMin = 0;
+          if (idx % 3 === 0) {
+            inHour = 7;
+            inMin = 50 + (idx % 10); // 07:50 - 07:59
+          } else {
+            inHour = 8;
+            inMin = 1 + (idx % 19); // 08:01 - 08:19
+          }
+          
+          const inTime = `${inHour.toString().padStart(2, '0')}:${inMin.toString().padStart(2, '0')}`;
+          const outTime = '17:05';
+          
+          const checkIn = `${dateStr} ${inTime}:00`;
+          const checkOut = `${dateStr} ${outTime}:00`;
+          const duration = getDuration(checkIn, checkOut);
+          
+          // Generate realistic GPS and distance
+          const lat = -7.7326 + (Math.random() * 0.0002 - 0.0001);
+          const lng = 110.3988 + (Math.random() * 0.0002 - 0.0001);
+          const distance = Math.round((3 + Math.random() * 15) * 10) / 10; // 3m - 18m from office
+          
+          await db.query(
+            'INSERT INTO attendance (user_id, check_in, check_out, latitude, longitude, distance, status, ip_address, date, duration, type) VALUES (?, ?, ?, ?, ?, ?, "di_kantor", "192.168.1.10", ?, ?, "check_in")',
+            [user.id, checkIn, checkOut, lat, lng, distance, dateStr, duration]
+          );
+        }
       }
     }
-    console.log('[Force Seeder] Seeded Rina Wati attendance logs successfully.');
+    console.log('[Force Seeder] Seeded attendance logs for 5 users successfully.');
 
     // 4. Seed 10 Dummy Portfolios
     console.log('[Force Seeder] Seeding 10 portfolios...');

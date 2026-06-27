@@ -46,8 +46,11 @@
         <button 
           v-if="!attendanceStatus.has_checked_in" 
           @click="performCheckIn" 
-          :disabled="gpsLoading"
-          class="w-32 h-32 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200 disabled:opacity-50"
+          :disabled="!canCheckIn"
+          class="w-32 h-32 rounded-full flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200"
+          :class="canCheckIn 
+            ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer' 
+            : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
         >
           <span class="material-symbols-outlined text-[48px] font-bold">login</span>
           <span class="text-[11px] font-bold tracking-wider">CHECK IN</span>
@@ -70,6 +73,14 @@
 
         <p class="text-[10px] text-gray-400">
           {{ gpsLoading ? 'Sedang mengakses lokasi GPS...' : 'Pastikan Anda berada dalam radius kantor.' }}
+        </p>
+
+        <!-- Tambahkan error message di bawah tombol -->
+        <p v-if="!gpsGranted" class="text-red-500 text-[11px] font-medium text-center mt-2 max-w-xs">
+          ⚠️ Aktifkan GPS untuk melakukan absensi. Akses lokasi diperlukan.
+        </p>
+        <p v-else-if="distance !== null && distance > 20" class="text-red-500 text-[11px] font-medium text-center mt-2 max-w-xs">
+          🚫 Anda berada di luar radius kantor. Jarak Anda: {{ Math.round(distance) }} meter dari kantor.
         </p>
       </div>
 
@@ -255,6 +266,18 @@ const attendanceStatus = ref({
 
 const historyList = ref([])
 const gpsResult = ref(null)
+
+const gpsGranted = computed(() => {
+  return gpsResult.value !== null && gpsResult.value.status !== 'error'
+})
+
+const distance = computed(() => {
+  return (gpsResult.value && gpsResult.value.distance !== undefined) ? gpsResult.value.distance : null
+})
+
+const canCheckIn = computed(() => {
+  return gpsGranted.value && distance.value !== null && distance.value <= 20
+})
 
 // Forms
 const showCashbonModal = ref(false)

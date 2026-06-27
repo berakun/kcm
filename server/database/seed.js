@@ -164,59 +164,104 @@ async function seed() {
     }
     console.log('[Seeder] Seeded 5 cashbon records.');
 
-    // 7. Seed Attendance (2 months: May + June 2025)
-    const attendances = [];
-    // Generate attendance for May and June 2025, weekdays only
-    const staffIds = [3, 4, 5]; // budi, dewi, eko
-    const staffNames = { 3: 'Budi', 4: 'Dewi', 5: 'Eko' };
+    // 7. Seed Attendance for 5 Users (May & June 2026)
+    console.log('[Seeder] Seeding attendance for 5 users (May & June 2026)...');
     
-    for (let month = 5; month <= 6; month++) {
-      const daysInMonth = new Date(2025, month, 0).getDate();
-      for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(2025, month - 1, day);
-        const dow = date.getDay(); // 0=Sun, 6=Sat
-        if (dow === 0) continue; // Skip Sunday
-        
-        const dateStr = `2025-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        
-        for (const uid of staffIds) {
-          // Random: 85% chance present, 15% absent
-          const present = Math.random() > 0.15;
-          if (!present) {
-            // Absent record
-            attendances.push([uid, null, null, null, null, null, 'luar_kantor', null, dateStr]);
-          } else {
-            // Random check-in between 07:50 and 08:20
-            const inMin = Math.floor(Math.random() * 30) + 470; // 470 = 7:50, 500 = 8:20
-            const inH = Math.floor(inMin / 60);
-            const inM = inMin % 60;
-            const checkIn = `${dateStr} ${String(inH).padStart(2,'0')}:${String(inM).padStart(2,'0')}:00`;
-            
-            // Random check-out between 16:50 and 17:15
-            const outMin = Math.floor(Math.random() * 25) + 1010; // 1010=16:50, 1035=17:15
-            const outH = Math.floor(outMin / 60);
-            const outM = outMin % 60;
-            const checkOut = `${dateStr} ${String(outH).padStart(2,'0')}:${String(outM).padStart(2,'0')}:00`;
-            
-            const lat = -7.7326 + (Math.random() * 0.001 - 0.0005);
-            const lng = 110.3988 + (Math.random() * 0.001 - 0.0005);
-            const dist = Math.round((Math.random() * 15 + 1) * 10) / 10;
-            const status = dist <= 20 ? 'di_kantor' : 'luar_kantor';
-            const ip = `192.168.100.${50 + uid}`;
-            
-            attendances.push([uid, checkIn, checkOut, lat, lng, dist, status, ip, dateStr]);
+    // We get the 5 original users (id 1 to 5)
+    const targetUsers = [1, 2, 3, 4, 5];
+    
+    const attendancePeriods = [
+      {
+        year: 2026,
+        month: 5,
+        days: [1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30]
+      },
+      {
+        year: 2026,
+        month: 6,
+        days: [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 29, 30]
+      }
+    ];
+
+    // Helper to calculate duration for seed
+    function getDurationForSeed(inStr, outStr) {
+      if (!outStr) return null;
+      const diffMs = new Date(outStr) - new Date(inStr);
+      const diffHrs = Math.floor(diffMs / 3600000);
+      const diffMins = Math.floor((diffMs % 3600000) / 60000);
+      const diffSecs = Math.floor((diffMs % 60000) / 1000);
+      return [
+        diffHrs.toString().padStart(2, '0'),
+        diffMins.toString().padStart(2, '0'),
+        diffSecs.toString().padStart(2, '0')
+      ].join(':');
+    }
+
+    let attendanceCount = 0;
+    for (const period of attendancePeriods) {
+      for (const userId of targetUsers) {
+        for (let idx = 0; idx < period.days.length; idx++) {
+          const day = period.days[idx];
+          const dateStr = `${period.year}-${period.month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+          
+          // 2 days absent: no records inserted
+          if (idx === 8 || idx === 18) {
+            continue;
           }
+          
+          // 1 day cuti, 1 day izin
+          if (idx === 4) {
+            // cuti
+            await db.query(
+              'INSERT INTO attendance (user_id, check_in, check_out, latitude, longitude, distance, status, ip_address, date, duration, type) VALUES (?, null, null, null, null, null, "di_kantor", "192.168.1.10", ?, null, "cuti")',
+              [userId, dateStr]
+            );
+            attendanceCount++;
+            continue;
+          }
+          if (idx === 14) {
+            // izin
+            await db.query(
+              'INSERT INTO attendance (user_id, check_in, check_out, latitude, longitude, distance, status, ip_address, date, duration, type) VALUES (?, null, null, null, null, null, "di_kantor", "192.168.1.10", ?, null, "izin")',
+              [userId, dateStr]
+            );
+            attendanceCount++;
+            continue;
+          }
+          
+          // Present days
+          // On time: <= 08:00 (approx 35%) -> idx % 3 === 0
+          let inHour = 8;
+          let inMin = 0;
+          if (idx % 3 === 0) {
+            inHour = 7;
+            inMin = 50 + (idx % 10); // 07:50 - 07:59
+          } else {
+            inHour = 8;
+            inMin = 1 + (idx % 19); // 08:01 - 08:19
+          }
+          
+          const inTime = `${inHour.toString().padStart(2, '0')}:${inMin.toString().padStart(2, '0')}`;
+          const outTime = '17:05';
+          
+          const checkIn = `${dateStr} ${inTime}:00`;
+          const checkOut = `${dateStr} ${outTime}:00`;
+          const duration = getDurationForSeed(checkIn, checkOut);
+          
+          // Generate realistic GPS and distance
+          const lat = -7.7326 + (Math.random() * 0.0002 - 0.0001);
+          const lng = 110.3988 + (Math.random() * 0.0002 - 0.0001);
+          const distance = Math.round((3 + Math.random() * 15) * 10) / 10; // 3m - 18m from office
+          
+          await db.query(
+            'INSERT INTO attendance (user_id, check_in, check_out, latitude, longitude, distance, status, ip_address, date, duration, type) VALUES (?, ?, ?, ?, ?, ?, "di_kantor", "192.168.1.10", ?, ?, "check_in")',
+            [userId, checkIn, checkOut, lat, lng, distance, dateStr, duration]
+          );
+          attendanceCount++;
         }
       }
     }
-
-    for (const a of attendances) {
-      await db.query(
-        'INSERT INTO attendance (user_id, check_in, check_out, latitude, longitude, distance, status, ip_address, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        a
-      );
-    }
-    console.log(`[Seeder] Seeded ${attendances.length} attendance records (2 months).`);
+    console.log(`[Seeder] Seeded ${attendanceCount} attendance records for May & June 2026.`);
 
     // 8. Seed Financial Reports
     const financials = [
