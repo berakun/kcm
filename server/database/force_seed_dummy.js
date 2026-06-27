@@ -17,6 +17,48 @@ function getDuration(inStr, outStr) {
 
 async function forceSeed() {
   try {
+    console.log('[Force Seeder] Creating tables if they do not exist...');
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS purchase_orders (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        po_number VARCHAR(50) UNIQUE NOT NULL,
+        to_supplier VARCHAR(200),
+        date DATE,
+        phone VARCHAR(20),
+        attn VARCHAR(100),
+        rab_id INT,
+        items JSON,
+        projects TEXT,
+        material_ref TEXT,
+        total DECIMAL(15,2) DEFAULT 0,
+        ppn DECIMAL(15,2) DEFAULT 0,
+        grand_total DECIMAL(15,2) DEFAULT 0,
+        in_words TEXT,
+        note TEXT,
+        deliver_by DATE,
+        deliver_to VARCHAR(200),
+        ordered_by VARCHAR(100),
+        purchasing VARCHAR(100),
+        prepared_by VARCHAR(100),
+        approved_by VARCHAR(100) DEFAULT 'Anriko K, ST.',
+        term_of_payment VARCHAR(200) DEFAULT 'Anriko K, ST.',
+        status VARCHAR(20) DEFAULT 'draft',
+        created_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS ongkos_tukang (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        rab_id INT NOT NULL,
+        date DATE NOT NULL,
+        description VARCHAR(255) NOT NULL,
+        amount DECIMAL(15,2) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('[Force Seeder] Starting database truncation...');
     await db.query('SET FOREIGN_KEY_CHECKS = 0');
     await db.query('TRUNCATE TABLE financial_reports');

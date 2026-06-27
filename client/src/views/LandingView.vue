@@ -5,7 +5,7 @@
     <header class="fixed top-0 left-0 w-full z-50 glass-effect border-b border-gray-200/40 dark:border-gray-800/40 transition-all duration-300">
       <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <router-link to="/" class="flex items-center space-x-2">
-          <img src="/logo-transparent.png" alt="KCM Logo" class="w-10 h-10 rounded-lg object-contain shadow-sm">
+          <img src="/logo-transparent.png" alt="KCM Logo" class="w-10 h-10 rounded-lg object-contain shadow-sm" loading="lazy">
           <span class="font-bold text-lg text-red-950 dark:text-white">Kurnia Cipta Mandiri</span>
         </router-link>
         
@@ -17,21 +17,42 @@
           <a href="#contact" class="text-gray-600 hover:text-red-800 dark:text-gray-300 dark:hover:text-red-400">Hubungi Kami</a>
         </nav>
 
-        <div class="flex items-center space-x-4">
-          <button @click="appStore.toggleTheme" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors">
+        <div class="flex items-center space-x-2 md:space-x-4">
+          <button @click="appStore.toggleTheme" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors" min-h-11>
             <span class="material-symbols-outlined align-middle">
               {{ appStore.darkMode ? 'light_mode' : 'dark_mode' }}
             </span>
           </button>
-          <router-link to="/login" class="bg-red-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-red-950 transition-all">
+          <router-link to="/login" class="bg-red-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-red-950 transition-all min-h-11 flex items-center">
             Masuk Akun
           </router-link>
+          <!-- Hamburger Button -->
+          <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors" min-h-11>
+            <span class="material-symbols-outlined align-middle">
+              {{ mobileMenuOpen ? 'close' : 'menu' }}
+            </span>
+          </button>
         </div>
+      </div>
+      
+      <!-- Mobile menu drawer -->
+      <div v-if="mobileMenuOpen" class="md:hidden fixed inset-0 top-20 z-40 bg-black/40 backdrop-blur-sm" @click="mobileMenuOpen = false"></div>
+      <div 
+        :class="[
+          'md:hidden fixed top-20 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6 z-50 shadow-xl flex flex-col gap-4 font-semibold transition-all duration-300',
+          mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
+        ]"
+      >
+        <a href="#hero" @click="mobileMenuOpen = false" class="text-gray-600 dark:text-gray-300 hover:text-red-800 py-2 border-b border-gray-100 dark:border-gray-800 text-sm">Beranda</a>
+        <a href="#about" @click="mobileMenuOpen = false" class="text-gray-600 dark:text-gray-300 hover:text-red-800 py-2 border-b border-gray-100 dark:border-gray-800 text-sm">Tentang Kami</a>
+        <a href="#services" @click="mobileMenuOpen = false" class="text-gray-600 dark:text-gray-300 hover:text-red-800 py-2 border-b border-gray-100 dark:border-gray-800 text-sm">Layanan</a>
+        <router-link to="/portfolio" @click="mobileMenuOpen = false" class="text-gray-600 dark:text-gray-300 hover:text-red-800 py-2 border-b border-gray-100 dark:border-gray-800 text-sm">Portfolio</router-link>
+        <a href="#contact" @click="mobileMenuOpen = false" class="text-gray-600 dark:text-gray-300 hover:text-red-800 py-2 text-sm">Hubungi Kami</a>
       </div>
     </header>
 
     <!-- Hero Section -->
-    <section id="hero" class="relative pt-32 pb-24 md:py-48 min-h-screen flex items-center bg-cover bg-center hero-bg">
+    <section id="hero" class="relative pt-20 pb-12 md:pt-48 md:pb-32 min-h-screen flex items-center bg-cover bg-center hero-bg">
       <div class="max-w-7xl mx-auto px-6 w-full text-white grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div class="space-y-6">
           <span class="inline-block px-3 py-1.5 rounded-full bg-amber-600/20 text-amber-500 border border-amber-600/30 text-xs font-bold uppercase tracking-wider">Interior & Renovasi</span>
@@ -74,7 +95,7 @@
     </section>
 
     <!-- About Section -->
-    <section id="about" class="py-24">
+    <section id="about" class="py-12 md:py-24">
       <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div class="relative group">
           <div class="absolute -top-6 -left-6 w-32 h-32 bg-amber-500/10 rounded-full -z-10 animate-pulse"></div>
@@ -107,7 +128,7 @@
     </section>
 
     <!-- Services Section -->
-    <section id="services" class="py-24 bg-gray-50 dark:bg-gray-800/40 border-y border-gray-100 dark:border-gray-800/60">
+    <section id="services" class="py-12 md:py-24 bg-gray-50 dark:bg-gray-800/40 border-y border-gray-100 dark:border-gray-800/60">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center max-w-2xl mx-auto mb-16">
           <span class="text-red-800 dark:text-red-500 font-bold text-xs uppercase tracking-widest block">Layanan Kami</span>
@@ -128,7 +149,7 @@
     </section>
 
     <!-- Portfolio Section Preview -->
-    <section class="py-24">
+    <section class="py-12 md:py-24">
       <div class="max-w-7xl mx-auto px-6">
         <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
           <div class="max-w-xl">
@@ -145,7 +166,7 @@
             <img :alt="p.title" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" :src="getImageUrl(p.images?.[0])"/>
             <span v-if="p.images?.length > 1" class="absolute top-3 right-3 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full z-10">📷 {{ p.images.length }}</span>
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <span class="text-amber-500 text-[10px] font-bold uppercase tracking-wider">{{ p.category }}</span>
+              <span class="text-amber-500 text-[10px] font-bold uppercase tracking-wider">{{ formatCategory(p.category) }}</span>
               <h4 class="text-white font-bold text-base mt-1">{{ p.title }}</h4>
             </div>
           </div>
@@ -154,7 +175,7 @@
     </section>
 
     <!-- Keunggulan Section -->
-    <section class="py-24 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-100 dark:border-gray-800/60">
+    <section class="py-12 md:py-24 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-100 dark:border-gray-800/60">
       <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16">
           <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Mengapa Memilih KCM?</h2>
@@ -187,7 +208,7 @@
     </section>
 
     <!-- FAQ Accordion -->
-    <section class="py-24">
+    <section class="py-12 md:py-24">
       <div class="max-w-4xl mx-auto px-6">
         <div class="text-center mb-16">
           <span class="text-red-800 dark:text-red-500 font-bold text-xs uppercase tracking-widest block">Pertanyaan Umum</span>
@@ -210,7 +231,7 @@
     </section>
 
     <!-- Contact & Maps Section -->
-    <section id="contact" class="py-24 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-100 dark:border-gray-800/60">
+    <section id="contact" class="py-12 md:py-24 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-100 dark:border-gray-800/60">
       <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16">
         <div class="space-y-8">
           <div>
@@ -301,7 +322,7 @@
             <li><a href="#about" class="hover:underline">Tentang Kami</a></li>
             <li><router-link to="/portfolio" class="hover:underline">Katalog Portfolio</router-link></li>
             <li><a href="#contact" class="hover:underline">Kontak & Lokasi</a></li>
-            <li><router-link to="/login" class="hover:underline">Karyawan Area</router-link></li>
+            <li><router-link to="/login" class="hover:underline">Login Karyawan</router-link></li>
           </ul>
         </div>
         <div>
@@ -338,6 +359,12 @@ const contactPhone = ref('')
 const contactMessage = ref('')
 const activeFaq = ref(null)
 const portfolioProjects = ref([])
+const mobileMenuOpen = ref(false)
+
+function formatCategory(cat) {
+  if (!cat) return ''
+  return cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
 
 onMounted(async () => {
   try {

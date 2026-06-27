@@ -5,7 +5,7 @@
     <header class="fixed top-0 left-0 w-full z-50 glass-effect border-b border-gray-200/40 dark:border-gray-800/40">
       <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <router-link to="/" class="flex items-center space-x-2">
-          <img src="/logo-transparent.png" alt="KCM Logo" class="w-10 h-10 rounded-lg object-contain shadow-sm">
+          <img src="/logo-transparent.png" alt="KCM Logo" class="w-10 h-10 rounded-lg object-contain shadow-sm" loading="lazy">
           <span class="font-bold text-lg text-red-950 dark:text-white">Kurnia Cipta Mandiri</span>
         </router-link>
         
@@ -17,16 +17,37 @@
           <router-link to="/#contact" class="text-gray-600 hover:text-red-800 dark:text-gray-300 dark:hover:text-red-400">Hubungi Kami</router-link>
         </nav>
 
-        <div class="flex items-center space-x-4">
-          <button @click="appStore.toggleTheme" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors">
+        <div class="flex items-center space-x-2 md:space-x-4">
+          <button @click="appStore.toggleTheme" class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors" min-h-11>
             <span class="material-symbols-outlined align-middle">
               {{ appStore.darkMode ? 'light_mode' : 'dark_mode' }}
             </span>
           </button>
-          <router-link to="/login" class="bg-red-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-red-950 transition-all">
+          <router-link to="/login" class="bg-red-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:bg-red-950 transition-all min-h-11 flex items-center">
             Masuk Akun
           </router-link>
+          <!-- Hamburger Button -->
+          <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-150 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors" min-h-11>
+            <span class="material-symbols-outlined align-middle">
+              {{ mobileMenuOpen ? 'close' : 'menu' }}
+            </span>
+          </button>
         </div>
+      </div>
+
+      <!-- Mobile menu drawer -->
+      <div v-if="mobileMenuOpen" class="md:hidden fixed inset-0 top-20 z-40 bg-black/40 backdrop-blur-sm" @click="mobileMenuOpen = false"></div>
+      <div 
+        :class="[
+          'md:hidden fixed top-20 left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6 z-50 shadow-xl flex flex-col gap-4 font-semibold transition-all duration-300',
+          mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
+        ]"
+      >
+        <router-link to="/" @click="mobileMenuOpen = false" class="text-gray-600 dark:text-gray-300 hover:text-red-800 py-2 border-b border-gray-100 dark:border-gray-800 text-sm">Beranda</router-link>
+        <router-link to="/#about" @click="mobileMenuOpen = false" class="text-gray-600 dark:text-gray-300 hover:text-red-800 py-2 border-b border-gray-100 dark:border-gray-800 text-sm">Tentang Kami</router-link>
+        <router-link to="/#services" @click="mobileMenuOpen = false" class="text-gray-600 dark:text-gray-300 hover:text-red-800 py-2 border-b border-gray-100 dark:border-gray-800 text-sm">Layanan</router-link>
+        <router-link to="/portfolio" @click="mobileMenuOpen = false" class="text-red-800 py-2 border-b border-gray-100 dark:border-gray-800 text-sm">Portfolio</router-link>
+        <router-link to="/#contact" @click="mobileMenuOpen = false" class="text-gray-600 dark:text-gray-300 hover:text-red-800 py-2 text-sm">Hubungi Kami</router-link>
       </div>
     </header>
 
@@ -64,7 +85,7 @@
             class="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-150 dark:border-gray-700 transition-all duration-300 hover:-translate-y-2 hover:shadow-lg cursor-pointer"
           >
             <div class="aspect-[4/3] overflow-hidden bg-gray-50 dark:bg-gray-900 relative">
-              <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" :src="getImageUrl(p.images?.[0])" :alt="p.title"/>
+              <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" :src="getImageUrl(p.images?.[0])" :alt="p.title" loading="lazy"/>
               <span v-if="p.images?.length > 1" class="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">📷 {{ p.images.length }}</span>
               <div class="absolute inset-0 bg-red-950/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                 <span class="bg-white text-red-955 font-bold px-6 py-2.5 rounded-full text-xs shadow-md">Lihat Proyek</span>
@@ -72,7 +93,7 @@
             </div>
             <div class="p-6">
               <div class="flex justify-between items-start mb-2.5">
-                <span class="text-[10px] uppercase tracking-widest font-extrabold text-amber-600 bg-amber-500/10 px-2 py-1 rounded-md capitalize">{{ p.category }}</span>
+                <span class="text-[10px] uppercase tracking-widest font-extrabold text-amber-600 bg-amber-500/10 px-2 py-1 rounded-md capitalize">{{ formatCategory(p.category) }}</span>
                 <span class="flex items-center text-gray-400 text-[10px]">
                   <span class="material-symbols-outlined text-xs mr-1">location_on</span>{{ p.location }}
                 </span>
@@ -111,7 +132,7 @@
         <div class="md:w-2/5 p-8 flex flex-col justify-between overflow-y-auto">
           <div class="space-y-6">
             <div>
-              <span class="text-[10px] uppercase tracking-wider font-extrabold text-amber-600 bg-amber-500/10 px-2.5 py-1.5 rounded-lg capitalize">{{ selectedProject.category }}</span>
+              <span class="text-[10px] uppercase tracking-wider font-extrabold text-amber-600 bg-amber-500/10 px-2.5 py-1.5 rounded-lg capitalize">{{ formatCategory(selectedProject.category) }}</span>
               <h3 class="text-xl font-bold mt-3 text-gray-900 dark:text-white leading-tight">{{ selectedProject.title }}</h3>
             </div>
             
@@ -175,6 +196,12 @@ const portfolios = ref([])
 const showModal = ref(false)
 const selectedProject = ref(null)
 const currentImageIndex = ref(0)
+const mobileMenuOpen = ref(false)
+
+function formatCategory(cat) {
+  if (!cat) return ''
+  return cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
 
 const categories = [
   { label: 'Semua', value: 'Semua' },

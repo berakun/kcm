@@ -385,17 +385,27 @@ const showSettings = ref(false)
 const now = new Date()
 const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']
 
-// Generate months list for last year and current year
+// Generate months list for last year and current year (up to current month for the current year)
 const monthsList = []
 const curYear = now.getFullYear()
-for (const yr of [curYear - 1, curYear]) {
-  monthNames.forEach((m, i) => {
-    monthsList.push({
-      value: `${yr}-${String(i+1).padStart(2,'0')}`,
-      label: `${m} ${yr}`
-    })
+const curMonthIdx = now.getMonth() // 0-indexed
+
+// Last Year (All 12 months)
+monthNames.forEach((m, i) => {
+  monthsList.push({
+    value: `${curYear - 1}-${String(i+1).padStart(2,'0')}`,
+    label: `${m} ${curYear - 1}`
+  })
+})
+
+// Current Year (Only up to current month)
+for (let i = 0; i <= curMonthIdx; i++) {
+  monthsList.push({
+    value: `${curYear}-${String(i+1).padStart(2,'0')}`,
+    label: `${monthNames[i]} ${curYear}`
   })
 }
+
 const months = ref(monthsList)
 const selectedMonth = ref(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`)
 const users = ref([])

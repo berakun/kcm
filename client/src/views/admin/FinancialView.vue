@@ -15,15 +15,11 @@
         <div class="bg-white dark:bg-gray-850 p-4 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div class="flex items-center gap-3 flex-wrap">
             <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Filter Periode:</span>
-            <input v-model="filterDateStart" type="date" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500" title="Tanggal Mulai"/>
-            <span class="text-gray-400 text-xs">→</span>
-            <input v-model="filterDateEnd" type="date" class="bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2.5 px-3 text-xs focus:ring-2 focus:ring-red-500" title="Tanggal Selesai"/>
-            <button @click="applyDateFilter" class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2">
-              <span class="material-symbols-outlined text-sm">filter_alt</span> Terapkan
-            </button>
-            <button @click="resetDateFilter" class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2">
-              <span class="material-symbols-outlined text-sm">restart_alt</span> Reset
-            </button>
+            <DateRangePicker 
+              v-model:startDate="filterDateStart" 
+              v-model:endDate="filterDateEnd" 
+              align="left"
+            />
           </div>
         </div>
 
@@ -159,6 +155,7 @@
 import { ref, computed, onMounted } from 'vue'
 import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
+import DateRangePicker from '../../components/ui/DateRangePicker.vue'
 import { useApi } from '../../composables/useApi'
 import { formatCurrency, formatDate } from '../../utils/helpers'
 import Chart from 'chart.js/auto'

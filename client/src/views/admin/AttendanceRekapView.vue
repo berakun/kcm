@@ -30,16 +30,17 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-2 border-t border-gray-100 dark:border-gray-800">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-gray-100 dark:border-gray-800">
             <div>
-              <label class="text-[10px] font-bold text-gray-400 block mb-1">Tanggal Mulai</label>
-              <input v-model="filter.start" type="date" @change="loadRekap" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs px-3 py-2 focus:border-red-500 focus:ring-0"/>
+              <label class="text-[10px] font-bold text-gray-400 block mb-1">Periode Absensi</label>
+              <DateRangePicker 
+                v-model:startDate="filter.start" 
+                v-model:endDate="filter.end" 
+                @change="loadRekap"
+                align="left"
+              />
             </div>
-            <div>
-              <label class="text-[10px] font-bold text-gray-400 block mb-1">Tanggal Selesai</label>
-              <input v-model="filter.end" type="date" @change="loadRekap" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs px-3 py-2 focus:border-red-500 focus:ring-0"/>
-            </div>
-            <div v-if="user?.role === 'super_admin'">
+            <div v-if="user?.role === 'super_admin' || user?.role === 'admin'">
               <label class="text-[10px] font-bold text-gray-400 block mb-1">Karyawan</label>
               <select v-model="filter.user_id" @change="loadRekap" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs px-3 py-2 focus:border-red-500 focus:ring-0">
                 <option value="">-- Semua Karyawan --</option>
@@ -47,7 +48,7 @@
               </select>
             </div>
             <div class="flex items-end">
-              <button @click="resetFilters" class="w-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-750 text-gray-600 dark:text-gray-300 font-bold py-2 rounded-xl text-xs transition-colors">
+              <button @click="resetFilters" class="w-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-750 text-gray-600 dark:text-gray-300 font-bold py-2.5 rounded-xl text-xs transition-colors min-h-[44px]">
                 Reset Filter
               </button>
             </div>
@@ -248,9 +249,9 @@
         <!-- TAB 2: TABLE VIEW -->
         <div v-if="activeTab === 'table'" class="space-y-6">
           <div class="bg-white dark:bg-gray-850 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 overflow-hidden">
-            <!-- Search field inside table -->
-            <div class="p-4 border-b border-gray-100 dark:border-gray-800">
-              <div class="relative w-full sm:w-80">
+            <!-- Search & Filters inside table -->
+            <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center">
+              <div class="relative w-full sm:w-64">
                 <input 
                   v-model="tableSearchQuery" 
                   class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2 pl-9 pr-4 text-xs focus:ring-2 focus:ring-red-500" 
@@ -258,6 +259,28 @@
                   type="text"
                 />
                 <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-base">search</span>
+              </div>
+              
+              <!-- Filter Karyawan -->
+              <div class="w-full sm:w-48">
+                <select 
+                  v-model="tableKaryawanFilter" 
+                  class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2 px-3 text-xs focus:ring-2 focus:ring-red-500 text-gray-700 dark:text-gray-300"
+                >
+                  <option value="">Semua Karyawan</option>
+                  <option v-for="emp in employeesInLogs" :key="emp.id" :value="emp.id">{{ emp.name }}</option>
+                </select>
+              </div>
+
+              <!-- Filter Departemen -->
+              <div class="w-full sm:w-48">
+                <select 
+                  v-model="tableDeptFilter" 
+                  class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl py-2 px-3 text-xs focus:ring-2 focus:ring-red-500 text-gray-700 dark:text-gray-300"
+                >
+                  <option value="">Semua Departemen</option>
+                  <option v-for="dept in departmentsList" :key="dept" :value="dept">{{ dept }}</option>
+                </select>
               </div>
             </div>
 
@@ -267,13 +290,13 @@
                   <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
                     <th class="py-4 px-6">Tanggal</th>
                     <th class="py-4 px-6">Karyawan</th>
-                    <th class="py-4 px-6">Departemen</th>
+                    <th class="py-4 px-6 hidden md:table-cell">Departemen</th>
                     <th class="py-4 px-6 text-center font-semibold">Check-In</th>
                     <th class="py-4 px-6 text-center font-semibold">Check-Out</th>
-                    <th class="py-4 px-6 text-center">Durasi</th>
-                    <th class="py-4 px-6 text-center">Jarak</th>
-                    <th class="py-4 px-6 text-center">Status</th>
-                    <th class="py-4 px-6 text-center">Tipe</th>
+                    <th class="py-4 px-6 text-center hidden lg:table-cell">Durasi</th>
+                    <th class="py-4 px-6 text-center hidden lg:table-cell">Jarak</th>
+                    <th class="py-4 px-6 text-center hidden sm:table-cell">Status</th>
+                    <th class="py-4 px-6 text-center hidden sm:table-cell">Tipe</th>
                     <th class="py-4 px-6 text-center" v-if="user?.role === 'super_admin'">Aksi</th>
                   </tr>
                 </thead>
@@ -289,15 +312,15 @@
                       </div>
                       <span>{{ log.employee_name }}</span>
                     </td>
-                    <td class="py-4 px-6 text-gray-500 dark:text-gray-400">{{ log.department || 'Staff' }}</td>
+                    <td class="py-4 px-6 text-gray-500 dark:text-gray-400 hidden md:table-cell">{{ log.department || 'Staff' }}</td>
                     <td class="py-4 px-6 text-center text-emerald-600 font-semibold font-mono">{{ log.check_in ? formatTime(log.check_in) : '--:--' }}</td>
                     <td class="py-4 px-6 text-center text-red-750 font-semibold font-mono">{{ log.check_out ? formatTime(log.check_out) : '--:--' }}</td>
-                    <td class="py-4 px-6 text-center font-mono font-medium">{{ log.duration || '--:--:--' }}</td>
-                    <td class="py-4 px-6 text-center font-mono font-medium">
+                    <td class="py-4 px-6 text-center font-mono font-medium hidden lg:table-cell">{{ log.duration || '--:--:--' }}</td>
+                    <td class="py-4 px-6 text-center font-mono font-medium hidden lg:table-cell">
                       <span v-if="log.distance !== null">{{ log.distance }} meter</span>
                       <span v-else class="text-gray-400">-</span>
                     </td>
-                    <td class="py-4 px-6 text-center">
+                    <td class="py-4 px-6 text-center hidden sm:table-cell">
                       <span :class="[
                         log.status === 'di_kantor' ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20' : 'text-amber-700 bg-amber-50 dark:bg-amber-955/20',
                         'px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase'
@@ -305,7 +328,7 @@
                         {{ log.status === 'di_kantor' ? 'Di Kantor' : 'Remote' }}
                       </span>
                     </td>
-                    <td class="py-4 px-6 text-center">
+                    <td class="py-4 px-6 text-center hidden sm:table-cell">
                       <span :class="typeBadgeClass(log.type)" class="px-2 py-1 text-[10px] font-bold rounded-lg uppercase">
                         {{ typeLabel(log.type) }}
                       </span>
@@ -466,6 +489,7 @@ import { ref, onMounted, computed } from 'vue'
 import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
 import BaseModal from '../../components/ui/BaseModal.vue'
+import DateRangePicker from '../../components/ui/DateRangePicker.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useApi } from '../../composables/useApi'
 import { formatDate, formatTime } from '../../utils/helpers'
@@ -530,10 +554,6 @@ async function fetchEmployees() {
 async function loadRekap() {
   try {
     const params = { ...filter.value }
-    // Admin only sees own attendance
-    if (user.value?.role === 'admin') {
-      params.user_id = user.value.id
-    }
     const logs = await api.get('/api/attendance/rekap', params)
     // Server may return { records: [...] } or flat array
     rekapLogs.value = Array.isArray(logs) ? logs : (logs.records || [])
@@ -569,9 +589,12 @@ const summary = computed(() => {
 function isLate(checkInStr) {
   if (!checkInStr) return false
   try {
-    const timePart = checkInStr.includes(' ') ? checkInStr.split(' ')[1] : checkInStr
-    const hour = parseInt(timePart.split(':')[0])
-    const minute = parseInt(timePart.split(':')[1])
+    const timePart = checkInStr.includes('T') 
+      ? checkInStr.split('T')[1] 
+      : (checkInStr.includes(' ') ? checkInStr.split(' ')[1] : checkInStr)
+    const parts = timePart.split(':')
+    const hour = parseInt(parts[0], 10)
+    const minute = parseInt(parts[1], 10)
     return hour > 8 || (hour === 8 && minute > 0)
   } catch (e) {
     return false
@@ -662,12 +685,35 @@ function formatDateString(str) {
   }
 }
 
+// Dynamic Table filters
+const tableKaryawanFilter = ref('')
+const tableDeptFilter = ref('')
+
+const departmentsList = computed(() => {
+  const depts = new Set()
+  rekapLogs.value.forEach(l => {
+    if (l.department) depts.add(l.department)
+  })
+  return Array.from(depts)
+})
+
+const employeesInLogs = computed(() => {
+  const emps = new Map()
+  rekapLogs.value.forEach(l => {
+    if (l.user_id) emps.set(l.user_id, l.employee_name)
+  })
+  return Array.from(emps.entries()).map(([id, name]) => ({ id, name }))
+})
+
 // Table search and filters
 const filteredTableLogs = computed(() => {
   const q = tableSearchQuery.value.toLowerCase().trim()
-  return rekapLogs.value.filter(l => 
-    l.employee_name.toLowerCase().includes(q)
-  )
+  return rekapLogs.value.filter(l => {
+    const matchSearch = l.employee_name.toLowerCase().includes(q)
+    const matchKaryawan = tableKaryawanFilter.value === '' || l.user_id === parseInt(tableKaryawanFilter.value)
+    const matchDept = tableDeptFilter.value === '' || l.department === tableDeptFilter.value
+    return matchSearch && matchKaryawan && matchDept
+  })
 })
 
 const tableTotalPages = computed(() => {

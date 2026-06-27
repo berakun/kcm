@@ -49,13 +49,11 @@
                   <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-lg">search</span>
                 </div>
                 <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
-                  <input type="date" v-model="filterDateStart" class="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs dark:bg-gray-900 dark:text-white" placeholder="Dari tanggal"/>
-                  <span class="text-gray-400 text-xs">→</span>
-                  <input type="date" v-model="filterDateEnd" class="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs dark:bg-gray-900 dark:text-white" placeholder="Sampai tanggal"/>
-                  <button v-if="filterDateStart || filterDateEnd" @click="filterDateStart=''; filterDateEnd=''" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-200">
-                    <span class="material-symbols-outlined text-xs align-middle">restart_alt</span> Reset
-                  </button>
+                  <DateRangePicker 
+                    v-model:startDate="filterDateStart" 
+                    v-model:endDate="filterDateEnd" 
+                    align="left"
+                  />
                 </div>
               </div>
               
@@ -103,8 +101,8 @@
                     <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
                       <th class="py-4 px-6">Kode RAB</th>
                       <th class="py-4 px-6">Nama Proyek</th>
-                      <th class="py-4 px-6">Klien</th>
-                      <th class="py-4 px-6">Tanggal</th>
+                      <th class="py-4 px-6 hidden sm:table-cell">Klien</th>
+                      <th class="py-4 px-6 hidden md:table-cell">Tanggal</th>
                       <th class="py-4 px-6">Total Anggaran</th>
                       <th class="py-4 px-6 text-center">Status</th>
                       <th class="py-4 px-6 text-center">Aksi</th>
@@ -117,8 +115,8 @@
                     <tr v-else v-for="r in filteredRabs" :key="r.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                       <td class="py-4 px-6 font-bold text-red-800 dark:text-red-500">{{ r.code }}</td>
                       <td class="py-4 px-6 font-semibold text-gray-900 dark:text-white">{{ r.project_name }}</td>
-                      <td class="py-4 px-6 text-gray-500 dark:text-gray-400">{{ r.client || '-' }}</td>
-                      <td class="py-4 px-6 text-gray-400">{{ formatDate(r.date) }}</td>
+                      <td class="py-4 px-6 text-gray-500 dark:text-gray-400 hidden sm:table-cell">{{ r.client || '-' }}</td>
+                      <td class="py-4 px-6 text-gray-400 hidden md:table-cell">{{ formatDate(r.date) }}</td>
                       <td class="py-4 px-6 font-semibold text-gray-900 dark:text-white">{{ formatCurrency(r.total_budget) }}</td>
                       <td class="py-4 px-6 text-center">
                         <span :class="[
@@ -674,6 +672,7 @@ import { ref, onMounted, computed } from 'vue'
 import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
 import BaseModal from '../../components/ui/BaseModal.vue'
+import DateRangePicker from '../../components/ui/DateRangePicker.vue'
 import { useApi } from '../../composables/useApi'
 import { useAppStore } from '../../stores/app'
 import { formatCurrency, formatDate } from '../../utils/helpers'

@@ -308,9 +308,24 @@ exports.updateAttendance = async (req, res) => {
   const { id } = req.params;
   const { check_in, check_out, status, distance } = req.body;
   try {
+    let duration = null;
+    if (check_in && check_out) {
+      const diffMs = new Date(check_out) - new Date(check_in);
+      if (!isNaN(diffMs) && diffMs >= 0) {
+        const diffHrs = Math.floor(diffMs / 3600000);
+        const diffMins = Math.floor((diffMs % 3600000) / 60000);
+        const diffSecs = Math.floor((diffMs % 60000) / 1000);
+        duration = [
+          diffHrs.toString().padStart(2, '0'),
+          diffMins.toString().padStart(2, '0'),
+          diffSecs.toString().padStart(2, '0')
+        ].join(':');
+      }
+    }
+
     await db.query(
-      'UPDATE attendance SET check_in = ?, check_out = ?, status = ?, distance = ? WHERE id = ?',
-      [check_in || null, check_out || null, status || 'di_kantor', distance || null, id]
+      'UPDATE attendance SET check_in = ?, check_out = ?, status = ?, distance = ?, duration = ? WHERE id = ?',
+      [check_in || null, check_out || null, status || 'di_kantor', distance || null, duration, id]
     );
     return res.json({ success: true, message: 'Data presensi berhasil diperbarui.' });
   } catch (err) {

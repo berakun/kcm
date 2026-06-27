@@ -147,7 +147,7 @@ const allLinks = [
     label: 'Rekap Absensi',
     icon: 'assignment',
     url: '/admin/attendance/rekap',
-    roles: ['admin']
+    roles: ['admin', 'super_admin']
   },
   {
     id: 'salary',

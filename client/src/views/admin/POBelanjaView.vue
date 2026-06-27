@@ -42,13 +42,11 @@
                 <option v-for="r in rabList" :key="r.id" :value="r.id">[{{ r.code }}] {{ r.project_name }}</option>
               </select>
               <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-gray-400 text-sm">calendar_today</span>
-                <input type="date" v-model="filters.date_from" class="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs dark:bg-gray-900 dark:text-white" placeholder="Dari tanggal"/>
-                <span class="text-gray-400 text-xs">→</span>
-                <input type="date" v-model="filters.date_to" class="border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs dark:bg-gray-900 dark:text-white" placeholder="Sampai tanggal"/>
-                <button v-if="filters.date_from || filters.date_to" @click="resetFilters" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-200">
-                  <span class="material-symbols-outlined text-xs align-middle">restart_alt</span> Reset
-                </button>
+                <DateRangePicker 
+                  v-model:startDate="filters.date_from" 
+                  v-model:endDate="filters.date_to" 
+                  @change="loadPOList"
+                />
               </div>
             </div>
           </div>
@@ -60,11 +58,11 @@
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
-                  <th class="py-4 px-6 w-12 text-center">No</th>
+                  <th class="py-4 px-6 w-12 text-center hidden sm:table-cell">No</th>
                   <th class="py-4 px-6">No PO</th>
                   <th class="py-4 px-6">Supplier</th>
-                  <th class="py-4 px-6">Tanggal</th>
-                  <th class="py-4 px-6">Project</th>
+                  <th class="py-4 px-6 hidden sm:table-cell">Tanggal</th>
+                  <th class="py-4 px-6 hidden md:table-cell">Project</th>
                   <th class="py-4 px-6 text-right">Total</th>
                   <th class="py-4 px-6 text-center">Status</th>
                   <th class="py-4 px-6 text-center">Aksi</th>
@@ -75,11 +73,11 @@
                   <td colspan="8" class="py-12 text-center text-gray-400">Belum ada PO tersimpan.</td>
                 </tr>
                 <tr v-else v-for="(po, idx) in paginatedPoList" :key="po.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-                  <td class="py-4 px-6 text-center text-gray-400">{{ (currentPage - 1) * perPage + idx + 1 }}</td>
+                  <td class="py-4 px-6 text-center text-gray-400 hidden sm:table-cell">{{ (currentPage - 1) * perPage + idx + 1 }}</td>
                   <td class="py-4 px-6 font-bold text-red-800 dark:text-red-500">{{ po.po_number }}</td>
                   <td class="py-4 px-6 font-semibold text-gray-900 dark:text-white">{{ po.to_supplier || '-' }}</td>
-                  <td class="py-4 px-6 text-gray-400">{{ formatDateID(po.date) }}</td>
-                  <td class="py-4 px-6 text-gray-500 dark:text-gray-400 max-w-[180px] truncate">{{ po.projects || '-' }}</td>
+                  <td class="py-4 px-6 text-gray-400 hidden sm:table-cell">{{ formatDateID(po.date) }}</td>
+                  <td class="py-4 px-6 text-gray-500 dark:text-gray-400 max-w-[180px] truncate hidden md:table-cell">{{ po.projects || '-' }}</td>
                   <td class="py-4 px-6 text-right font-mono font-semibold text-gray-900 dark:text-white">{{ formatCurrency(po.grand_total) }}</td>
                   <td class="py-4 px-6 text-center">
                     <span :class="statusBadgeClass(po.status)" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">{{ po.status || 'draft' }}</span>
@@ -237,6 +235,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
 import PoFormModal from '../../components/rab/PoFormModal.vue'
+import DateRangePicker from '../../components/ui/DateRangePicker.vue'
 import { useApi } from '../../composables/useApi'
 import { useAppStore } from '../../stores/app'
 import { formatCurrency, formatDate } from '../../utils/helpers'

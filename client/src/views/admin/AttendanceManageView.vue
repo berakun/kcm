@@ -11,15 +11,15 @@
       <!-- Content Body -->
       <div class="p-8 flex-grow space-y-6 overflow-y-auto max-h-[calc(100vh-80px)]">
         
-        <!-- Controls & Datepicker -->
+        <!-- Controls & Date Range Picker -->
         <div class="bg-white dark:bg-gray-850 p-4 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div class="flex items-center space-x-3 w-full sm:w-auto">
-            <span class="text-xs font-bold text-gray-400 uppercase whitespace-nowrap">Pilih Tanggal:</span>
-            <input 
-              v-model="selectedDate" 
-              type="date"
+            <span class="text-xs font-bold text-gray-400 uppercase whitespace-nowrap">Periode Absensi:</span>
+            <DateRangePicker 
+              v-model:startDate="filterDateStart" 
+              v-model:endDate="filterDateEnd" 
               @change="fetchDailyLogs"
-              class="rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs px-4 py-2 focus:border-red-500 focus:ring-0"
+              align="left"
             />
           </div>
         </div>
@@ -63,6 +63,7 @@
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
+                  <th class="py-4 px-6">Tanggal</th>
                   <th class="py-4 px-6">Nama Karyawan</th>
                   <th class="py-4 px-6">Departemen</th>
                   <th class="py-4 px-6 text-center font-semibold">Check-In</th>
@@ -76,16 +77,17 @@
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
                 <tr v-if="logsList.length === 0">
-                  <td colspan="9" class="py-12 text-center text-gray-400">Tidak ada rekap absensi pada tanggal ini.</td>
+                  <td colspan="10" class="py-12 text-center text-gray-400">Tidak ada rekap absensi pada periode ini.</td>
                 </tr>
                 <tr v-else v-for="log in logsList" :key="log.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                  <td class="py-4 px-6 font-medium text-gray-550 dark:text-gray-400 font-mono">{{ formatDate(log.date) }}</td>
                   <td class="py-4 px-6 font-semibold text-gray-900 dark:text-white flex items-center space-x-3">
                     <div class="w-8 h-8 rounded-full bg-red-900/10 text-red-800 font-bold flex items-center justify-center text-sm uppercase">
                       {{ log.employee_name.charAt(0) }}
                     </div>
                     <span>{{ log.employee_name }}</span>
                   </td>
-                  <td class="py-4 px-6 font-medium text-gray-500 dark:text-gray-400">{{ log.department || 'Staff' }}</td>
+                  <td class="py-4 px-6 font-medium text-gray-550 dark:text-gray-400">{{ log.department || 'Staff' }}</td>
                   <td class="py-4 px-6 text-center text-emerald-600 font-semibold font-mono">{{ log.check_in ? formatTime(log.check_in) : '--:--' }}</td>
                   <td class="py-4 px-6 text-center text-red-750 font-semibold font-mono">{{ log.check_out ? formatTime(log.check_out) : '--:--' }}</td>
                   <td class="py-4 px-6 text-center font-mono font-medium">{{ log.duration || '--:--:--' }}</td>
@@ -122,13 +124,16 @@
 import { ref, onMounted } from 'vue'
 import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
+import DateRangePicker from '../../components/ui/DateRangePicker.vue'
 import { useApi } from '../../composables/useApi'
 import { useAppStore } from '../../stores/app'
+import { formatDate } from '../../utils/helpers'
 
 const api = useApi()
 const appStore = useAppStore()
 
-const selectedDate = ref(new Date().toISOString().split('T')[0])
+const filterDateStart = ref(new Date().toISOString().split('T')[0])
+const filterDateEnd = ref(new Date().toISOString().split('T')[0])
 const logsList = ref([])
 
 onMounted(async () => {
@@ -137,7 +142,14 @@ onMounted(async () => {
 
 async function fetchDailyLogs() {
   try {
-    const data = await api.get('/api/attendance/admin-list', { date: selectedDate.value })
+    const params = {}
+    if (filterDateStart.value && filterDateEnd.value) {
+      params.from = filterDateStart.value
+      params.to = filterDateEnd.value
+    } else {
+      params.date = new Date().toISOString().split('T')[0]
+    }
+    const data = await api.get('/api/attendance/admin-list', params)
     logsList.value = data
   } catch (err) {
     appStore.showAlert('Gagal mengambil data logs presensi.', 'error')
