@@ -699,15 +699,16 @@ async function loadData() {
       // Hari hadir lengkap: check_in + check_out
       const hadirLengkap = normalLogs.filter(l => l.check_in && l.check_out).length
 
-      // Absen setengah: check_in tapi tidak check_out
-      const absenSetengah = normalLogs.filter(l => l.check_in && !l.check_out).length
+      // Absen setengah: check_in tapi tidak check_out (dianggap alpa/tidak hadir 1x sesuai request user)
+      const absenSetengah = 0
+      const incompleteDaysCount = normalLogs.filter(l => l.check_in && !l.check_out).length
 
       // Hari dengan any record (including izin/cuti/libur — these are NOT counted as absent)
       const daysWithAnyRecord = new Set(logs.map(l => l.date)).size
 
-      // Tidak hadir = totalWorkingDays - days with any attendance record
+      // Tidak hadir = totalWorkingDays - days with any attendance record + incomplete check-ins count
       // Hanya potong jika staf memiliki riwayat absen di bulan tersebut, mencegah penalty penuh bulan kosong
-      const tidakHadir = logs.length > 0 ? Math.max(0, totalWorkingDays - daysWithAnyRecord) : 0
+      const tidakHadir = logs.length > 0 ? Math.max(0, (totalWorkingDays - daysWithAnyRecord) + incompleteDaysCount) : 0
 
       // Terlambat: check_in after 08:15 (hour > 8 or hour === 8 && minute > 15)
       const terlambat = normalLogs.filter(l => {

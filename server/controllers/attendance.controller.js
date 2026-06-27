@@ -1,5 +1,12 @@
-// server/controllers/attendance.controller.js
 const db = require('../config/db');
+
+function getJakartaDate() {
+  const tzOffset = 7 * 60; // Jakarta is UTC+7
+  const d = new Date();
+  const localTime = d.getTime() + (d.getTimezoneOffset() + tzOffset) * 60000;
+  const localDate = new Date(localTime);
+  return localDate.toISOString().split('T')[0];
+}
 
 // Haversine formula
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -60,7 +67,7 @@ exports.saveSettings = async (req, res) => {
 };
 
 exports.getStatus = async (req, res) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getJakartaDate();
   try {
     const [rows] = await db.query(
       'SELECT * FROM attendance WHERE user_id = ? AND date = ? ORDER BY id DESC LIMIT 1',
@@ -138,7 +145,7 @@ exports.checkIn = async (req, res) => {
     return res.status(400).json({ error: 'Koordinat GPS wajib disediakan.' });
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getJakartaDate();
   const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
   try {
@@ -201,7 +208,7 @@ exports.checkOut = async (req, res) => {
     return res.status(400).json({ error: 'Koordinat GPS wajib disediakan.' });
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getJakartaDate();
   const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
   try {
@@ -291,7 +298,7 @@ exports.getRekap = async (req, res) => {
 
     // Flag incomplete days (check_in without check_out, excluding izin/cuti/libur_tahunan)
     const incomplete = rows.filter(r => r.check_in && !r.check_out && (!r.type || r.type === 'check_in'));
-    const totalDeduction = incomplete.length * 40000;
+    const totalDeduction = incomplete.length * 80000; // Counted as absent 1x (Rp 80.000)
 
     return res.json({
       records: rows,

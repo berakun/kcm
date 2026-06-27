@@ -10,7 +10,12 @@ export function formatCurrency(value) {
 
 export function formatDate(dateStr, includeTime = false) {
   if (!dateStr) return '-'
-  const date = new Date(dateStr)
+  let standardized = dateStr
+  if (typeof standardized === 'string' && standardized.includes(' ') && !standardized.includes('T')) {
+    standardized = standardized.replace(' ', 'T')
+  }
+  const date = new Date(standardized)
+  if (isNaN(date.getTime())) return '-'
   const tz = { timeZone: 'Asia/Jakarta' }
   if (includeTime) {
     return date.toLocaleString('id-ID', { ...tz, year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -21,8 +26,13 @@ export function formatDate(dateStr, includeTime = false) {
 export function formatTime(dateStr) {
   if (!dateStr) return '-'
   try {
-    const date = new Date(dateStr)
-    return date.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' }).split('.').slice(0, 2).join(':')
+    let standardized = dateStr
+    if (typeof standardized === 'string' && standardized.includes(' ') && !standardized.includes('T')) {
+      standardized = standardized.replace(' ', 'T')
+    }
+    const date = new Date(standardized)
+    if (isNaN(date.getTime())) return '-'
+    return date.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':')
   } catch (e) {
     return '-'
   }

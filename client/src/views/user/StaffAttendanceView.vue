@@ -60,7 +60,7 @@
           v-else-if="!attendanceStatus.has_checked_out" 
           @click="performCheckOut" 
           :disabled="gpsLoading"
-          class="w-32 h-32 rounded-full bg-red-750 hover:bg-red-855 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200 disabled:opacity-50"
+          class="w-32 h-32 rounded-full bg-red-600 hover:bg-red-700 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200 disabled:opacity-50"
         >
           <span class="material-symbols-outlined text-[48px] font-bold">logout</span>
           <span class="text-[11px] font-bold tracking-wider">CHECK OUT</span>
