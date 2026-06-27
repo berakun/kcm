@@ -94,7 +94,7 @@
             <button 
               v-if="!todayStatus.checkedIn"
               @click="checkIn" 
-              :disabled="loadingAbsen || gpsLoading"
+              :disabled="loadingAbsen || gpsLoading || !canCheckIn"
               class="w-28 h-28 rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200"
             >
               <span class="material-symbols-outlined text-[40px]">login</span>
@@ -103,7 +103,7 @@
             <button 
               v-else-if="!todayStatus.checkedOut"
               @click="checkOut"
-              :disabled="loadingAbsen || gpsLoading"
+              :disabled="loadingAbsen || gpsLoading || !canCheckIn"
               class="w-28 h-28 rounded-full bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200"
             >
               <span class="material-symbols-outlined text-[40px]">logout</span>
@@ -113,10 +113,18 @@
               <span class="material-symbols-outlined text-[40px]">check_circle</span>
               <span class="text-[9px] font-bold tracking-wider uppercase mt-1">SELESAI</span>
             </div>
-
-            <p class="text-[10px] text-gray-400">
-              {{ gpsLoading ? 'Sedang mengakses lokasi GPS...' : 'Pastikan Anda berada dalam radius kantor.' }}
+ 
+            <p class="text-[10px] text-gray-400" v-if="gpsLoading">
+              Sedang mengakses lokasi GPS...
             </p>
+            
+            <!-- Warnings / Error Texts if GPS disabled or outside office -->
+            <div v-if="!gpsLoading && !gpsGranted" class="w-full max-w-xs p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-xl text-center">
+              <span class="text-xs font-semibold text-amber-800 dark:text-amber-500 block">⚠️ Aktifkan GPS untuk melakukan absensi. Akses lokasi diperlukan.</span>
+            </div>
+            <div v-else-if="!gpsLoading && gpsResult?.status === 'luar_kantor'" class="w-full max-w-xs p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-center">
+              <span class="text-xs font-semibold text-red-800 dark:text-red-500 block">🚫 Anda berada di luar radius kantor. Jarak Anda: {{ distance }} meter dari kantor.</span>
+            </div>
           </div>
 
           <!-- GPS Geofence Status -->
@@ -269,6 +277,20 @@ const absenMsg = ref('')
 const absenError = ref(false)
 const absenWarning = ref(false)
 const gpsResult = ref(null)
+
+const gpsGranted = computed(() => {
+  return gpsResult.value && gpsResult.value.status !== 'error' && gpsResult.value.status !== 'loading'
+})
+
+const distance = computed(() => {
+  return gpsResult.value?.distance
+})
+
+const canCheckIn = computed(() => {
+  if (!gpsGranted.value) return false
+  if (gpsResult.value?.status !== 'di_kantor') return false
+  return true
+})
 
 function formatAttendanceDate(dateStr) {
   if (!dateStr) return ''
