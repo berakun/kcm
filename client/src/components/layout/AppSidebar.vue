@@ -14,7 +14,7 @@
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
-    <div>
+    <div class="flex-grow overflow-y-auto scrollbar-hide">
       <!-- Brand Logo Header -->
       <div class="flex items-center space-x-3 px-6 py-5 border-b border-red-900/60 bg-red-900/10">
         <img src="/logo-transparent.png" alt="KCM Logo" class="w-12 h-12 rounded-lg object-contain">
