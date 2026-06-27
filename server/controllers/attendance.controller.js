@@ -298,7 +298,7 @@ exports.getRekap = async (req, res) => {
 
     // Flag incomplete days (check_in without check_out, excluding izin/cuti/libur_tahunan)
     const incomplete = rows.filter(r => r.check_in && !r.check_out && (!r.type || r.type === 'check_in'));
-    const totalDeduction = incomplete.length * 80000; // Counted as absent 1x (Rp 80.000)
+    const totalDeduction = incomplete.length * 40000;
 
     return res.json({
       records: rows,
