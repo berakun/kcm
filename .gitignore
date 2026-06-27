@@ -15,7 +15,7 @@ node_modules/
 # (prompts, perubahan log, UI mockups)
 # ==============================
 docs/
-ui/
+/ui/
 revisi_qa/
 
 # ==============================
