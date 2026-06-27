@@ -32,7 +32,7 @@
               </div>
               <div>
                 <p class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">PERIODE GAJI</p>
-                <p class="text-xs font-black text-gray-850 dark:text-white mt-0.5">{{ monthLabel }}</p>
+                <p class="text-xs font-black text-gray-850 dark:text-white mt-0.5">{{ calcMonthLabel }}</p>
               </div>
             </div>
 
@@ -202,7 +202,7 @@
 
         <!-- Empty State -->
         <div v-if="!loading && tableRows.length === 0 && users.length > 0" class="text-center py-12 text-gray-400 text-sm">
-          Pilih bulan untuk melihat data gaji karyawan.
+          Tidak ada data gaji untuk periode {{ calcMonthLabel }} (absensi bulan tersebut kosong).
         </div>
 
       </div>
@@ -279,9 +279,15 @@
         </div>
 
         <div class="space-y-4 text-xs">
-          <div class="bg-red-50/50 dark:bg-red-950/10 border border-red-100 dark:border-red-900/30 rounded-xl p-4 flex justify-between items-center">
-            <span class="font-bold text-gray-700 dark:text-gray-300">TOTAL POTONGAN:</span>
-            <span class="text-sm font-mono font-black text-red-700 dark:text-red-500">-{{ formatCurrency(deductionsModal.totalPotongan) }}</span>
+          <div class="bg-red-50/50 dark:bg-red-950/10 border border-red-100 dark:border-red-900/30 rounded-xl p-4 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-gray-700 dark:text-gray-300">POTONGAN ABSENSI (TABEL):</span>
+              <span class="font-mono font-bold text-red-700 dark:text-red-500">-{{ formatCurrency(deductionsModal.totalPotongan) }}</span>
+            </div>
+            <div v-if="deductionsModal.potonganMakanTransport > 0" class="flex justify-between items-center border-t border-red-100 dark:border-red-900/20 pt-2">
+              <span class="font-bold text-gray-700 dark:text-gray-300">POTONGAN UANG MAKAN & TRANS:</span>
+              <span class="font-mono font-bold text-red-700 dark:text-red-500">-{{ formatCurrency(deductionsModal.potonganMakanTransport) }}</span>
+            </div>
           </div>
 
           <div class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -318,6 +324,30 @@
               <div class="text-right">
                 <p class="font-mono text-gray-700 dark:text-gray-300">{{ formatCurrency(deductionsModal.potonganTidakHadirCount * deductionsModal.tidakHadirRate) }}</p>
                 <p class="text-[9px] text-gray-400 mt-0.5">Rate: {{ formatCurrency(deductionsModal.tidakHadirRate) }}/hari</p>
+              </div>
+            </div>
+
+            <!-- 4. Penyesuaian Makan & Transport (Cuti) -->
+            <div v-if="deductionsModal.cuti > 0" class="py-3 flex justify-between items-start">
+              <div>
+                <p class="font-bold text-gray-800 dark:text-gray-200">Penyesuaian Makan & Transport (Cuti)</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">Jumlah: {{ deductionsModal.cuti }} hari cuti</p>
+              </div>
+              <div class="text-right">
+                <p class="font-mono text-red-650 dark:text-red-500">-{{ formatCurrency(deductionsModal.cuti * deductionsModal.dailyMakanTransport) }}</p>
+                <p class="text-[9px] text-gray-400 mt-0.5">Rate: {{ formatCurrency(deductionsModal.dailyMakanTransport) }}/hari</p>
+              </div>
+            </div>
+
+            <!-- 5. Penyesuaian Makan & Transport (Libur Tahunan) -->
+            <div v-if="deductionsModal.liburTahunan > 0" class="py-3 flex justify-between items-start">
+              <div>
+                <p class="font-bold text-gray-800 dark:text-gray-200">Penyesuaian Makan & Transport (Libur Tahunan)</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">Jumlah: {{ deductionsModal.liburTahunan }} hari libur tahunan</p>
+              </div>
+              <div class="text-right">
+                <p class="font-mono text-red-650 dark:text-red-500">-{{ formatCurrency(deductionsModal.liburTahunan * deductionsModal.dailyMakanTransport) }}</p>
+                <p class="text-[9px] text-gray-400 mt-0.5">Rate: {{ formatCurrency(deductionsModal.dailyMakanTransport) }}/hari</p>
               </div>
             </div>
           </div>
@@ -377,6 +407,19 @@ const isSuperAdmin = computed(() => currentUser.value?.role === 'super_admin')
 const monthLabel = computed(() => {
   const [y, m] = selectedMonth.value.split('-')
   return `${monthNames[parseInt(m)-1]} ${y}`
+})
+
+const calcMonthLabel = computed(() => {
+  const [y, m] = selectedMonth.value.split('-')
+  const year = parseInt(y)
+  const month = parseInt(m)
+  let calcYear = year
+  let calcMonth = month - 1
+  if (calcMonth === 0) {
+    calcMonth = 12
+    calcYear = year - 1
+  }
+  return `${monthNames[calcMonth-1]} ${calcYear}`
 })
 
 // Table totals
@@ -459,7 +502,11 @@ const deductionsModal = reactive({
   absenSetengahRate: 0,
   tidakHadirRate: 0,
   totalWorkingDays: 0,
-  hadirLengkap: 0
+  hadirLengkap: 0,
+  cuti: 0,
+  liburTahunan: 0,
+  dailyMakanTransport: 0,
+  potonganMakanTransport: 0
 })
 
 function openDeductionsModal(row) {
@@ -474,6 +521,13 @@ function openDeductionsModal(row) {
   deductionsModal.tidakHadirRate = row.tidakHadirRate
   deductionsModal.totalWorkingDays = row.totalWorkingDays
   deductionsModal.hadirLengkap = row.hadirLengkap
+  
+  deductionsModal.cuti = row.cuti || 0
+  deductionsModal.liburTahunan = row.liburTahunan || 0
+  const daily = row.totalWorkingDays > 0 ? (row.baseMakanTransport / row.totalWorkingDays) : 0
+  deductionsModal.dailyMakanTransport = Math.round(daily)
+  deductionsModal.potonganMakanTransport = Math.round((deductionsModal.cuti + deductionsModal.liburTahunan) * daily)
+  
   deductionsModal.show = true
 }
 
@@ -591,10 +645,20 @@ async function loadData() {
   const rates = getRates()
   const overrides = loadOverrides()
 
-  const [year, month] = selectedMonth.value.split('-')
-  const startDate = `${year}-${month}-01`
-  const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate()
-  const endDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`
+  const [yearStr, monthStr] = selectedMonth.value.split('-')
+  const year = parseInt(yearStr)
+  const month = parseInt(monthStr)
+
+  let calcYear = year
+  let calcMonth = month - 1
+  if (calcMonth === 0) {
+    calcMonth = 12
+    calcYear = year - 1
+  }
+
+  const startDate = `${calcYear}-${String(calcMonth).padStart(2, '0')}-01`
+  const lastDay = new Date(calcYear, calcMonth, 0).getDate()
+  const endDate = `${calcYear}-${String(calcMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
   const totalWorkingDays = countWorkingDays(startDate, endDate)
 
@@ -602,6 +666,11 @@ async function loadData() {
     try {
       const res = await api.get('/api/attendance/rekap', { user_id: u.id, start: startDate, end: endDate })
       const logs = res.records || res || [] // API returns { records: [...] }
+
+      // Skip users if they have no attendance logs in the calculated period
+      if (logs.length === 0) {
+        continue
+      }
 
       // Separate: normal attendance (check_in type or no type) vs izin/cuti/libur
       const normalLogs = logs.filter(l => !l.type || l.type === 'check_in')
@@ -632,7 +701,17 @@ async function loadData() {
       const config = getConfig(u.role)
       const ov = overrides[u.id] || {}
       const gajiPokok = ov.gajiPokok ?? config.gajiPokok ?? 0
-      const makanTransport = ov.makanTransport ?? config.makanTransport ?? 0
+      const baseMakanTransport = ov.makanTransport ?? config.makanTransport ?? 0
+      
+      const cuti = ov.cuti || 0
+      const liburTahunan = ov.liburTahunan || 0
+
+      // Calculate adjusted makan & transport:
+      // Deduct daily rate for cuti & liburTahunan
+      const dailyMakanTransport = totalWorkingDays > 0 ? (baseMakanTransport / totalWorkingDays) : 0
+      const potonganMakanTransport = (cuti + liburTahunan) * dailyMakanTransport
+      const makanTransport = Math.max(0, Math.round(baseMakanTransport - potonganMakanTransport))
+
       const tunjanganKesehatan = ov.tunjanganKesehatan ?? config.tunjanganKesehatan ?? 0
       const tunjanganJabatan = ov.tunjanganJabatan ?? config.tunjanganJabatan ?? 0
       const tunjanganHariRaya = ov.tunjanganHariRaya ?? config.tunjanganHariRaya ?? 0
@@ -656,6 +735,7 @@ async function loadData() {
         role: u.role,
         roleLabel: roleLabel(u.role),
         gajiPokok,
+        baseMakanTransport,
         makanTransport,
         tunjanganKesehatan,
         tunjanganJabatan,
@@ -670,8 +750,8 @@ async function loadData() {
         potongan: totalPotongan,
         totalPotongan,
         // Overrides
-        cuti: ov.cuti || 0,
-        liburTahunan: ov.liburTahunan || 0,
+        cuti,
+        liburTahunan,
         // Config rates for slip
         terlambatRate,
         tidakHadirRate,
@@ -692,7 +772,7 @@ function openEditModal(row) {
   editModal.name = row.name
   editModal.roleLabel = row.roleLabel
   editModal.gajiPokok = row.gajiPokok
-  editModal.makanTransport = row.makanTransport
+  editModal.makanTransport = row.baseMakanTransport
   editModal.cuti = row.cuti
   editModal.liburTahunan = row.liburTahunan
   editModal.tunjanganKesehatan = row.tunjanganKesehatan
@@ -725,7 +805,7 @@ function buildSlipHTML(slip) {
         <p style="font-size: 9px; color: #666; margin-top: 2px;">Jl. Kaliurang Km. 12, Griya Penen Asri Blok D-12, Harjobinangun, Pakem, Sleman, Yogyakarta</p>
         <p style="font-size: 9px; color: #666;">Telp. +62 85 100 80 5285 | Fax: +62 85 100 80 5285 | Email: kcm_production@ymail.com</p>
         <div style="margin-top: 10px; font-size: 13px; font-weight: 900; letter-spacing: 2px; display: inline-block; border-bottom: 1px solid #888; padding-bottom: 3px;">SLIP GAJI KARYAWAN</div>
-        <div style="font-size: 11px; font-weight: 700; color: #c0392b; margin-top: 4px;">BULAN ${monthLabel.value}</div>
+        <div style="font-size: 11px; font-weight: 700; color: #c0392b; margin-top: 4px;">BULAN ${calcMonthLabel.value}</div>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; margin-bottom: 12px; font-size: 11px;">
@@ -882,7 +962,7 @@ function cetakSlip(row) {
 
   const win = window.open('', '_blank')
   win.document.write(`
-    <html><head><title>Slip Gaji - ${row.name} - ${monthLabel.value}</title>
+    <html><head><title>Slip Gaji - ${row.name} - ${calcMonthLabel.value}</title>
     <style>${printWindowStyles()}</style></head><body>
     <button class="print-btn" onclick="window.print()">🖨️ Print</button>
     ${slipHTML}
@@ -902,7 +982,7 @@ function cetakSemua() {
 
   const win = window.open('', '_blank')
   win.document.write(`
-    <html><head><title>Slip Gaji - ${monthLabel.value}</title>
+    <html><head><title>Slip Gaji - ${calcMonthLabel.value}</title>
     <style>${printWindowStyles()}</style></head><body>
     <button class="print-btn" onclick="window.print()">🖨️ Print Semua</button>
     ${allSlipsHTML}
