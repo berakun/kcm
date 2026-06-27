@@ -17,6 +17,10 @@ configureSecurity(app);
 // Request Logging
 app.use(morgan('dev'));
 
+// Cookie Parser
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 // Body Parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

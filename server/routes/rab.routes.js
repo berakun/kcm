@@ -30,12 +30,12 @@ const upload = multer({
 });
 
 // RAB Builder routes (Admin/Super Admin only)
-router.get('/', authMiddleware, rabController.getRabs);
+router.get('/', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.getRabs);
 router.post('/', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.saveRab);
 router.delete('/', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.deleteRab);
 
 // Rembes routes (Admin/Super Admin only)
-router.get('/rembes', authMiddleware, rabController.getRembes);
+router.get('/rembes', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.getRembes);
 router.post('/rembes', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.saveRembes);
 router.delete('/rembes', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.deleteRembes);
 
@@ -45,7 +45,7 @@ router.post('/cashbon', authMiddleware, upload.single('proof_file'), rabControll
 router.put('/cashbon/status', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.updateCashbonStatus);
 
 // Ongkos Tukang routes (Admin/Super Admin only)
-router.get('/ongkos-tukang', authMiddleware, rabController.getOngkosTukang);
+router.get('/ongkos-tukang', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.getOngkosTukang);
 router.post('/ongkos-tukang', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.saveOngkosTukang);
 router.delete('/ongkos-tukang', authMiddleware, roleMiddleware(['admin', 'super_admin']), rabController.deleteOngkosTukang);
 

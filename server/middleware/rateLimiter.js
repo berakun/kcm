@@ -16,7 +16,7 @@ const generalLimiter = rateLimit({
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 login attempts per windowMs
+  max: 5, // Limit each IP to 5 login attempts per windowMs
   message: { error: 'Terlalu banyak percobaan login dari IP ini. Silakan coba lagi dalam 15 menit.' },
   standardHeaders: true,
   legacyHeaders: false

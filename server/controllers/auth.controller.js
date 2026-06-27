@@ -39,10 +39,18 @@ exports.login = async (req, res) => {
     // Update last active
     await db.query('UPDATE users SET last_active = NOW() WHERE id = ?', [user.id]);
 
+    // Set JWT in HttpOnly cookie
+    res.cookie('kcm_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      path: '/'
+    });
+
     return res.json({
       success: true,
       message: 'Login berhasil',
-      token,
       user: {
         id: user.id,
         name: user.name,
@@ -57,6 +65,15 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.logout = async (req, res) => {
+  res.clearCookie('kcm_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
+    path: '/'
+  });
+  return res.json({ success: true, message: 'Logout berhasil' });
+};
 
 exports.me = async (req, res) => {
   // req.user is populated by auth middleware

@@ -11,9 +11,6 @@ export function useApi() {
     if (!isMultipart) {
       headers['Content-Type'] = 'application/json'
     }
-    if (authStore.token) {
-      headers['Authorization'] = `Bearer ${authStore.token}`
-    }
     return { headers }
   }
 

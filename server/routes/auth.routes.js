@@ -6,6 +6,7 @@ const authMiddleware = require('../middleware/auth');
 const { loginLimiter } = require('../middleware/rateLimiter');
 
 router.post('/login', loginLimiter, authController.login);
+router.post('/logout', authMiddleware, authController.logout);
 router.get('/me', authMiddleware, authController.me);
 
 module.exports = router;

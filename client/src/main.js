@@ -8,12 +8,7 @@ import './assets/css/main.css'
 
 // Configure Axios base options
 axios.defaults.baseURL = window.location.origin
-
-// Retrieve local token if any
-const token = localStorage.getItem('kcm_token')
-if (token) {
-  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-}
+axios.defaults.withCredentials = true
 
 const app = createApp(App)
 const pinia = createPinia()

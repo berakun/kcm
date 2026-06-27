@@ -3,14 +3,11 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 module.exports = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Akses ditolak. Token tidak disediakan.' });
-  }
+  // Read token from cookies (for web app) or Authorization header (for scripts/curl/Postman)
+  const token = req.cookies?.kcm_token || (req.headers['authorization'] ? req.headers['authorization'].split(' ')[1] : null);
 
-  const token = authHeader.split(' ')[1];
   if (!token) {
-    return res.status(401).json({ error: 'Akses ditolak. Format token tidak valid.' });
+    return res.status(401).json({ error: 'Akses ditolak. Token tidak disediakan.' });
   }
 
   try {

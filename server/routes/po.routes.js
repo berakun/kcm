@@ -5,8 +5,8 @@ const poController = require('../controllers/po.controller');
 const authMiddleware = require('../middleware/auth');
 const roleMiddleware = require('../middleware/role');
 
-router.get('/', authMiddleware, poController.getPos);
-router.get('/:id', authMiddleware, poController.getPos);
+router.get('/', authMiddleware, roleMiddleware(['admin', 'super_admin']), poController.getPos);
+router.get('/:id', authMiddleware, roleMiddleware(['admin', 'super_admin']), poController.getPos);
 router.post('/', authMiddleware, roleMiddleware(['admin', 'super_admin']), poController.createPo);
 router.put('/:id', authMiddleware, roleMiddleware(['admin', 'super_admin']), poController.updatePo);
 router.delete('/:id', authMiddleware, roleMiddleware(['admin', 'super_admin']), poController.deletePo);

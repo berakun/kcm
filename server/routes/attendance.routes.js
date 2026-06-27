@@ -5,7 +5,7 @@ const attendanceController = require('../controllers/attendance.controller');
 const authMiddleware = require('../middleware/auth');
 const roleMiddleware = require('../middleware/role');
 
-router.get('/settings', authMiddleware, attendanceController.getSettings);
+router.get('/settings', authMiddleware, roleMiddleware(['admin', 'super_admin']), attendanceController.getSettings);
 router.post('/settings', authMiddleware, roleMiddleware(['super_admin']), attendanceController.saveSettings);
 
 router.get('/status', authMiddleware, attendanceController.getStatus);

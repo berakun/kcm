@@ -2,7 +2,7 @@
   <div class="min-h-screen flex flex-col items-center overflow-x-hidden">
     <!-- Top Hero Section -->
     <div class="relative w-full h-[40vh] md:h-[45vh] overflow-hidden">
-      <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBT4VqcBNFcxdoSxuqnnYvQ95rnHPbgjiOA1yR_Ay-89ZGjBFOMXlPZfmrrwPpbqYtVSX_ahLsLomQ6-HCGl6YDJyMW5KBp20_mJ3--tdV7TGB0LkiR5UiHvbA0LkRaTkrsXhWpENBFUeyonIS_6_LRtHfwpTuPpfnbOYLoyvbGno5ePLOqCRpsVpwU9BMPA6ShD1oAvqYG6i7-FaA9GSnpdj-QMsYQvtTWAIonmtGtKCQQWnzJSqNkjA');"></div>
+      <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('/assets/images/hero-login.jpg');"></div>
       <div class="absolute inset-0 hero-gradient"></div>
       
       <!-- Top Left Logo Link -->
