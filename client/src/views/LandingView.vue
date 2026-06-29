@@ -363,12 +363,6 @@ const servicesList = [
   { icon: 'forum', title: 'Konsultasi & RAB', desc: 'Survey lokasi gratis serta estimasi anggaran RAB transparan sejak awal.' }
 ]
 
-const previewProjects = [
-  { category: 'Residential', title: 'Living Room Sleek Maroon', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBT4VqcBNFcxdoSxuqnnYvQ95rnHPbgjiOA1yR_Ay-89ZGjBFOMXlPZfmrrwPpbqYtVSX_ahLsLomQ6-HCGl6YDJyMW5KBp20_mJ3--tdV7TGB0LkiR5UiHvbA0LkRaTkrsXhWpENBFUeyonIS_6_LRtHfwpTuPpfnbOYLoyvbGno5ePLOqCRpsVpwU9BMPA6ShD1oAvqYG6i7-FaA9GSnpdj-QMsYQvtTWAIonmtGtKCQQWnzJSqNkjA' },
-  { category: 'Residential', title: 'Matte Black Marble Kitchen', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBIcUDAZC7ZPnxMYzZihUHMdp0IIqGGPBMvCKFgaF4Uh6TUZpvHTNSlCiUh4ZjAv0oswUmNQrtLCJNiIzeFQSfVLi-0tH-B2jkYmnu7R1mwx9ESi_ECVC962deTTxr32NaDK_yu8X29nmWoYsVckDUkrsnA4e8zi9ncL4mAJgzvkNgp1u2SrL9vIroORhaapHqh01J6W-oA-31O0Ed3r9pIGH74vPOM82QNu88ihzjjOeFr1zDRKfTinw' },
-  { category: 'Office', title: 'Sophisticated Office Space', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDjIj1YhH5n-ou7BYdeP0mSVTKFvNQO1uSEPFiB5lWaOKlXGkETjjjHNMa9CcUnMFtr2lljpBNGKY7g7nGr7BqlRCIUrGkf8AxuyvYOgz1_HpTX8d5RSGFldwnKnt2KdFU6rWZACSN3qZV8eB1OtX-KNVBzEfq1TgUa_mHd693APAohOs6THgBJn_rn-Ig2Pqg6eeg__Mg_IEhMEl77Eh1Nm7a2ZJEu63RtehtWOYX_x2sbkZKYKfRg6Q' }
-]
-
 function sendWhatsappMessage() {
   const waUrl = `https://wa.me/6285868000012?text=Halo%20KCM%2C%20saya%20${encodeURIComponent(contactName.value)}%20(${encodeURIComponent(contactPhone.value)})%20ingin%20berkonsultasi%20mengenai%20proyek%3A%20${encodeURIComponent(contactMessage.value)}`
   window.open(waUrl, '_blank')

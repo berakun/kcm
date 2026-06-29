@@ -212,25 +212,12 @@ const categories = [
   { label: 'Rumah Sakit', value: 'rumah_sakit' }
 ]
 
-const mockProjects = [
-  { id: 101, title: 'Emerald Residence Living', category: 'residential', client_name: 'Ibu Anita', location: 'Sleman, Yogyakarta', year: '2024', description: 'Desain interior ruang tamu mewah bertema minimalis modern dengan aksen warna maroon hangat.', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuBT4VqcBNFcxdoSxuqnnYvQ95rnHPbgjiOA1yR_Ay-89ZGjBFOMXlPZfmrrwPpbqYtVSX_ahLsLomQ6-HCGl6YDJyMW5KBp20_mJ3--tdV7TGB0LkiR5UiHvbA0LkRaTkrsXhWpENBFUeyonIS_6_LRtHfwpTuPpfnbOYLoyvbGno5ePLOqCRpsVpwU9BMPA6ShD1oAvqYG6i7-FaA9GSnpdj-QMsYQvtTWAIonmtGtKCQQWnzJSqNkjA'] },
-  { id: 102, title: 'Corporate Executive Office', category: 'office', client_name: 'PT Sinergi Mandiri', location: 'BSD City, Tangerang', year: '2025', description: 'Ruang kerja direksi eksekutif dengan panel kayu jati premium, meja kaca modern, dan pencahayaan ambient.', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuB8ZVi3NOI07bupgKIGTkv1nhDyyQYoUBF4udfJT17-riYCemxJCkqTgpouK_-X2EZ7SV9KGALJzQs7UAmwCO96RfHLqRuTFaZeBtwnLU5BTl8DtQSGr0BWSIgUIJxX9BcNepHoT0HMpq6yhhEy6RQGD6VPdRemlKe9sCzqVKGZEBDY32xKXr_XCVVxUIao9LRGbmEur2Bbl2IPAU1Il9s-EQoTg1BCB_7YBkhQsfgDe5FeaA1mbtls6A'] },
-  { id: 103, title: 'Contemporary Luxury Kitchen', category: 'residential', client_name: 'Bapak Rian', location: 'Bandung, Jawa Barat', year: '2024', description: 'Kitchen set berkonsep dapur bersih matte black dengan backsplash marmer putih Carrara.', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuBIcUDAZC7ZPnxMYzZihUHMdp0IIqGGPBMvCKFgaF4Uh6TUZpvHTNSlCiUh4ZjAv0oswUmNQrtLCJNiIzeFQSfVLi-0tH-B2jkYmnu7R1mwx9ESi_ECVC962deTTxr32NaDK_yu8X29nmWoYsVckDUkrsnA4e8zi9ncL4mAJgzvkNgp1u2SrL9vIroORhaapHqh01J6W-oA-31O0Ed3r9pIGH74vPOM82QNu88ihzjjOeFr1zDRKfTinw'] },
-  { id: 104, title: 'Grand Hotel Lobby Suite', category: 'hotel', client_name: 'Hotel Grand Palazzo', location: 'Surabaya, Jawa Timur', year: '2025', description: 'Lobby hotel megah dengan pilar marmer klasik, sofa beludru custom mewah, dan chandelier kristal gantung.', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuDPbDlo7ojQNXYoAQnAjkqfzBfH3_qrZ869aVwx5DxA29xZYlzK2zwjwz-Oc9GBm1Ds4BJPewdBXc4VtwpwoQ1vHpQVTnqxeGWNRzAzxNiq_thbEWKzu9azEfuelFKNA-HSB8UuKePkaCORjP6W0NeZV7d1uVZMZvOjsAP-9VWjfQgSYnClc6NF350Jjo_zTzQmtyF3xGN6zmGUMkds3j2B0KMaiXH4JAWdkojD6S-C4hN1rI2Xrxc_Kw'] },
-  { id: 105, title: 'Kost Eksklusif Candi Winangun', category: 'kost', client_name: 'Bapak Anriko', location: 'Sleman, Yogyakarta', year: '2024', description: 'Pengerjaan interior 12 kamar kost eksklusif dengan built-in bed, meja belajar minimalis, dan kamar mandi dalam.', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuApsoAEGLntu70B3_XSH08itu-mNWuceYXNAMkeuNzHpwBTTXNQBzMxk_ukHaD5bpn40Dg-nsFQVr3Z0JDz6fSyIRFRYP0PTc54e5OQ9z2BsA2TOF9YBrMDqzYJKIMv6PbWHK9HSCnt9QvzkvRO6w3y_MyaR_z4voXkuXI_Q4Mk69WPp_0FU4LaJekZR1AeZeJSXfdfa9hp8Y1gClmOTjr-Bo9TL8yLCw2jasf6pKLAv_KxYuK_doOJyA'] },
-  { id: 106, title: 'Rumah Sakit Bethesda Suite', category: 'rumah_sakit', client_name: 'Bethesda Care', location: 'Yogyakarta', year: '2023', description: 'Pengerjaan ruang rawat inap VIP berstandar higienis tinggi dengan kabinet penyimpanan antiseptik.', images: ['https://lh3.googleusercontent.com/aida-public/AB6AXuBGk1cDYziuw7Ug0-wmVPs92MIXy6a94zxwV6G3gWjs7EBm3uSXisxxejHWQflLFdOxDYPLsdpWqGL2WH5Te3Pzu26k_kFApgFpzmTqQd3UhDgdAM7KapTkn7XH7Tu27VJmuaSczlO03Lq7Fvzj7YBJtze4TrZSU-7s4xlEJJuW9sh55rUAmiNiln05zCoM9F1JD55oCuu4mvzdQRm3MbIOUX7h2ih5IX7cNsRRCjCMOa6dPLkbGYWHMQ'] }
-]
-
 onMounted(async () => {
   try {
     const data = await api.get('/api/portfolio')
-    if (data && data.length > 0) {
-      portfolios.value = data
-    } else {
-      portfolios.value = mockProjects
-    }
+    portfolios.value = data || []
   } catch (err) {
-    portfolios.value = mockProjects
+    portfolios.value = []
   }
 })
 
