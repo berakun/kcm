@@ -351,8 +351,10 @@ exports.getRekap = async (req, res) => {
 
     // 4. Merge and sort
     const allRecords = [...rows, ...leaveRecords].sort((a, b) => {
-      if (a.date === b.date) return (b.check_in || '').localeCompare(a.check_in || '');
-      return b.date.localeCompare(a.date);
+      const dateA = String(a.date || '');
+      const dateB = String(b.date || '');
+      if (dateA === dateB) return String(b.check_in || '').localeCompare(String(a.check_in || ''));
+      return dateB.localeCompare(dateA);
     });
 
     // Flag incomplete days (check_in without check_out, excluding izin/cuti/libur_tahunan)
