@@ -48,7 +48,7 @@
             <span class="material-symbols-outlined text-gray-400 group-hover:translate-x-1 transition-transform text-lg">chevron_right</span>
           </router-link>
 
-          <router-link to="/admin/financial" class="flex items-center justify-between bg-white dark:bg-gray-855 p-6 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm hover:shadow-md transition-all group">
+          <router-link to="/admin/financial" v-if="isSuperAdmin" class="flex items-center justify-between bg-white dark:bg-gray-855 p-6 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm hover:shadow-md transition-all group">
             <div class="flex items-center space-x-4">
               <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-xl">
                 <span class="material-symbols-outlined text-2xl">payments</span>
@@ -59,6 +59,21 @@
               </div>
             </div>
             <span class="material-symbols-outlined text-gray-400 group-hover:translate-x-1 transition-transform text-lg">chevron_right</span>
+          </router-link>
+
+          <router-link to="/admin/po" v-slot="{ href, navigate }" v-if="!isSuperAdmin" custom>
+            <a :href="href" @click="navigate" class="flex items-center justify-between bg-white dark:bg-gray-855 p-6 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm hover:shadow-md transition-all group">
+              <div class="flex items-center space-x-4">
+                <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 rounded-xl">
+                  <span class="material-symbols-outlined text-2xl">shopping_cart</span>
+                </div>
+                <div>
+                  <h4 class="font-bold text-xs text-gray-800 dark:text-white">PO Belanja</h4>
+                  <p class="text-[10px] text-gray-400 mt-0.5">Kelola purchase order belanja</p>
+                </div>
+              </div>
+              <span class="material-symbols-outlined text-gray-400 group-hover:translate-x-1 transition-transform text-lg">chevron_right</span>
+            </a>
           </router-link>
         </div>
 

@@ -56,9 +56,9 @@ const optionalAuth = (req, res, next) => {
 
 router.get('/', optionalAuth, portfolioController.getPortfolios);
 
-// Admin / Super Admin routes
-router.post('/', authMiddleware, roleMiddleware(['admin', 'super_admin']), upload.array('images', 10), portfolioController.createPortfolio);
-router.post('/update', authMiddleware, roleMiddleware(['admin', 'super_admin']), upload.array('images', 10), portfolioController.updatePortfolio);
-router.delete('/', authMiddleware, roleMiddleware(['admin', 'super_admin']), portfolioController.deletePortfolio);
+// Super Admin only routes for modification
+router.post('/', authMiddleware, roleMiddleware(['super_admin']), upload.array('images', 10), portfolioController.createPortfolio);
+router.post('/update', authMiddleware, roleMiddleware(['super_admin']), upload.array('images', 10), portfolioController.updatePortfolio);
+router.delete('/', authMiddleware, roleMiddleware(['super_admin']), portfolioController.deletePortfolio);
 
 module.exports = router;

@@ -29,7 +29,7 @@
             </button>
           </div>
           
-          <button @click="openAddModal" class="bg-red-800 hover:bg-red-950 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap">
+          <button v-if="isSuperAdmin" @click="openAddModal" class="bg-red-800 hover:bg-red-950 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 whitespace-nowrap">
             <span class="material-symbols-outlined text-sm">add_photo_alternate</span>
             Tambah Portfolio
           </button>
@@ -61,11 +61,11 @@
                 <span class="text-[10px] text-gray-400 flex items-center">
                   <span class="material-symbols-outlined text-xs mr-1">location_on</span>{{ p.location || '-' }}
                 </span>
-                <div class="space-x-1.5 flex items-center">
-                  <button @click="editPortfolio(p)" class="p-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-lg text-amber-600 hover:text-amber-800">
+                <div class="space-x-1.5 flex items-center" v-if="isSuperAdmin">
+                  <button @click="editPortfolio(p)" class="p-1.5 bg-amber-50 dark:bg-amber-955/20 rounded-lg text-amber-600 hover:text-amber-800">
                     <span class="material-symbols-outlined text-sm align-middle">edit</span>
                   </button>
-                  <button @click="deletePortfolio(p.id)" class="p-1.5 bg-red-50 dark:bg-red-950/20 rounded-lg text-red-600 hover:text-red-800">
+                  <button @click="deletePortfolio(p.id)" class="p-1.5 bg-red-50 dark:bg-red-955/20 rounded-lg text-red-600 hover:text-red-800">
                     <span class="material-symbols-outlined text-sm align-middle">delete</span>
                   </button>
                 </div>
@@ -176,6 +176,8 @@ import { getImageUrl } from '../../utils/helpers'
 const { user } = useAuth()
 const api = useApi()
 
+const isSuperAdmin = computed(() => user.value?.role === 'super_admin')
+
 const activeCategory = ref('all')
 const portfolios = ref([])
 const showModal = ref(false)
@@ -248,6 +250,7 @@ function onFilesSelected(e) {
 }
 
 function openAddModal() {
+  if (!isSuperAdmin.value) return
   modalTitle.value = 'Tambah Portfolio Baru'
   form.value = {
     id: '',
@@ -267,6 +270,7 @@ function openAddModal() {
 }
 
 function editPortfolio(p) {
+  if (!isSuperAdmin.value) return
   modalTitle.value = 'Edit Portfolio Proyek'
   form.value = {
     id: p.id,
@@ -302,6 +306,7 @@ function removeImage(idx) {
 }
 
 async function submitForm() {
+  if (!isSuperAdmin.value) return
   const formData = new FormData()
   
   // Append fields
@@ -339,6 +344,7 @@ async function submitForm() {
 }
 
 async function deletePortfolio(id) {
+  if (!isSuperAdmin.value) return
   if (!confirm('Apakah Anda yakin ingin menghapus proyek ini?')) return
   try {
     await api.delete('/api/portfolio', { id })
