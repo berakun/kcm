@@ -97,3 +97,11 @@ body {
 /* Scrollbar hide untuk tab container */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Global Input Focus Styles (No ugly browser outline, soft premium shadow) */
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.15) !important;
+  border-color: #991b1b !important;
+}

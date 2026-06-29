@@ -619,19 +619,19 @@
               <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div class="md:col-span-1">
                   <label class="text-[10px] font-bold text-gray-400 block mb-1">Kode RAB</label>
-                  <input v-model="builderForm.code" type="text" required class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Contoh: RAB-001"/>
+                  <input v-model="builderForm.code" type="text" required class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs py-2.5 px-4 focus:border-red-500 focus:ring-0" placeholder="Contoh: RAB-001"/>
                 </div>
                 <div class="md:col-span-2">
                   <label class="text-[10px] font-bold text-gray-400 block mb-1">Nama Proyek</label>
-                  <input v-model="builderForm.project_name" type="text" required class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Contoh: Renovasi Dapur Modern Sleman"/>
+                  <input v-model="builderForm.project_name" type="text" required class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs py-2.5 px-4 focus:border-red-500 focus:ring-0" placeholder="Contoh: Renovasi Dapur Modern Sleman"/>
                 </div>
                 <div class="md:col-span-1">
                   <label class="text-[10px] font-bold text-gray-400 block mb-1">Klien</label>
-                  <input v-model="builderForm.client" type="text" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Contoh: Ibu Rina"/>
+                  <input v-model="builderForm.client" type="text" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs py-2.5 px-4 focus:border-red-500 focus:ring-0" placeholder="Contoh: Ibu Rina"/>
                 </div>
                 <div class="md:col-span-1">
                   <label class="text-[10px] font-bold text-gray-400 block mb-1">Status Proyek</label>
-                  <select v-model="builderForm.status" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0">
+                  <select v-model="builderForm.status" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs py-2.5 px-4 focus:border-red-500 focus:ring-0">
                     <option value="draft">Draft</option>
                     <option value="dikerjakan">Dikerjakan</option>
                     <option value="selesai">Selesai</option>
