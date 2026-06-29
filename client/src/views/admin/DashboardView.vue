@@ -211,12 +211,12 @@
             <h3 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Riwayat Pengajuan Cuti Anda</h3>
             
             <div class="space-y-2 max-h-60 overflow-y-auto">
-              <div v-if="leaveHistoryList.length === 0" class="text-center py-6 text-xs text-gray-400">
+              <div v-if="filteredLeaveHistory.length === 0" class="text-center py-6 text-xs text-gray-400">
                 Belum ada pengajuan cuti.
               </div>
               <div 
                 v-else 
-                v-for="leave in leaveHistoryList" 
+                v-for="leave in filteredLeaveHistory" 
                 :key="leave.id"
                 class="p-4 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-800 flex justify-between items-center"
               >
@@ -513,6 +513,16 @@ const leaveForm = ref({
   reason: ''
 })
 const leaveHistoryList = ref([])
+
+const filteredLeaveHistory = computed(() => {
+  return leaveHistoryList.value.filter(leave => {
+    return leave.start_date && 
+           leave.end_date && 
+           leave.start_date !== '0000-00-00' && 
+           leave.end_date !== '0000-00-00' &&
+           String(leave.start_date).trim() !== ''
+  })
+})
 
 onMounted(async () => {
   // Start clock for admin attendance
