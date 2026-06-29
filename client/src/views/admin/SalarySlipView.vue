@@ -719,12 +719,22 @@ async function loadData() {
         return h > 8 || (h === 8 && m > 15)
       }).length
 
+      // Fetch dynamic approved leave days
+      const periodStr = `${calcYear}-${String(calcMonth).padStart(2, '0')}`
+      let dbCuti = 0
+      try {
+        const leaveRes = await api.get(`/api/leaves/user-month/${u.id}/${periodStr}`)
+        dbCuti = leaveRes.totalDays || 0
+      } catch (err) {
+        console.error('Failed to fetch leave days', err)
+      }
+
       const config = getConfig(u.role)
       const ov = overrides[u.id] || {}
       const gajiPokok = ov.gajiPokok ?? config.gajiPokok ?? 0
       const baseMakanTransport = ov.makanTransport ?? config.makanTransport ?? 0
       
-      const cuti = ov.cuti || 0
+      const cuti = ov.cuti !== undefined ? ov.cuti : dbCuti
       const liburTahunan = ov.liburTahunan || 0
 
       // Calculate adjusted makan & transport:
@@ -873,6 +883,7 @@ function buildSlipHTML(slip) {
         <tr><td>Absen 1x (1/2hari)</td><td class="text-right" style="color:#888">${slip.potonganAbsenCount} X Rp ${formatNumber(slip.absenSetengahRate)} =</td><td class="text-right font-bold">${slip.potonganAbsen > 0 ? formatNumber(slip.potonganAbsen) : '-'}</td></tr>
         <tr><td>Tidak Hadir (1hari)</td><td class="text-right" style="color:#888">${slip.potonganTidakHadirCount} X Rp ${formatNumber(slip.tidakHadirRate)} =</td><td class="text-right font-bold">${slip.potonganTidakHadir > 0 ? formatNumber(slip.potonganTidakHadir) : '-'}</td></tr>
         <tr><td>Terlambat Hadir (10menit)</td><td class="text-right" style="color:#888">${slip.potonganTerlambatCount} X Rp ${formatNumber(slip.terlambatRate)} =</td><td class="text-right font-bold">${slip.potonganTerlambat > 0 ? formatNumber(slip.potonganTerlambat) : '-'}</td></tr>
+        <tr><td>Cuti Kerja (Potongan Makan)</td><td class="text-right" style="color:#888">${slip.cuti} Hari X Rp ${formatNumber(slip.dailyMakanTransport)} =</td><td class="text-right font-bold">${slip.potonganMakanTransport > 0 ? formatNumber(slip.potonganMakanTransport) : '-'}</td></tr>
         <tr class="border-t"><td colspan="2" class="font-bold" style="padding-top:4px;">POTONGAN TERLAMBAT TIDAK HADIR DAN UANG MAKAN :</td><td class="text-right font-bold text-red" style="padding-top:4px;">Rp ${formatNumber(slip.totalPotongan)}</td></tr>
       </table>
  

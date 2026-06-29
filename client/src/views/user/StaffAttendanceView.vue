@@ -114,13 +114,20 @@
       </div>
 
       <!-- Quick Actions Grid (Request Form Triggers) -->
-      <div class="grid grid-cols-1">
-        <button @click="openCashbonModal" class="flex flex-col items-center justify-center p-5 bg-white dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-2xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-all text-center">
+      <div class="grid grid-cols-2 gap-4">
+        <button @click="openCashbonModal" class="flex flex-col items-center justify-center p-5 bg-white dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-all text-center">
           <div class="p-3.5 bg-amber-50 dark:bg-amber-955/40 text-amber-600 rounded-xl mb-2">
             <span class="material-symbols-outlined text-xl">payments</span>
           </div>
-          <span class="text-xs font-bold text-gray-800 dark:text-white">Ajukan Cashbon Lapangan</span>
-          <span class="text-[9px] text-gray-400 mt-1">Mengajukan dana operasional proyek</span>
+          <span class="text-xs font-bold text-gray-800 dark:text-white">Cashbon Lapangan</span>
+          <span class="text-[9px] text-gray-400 mt-1">Ajukan dana operasional</span>
+        </button>
+        <button @click="openLeaveModal" class="flex flex-col items-center justify-center p-5 bg-white dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-all text-center">
+          <div class="p-3.5 bg-indigo-50 dark:bg-indigo-955/40 text-indigo-600 rounded-xl mb-2">
+            <span class="material-symbols-outlined text-xl">date_range</span>
+          </div>
+          <span class="text-xs font-bold text-gray-800 dark:text-white">Ajukan Cuti</span>
+          <span class="text-[9px] text-gray-400 mt-1">Mengajukan cuti kerja</span>
         </button>
       </div>
 
@@ -196,6 +203,45 @@
         </div>
       </section>
 
+      <!-- Leave History List -->
+      <section class="space-y-3">
+        <h3 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Riwayat Pengajuan Cuti</h3>
+        
+        <div class="space-y-2">
+          <div v-if="leaveHistoryList.length === 0" class="text-center py-8 text-xs text-gray-400">
+            Belum ada pengajuan cuti.
+          </div>
+          <div 
+            v-else 
+            v-for="leave in leaveHistoryList" 
+            :key="leave.id"
+            class="bg-white dark:bg-gray-850 p-4 rounded-xl border border-gray-150 dark:border-gray-800 flex justify-between items-center"
+          >
+            <div>
+              <div class="text-xs font-bold text-gray-800 dark:text-white">
+                {{ formatDate(leave.start_date) }} s/d {{ formatDate(leave.end_date) }}
+              </div>
+              <div class="text-[10px] text-gray-400 mt-1">
+                Alasan: {{ leave.reason }}
+              </div>
+            </div>
+            <div class="text-right">
+              <span :class="[
+                leave.status === 'approved' ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20' :
+                leave.status === 'rejected' ? 'text-red-700 bg-red-50 dark:bg-red-955/20' :
+                'text-amber-700 bg-amber-50 dark:bg-amber-955/20',
+                'px-2.5 py-1 text-[9px] font-bold rounded-lg uppercase tracking-wider'
+              ]">
+                {{ 
+                  leave.status === 'approved' ? 'Disetujui' : 
+                  leave.status === 'rejected' ? 'Ditolak' : 'Pending' 
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </main>
 
     <!-- Modal Form: Request Cashbon -->
@@ -232,6 +278,36 @@
             Batal
           </button>
           <button type="submit" class="bg-red-800 hover:bg-red-950 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-md">
+            Kirim Pengajuan
+          </button>
+        </div>
+      </form>
+    </BaseModal>
+
+    <!-- Modal Form: Request Leave -->
+    <BaseModal :show="showLeaveModal" title="Pengajuan Cuti Baru" @close="closeLeaveModal">
+      <form @submit.prevent="submitLeave" class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-1">Tanggal Mulai</label>
+            <input v-model="leaveForm.start_date" type="date" required class="w-full rounded-lg border border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0"/>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-1">Tanggal Selesai</label>
+            <input v-model="leaveForm.end_date" type="date" required class="w-full rounded-lg border border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">Alasan Pengajuan Cuti</label>
+          <textarea v-model="leaveForm.reason" required rows="3" class="w-full rounded-lg border border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Jelaskan keperluan cuti Anda secara singkat..."></textarea>
+        </div>
+
+        <div class="border-t border-gray-100 dark:border-gray-800 pt-4 flex justify-end space-x-3 mt-6">
+          <button type="button" @click="closeLeaveModal" class="px-5 py-2.5 rounded-lg border border-gray-250 text-gray-500 font-semibold text-xs hover:bg-gray-50">
+            Batal
+          </button>
+          <button type="submit" class="bg-red-800 hover:bg-red-950 text-white font-semibold text-xs px-5 py-2.5 rounded-lg shadow-md">
             Kirim Pengajuan
           </button>
         </div>
@@ -289,10 +365,19 @@ const cashbonForm = ref({
   proof_file: null
 })
 
+const showLeaveModal = ref(false)
+const leaveForm = ref({
+  start_date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
+  end_date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
+  reason: ''
+})
+const leaveHistoryList = ref([])
+
 onMounted(async () => {
   startClock()
   await fetchStatus()
   await fetchHistory()
+  await fetchLeaveHistory()
   await triggerGpsCheck()
 })
 
@@ -438,6 +523,46 @@ function formatTime(dateStr) {
     return d.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' }).split('.').slice(0, 2).join(':')
   } catch (e) {
     return '--:--'
+  }
+}
+
+// ==========================================
+// LEAVE REQUESTS
+// ==========================================
+async function fetchLeaveHistory() {
+  try {
+    const data = await api.get('/api/leaves/my')
+    leaveHistoryList.value = data
+  } catch (err) {
+    console.error('Failed to load leave history list.')
+  }
+}
+
+function openLeaveModal() {
+  leaveForm.value = {
+    start_date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
+    end_date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
+    reason: ''
+  }
+  showLeaveModal.value = true
+}
+
+function closeLeaveModal() {
+  showLeaveModal.value = false
+}
+
+async function submitLeave() {
+  if (!leaveForm.value.start_date || !leaveForm.value.end_date || !leaveForm.value.reason) {
+    appStore.showAlert('Semua field wajib diisi.', 'error')
+    return
+  }
+  try {
+    const res = await api.post('/api/leaves', leaveForm.value)
+    appStore.showAlert(res.message, 'success')
+    closeLeaveModal()
+    await fetchLeaveHistory()
+  } catch (err) {
+    appStore.showAlert('Gagal mengirim pengajuan cuti: ' + (err.response?.data?.error || err.message), 'error')
   }
 }
 </script>

@@ -205,7 +205,6 @@
               <canvas id="attendanceChart"></canvas>
             </div>
           </div>
-
           <!-- Daily presence log list (last 7 days) -->
           <div class="bg-white dark:bg-gray-850 p-6 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm lg:col-span-3">
             <h3 class="font-bold text-sm mb-4 text-gray-900 dark:text-white">Absensi 7 Hari Terakhir</h3>
@@ -233,11 +232,60 @@
                       <span :class="[
                         log.status === 'di_kantor' 
                           ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20' 
-                          : 'text-amber-700 bg-amber-50 dark:bg-amber-950/20',
+                          : 'text-amber-700 bg-amber-50 dark:bg-amber-955/20',
                         'px-2 py-0.5 text-[10px] font-bold rounded-lg'
                       ]">
                         {{ log.status === 'di_kantor' ? 'Hadir' : 'Di Luar' }}
                       </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Leave Requests widget for Superadmin -->
+          <div class="bg-white dark:bg-gray-850 p-6 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm lg:col-span-3">
+            <h3 class="font-bold text-sm mb-4 text-gray-900 dark:text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-base text-indigo-650">date_range</span>
+              Persetujuan Pengajuan Cuti Karyawan
+            </h3>
+            
+            <div v-if="pendingLeaves.length === 0" class="text-center py-12 text-xs text-gray-400">
+              Tidak ada pengajuan cuti yang memerlukan persetujuan.
+            </div>
+            <div v-else class="overflow-x-auto">
+              <table class="w-full text-left text-[11px] border-collapse">
+                <thead>
+                  <tr class="border-b border-gray-150 dark:border-gray-800 text-gray-400 uppercase tracking-wider text-[9px]">
+                    <th class="pb-2 font-bold">Karyawan</th>
+                    <th class="pb-2 font-bold">Departemen</th>
+                    <th class="pb-2 font-bold">Tanggal</th>
+                    <th class="pb-2 font-bold">Alasan</th>
+                    <th class="pb-2 font-bold text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="leave in pendingLeaves" :key="leave.id" class="border-b border-gray-50 dark:border-gray-800/50 last:border-b-0">
+                    <td class="py-3 font-semibold text-gray-900 dark:text-white">{{ leave.employee_name }}</td>
+                    <td class="py-3 text-gray-500">{{ leave.employee_department || '-' }}</td>
+                    <td class="py-3 text-gray-500 font-semibold">{{ formatDate(leave.start_date) }} s/d {{ formatDate(leave.end_date) }}</td>
+                    <td class="py-3 text-gray-500 max-w-[200px] truncate" :title="leave.reason">{{ leave.reason }}</td>
+                    <td class="py-3 text-center">
+                      <div class="flex items-center justify-center gap-2">
+                        <button 
+                          @click="approveLeave(leave.id)" 
+                          class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[9px] font-bold transition-all"
+                        >
+                          Setujui
+                        </button>
+                        <button 
+                          @click="rejectLeave(leave.id)" 
+                          class="px-2.5 py-1 bg-red-650 hover:bg-red-750 text-white rounded-lg text-[9px] font-bold transition-all"
+                        >
+                          Tolak
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -257,8 +305,11 @@ import AppTopbar from '../../components/layout/AppTopbar.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useApi } from '../../composables/useApi'
 import { useGps } from '../../composables/useGps'
+import { useAppStore } from '../../stores/app'
 import { formatTime, formatDate } from '../../utils/helpers'
 import Chart from 'chart.js/auto'
+
+const appStore = useAppStore()
 
 const { user } = useAuth()
 const api = useApi()
@@ -371,6 +422,7 @@ const stats = ref([
 ])
 
 const attendanceList = ref([])
+const pendingLeaves = ref([])
 
 onMounted(async () => {
   // Start clock for admin attendance
@@ -383,6 +435,10 @@ onMounted(async () => {
     .catch(err => {
       gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
     })
+
+  if (isSuperAdmin.value) {
+    await fetchLeaves()
+  }
 
   try {
     // 1. Fetch Total Users
@@ -451,5 +507,39 @@ function renderChart() {
       }
     }
   })
+}
+
+// ==========================================
+// LEAVE APPROVALS
+// ==========================================
+async function fetchLeaves() {
+  try {
+    const data = await api.get('/api/leaves')
+    pendingLeaves.value = data.filter(l => l.status === 'pending')
+  } catch (err) {
+    console.error('Failed to load leave requests.')
+  }
+}
+
+async function approveLeave(id) {
+  if (!confirm('Apakah Anda yakin ingin menyetujui pengajuan cuti ini?')) return
+  try {
+    await api.put(`/api/leaves/${id}/status`, { status: 'approved' })
+    appStore.showAlert('Pengajuan cuti berhasil disetujui.', 'success')
+    await fetchLeaves()
+  } catch (err) {
+    appStore.showAlert('Gagal menyetujui cuti: ' + (err.response?.data?.error || err.message), 'error')
+  }
+}
+
+async function rejectLeave(id) {
+  if (!confirm('Apakah Anda yakin ingin menolak pengajuan cuti ini?')) return
+  try {
+    await api.put(`/api/leaves/${id}/status`, { status: 'rejected' })
+    appStore.showAlert('Pengajuan cuti ditolak.', 'success')
+    await fetchLeaves()
+  } catch (err) {
+    appStore.showAlert('Gagal menolak cuti: ' + (err.response?.data?.error || err.message), 'error')
+  }
 }
 </script>
