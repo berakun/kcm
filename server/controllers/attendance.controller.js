@@ -284,6 +284,7 @@ exports.deleteAttendance = async (req, res) => {
 exports.getRekap = async (req, res) => {
   const { start, end, user_id } = req.query;
   try {
+    // 1. Fetch attendance logs
     let query = `SELECT a.*, u.name as employee_name, u.department 
                  FROM attendance a 
                  JOIN users u ON a.user_id = u.id 
@@ -296,12 +297,70 @@ exports.getRekap = async (req, res) => {
     query += ' ORDER BY a.date DESC, a.check_in DESC';
     const [rows] = await db.query(query, params);
 
+    // 2. Fetch approved leaves overlapping with date range
+    let leaveQuery = `SELECT l.*, u.name as employee_name, u.department
+                      FROM leaves l
+                      JOIN users u ON l.user_id = u.id
+                      WHERE l.status = 'approved'
+                        AND l.start_date <= ? AND l.end_date >= ?`;
+    const leaveParams = [end, start];
+    if (user_id) {
+      leaveQuery += ' AND l.user_id = ?';
+      leaveParams.push(user_id);
+    }
+    const [leaves] = await db.query(leaveQuery, leaveParams);
+
+    // 3. Generate virtual attendance records for each leave day
+    const leaveRecords = [];
+    for (const leave of leaves) {
+      const leaveStart = new Date(leave.start_date);
+      const leaveEnd = new Date(leave.end_date);
+      const rangeStart = new Date(start);
+      const rangeEnd = new Date(end);
+
+      // Bound to query range
+      const boundStart = new Date(Math.max(leaveStart, rangeStart));
+      const boundEnd = new Date(Math.min(leaveEnd, rangeEnd));
+
+      for (let d = new Date(boundStart); d <= boundEnd; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        // Skip if attendance record already exists for this date
+        const hasExisting = rows.some(r => r.user_id === leave.user_id && r.date === dateStr);
+        if (!hasExisting) {
+          leaveRecords.push({
+            id: `leave-${leave.id}-${dateStr}`,
+            user_id: leave.user_id,
+            employee_name: leave.employee_name,
+            department: leave.department,
+            date: dateStr,
+            check_in: null,
+            check_out: null,
+            duration: null,
+            latitude: null,
+            longitude: null,
+            distance: null,
+            status: 'di_kantor',
+            type: 'cuti',
+            ip_address: null,
+            created_at: leave.created_at,
+            leave_reason: leave.reason
+          });
+        }
+      }
+    }
+
+    // 4. Merge and sort
+    const allRecords = [...rows, ...leaveRecords].sort((a, b) => {
+      if (a.date === b.date) return (b.check_in || '').localeCompare(a.check_in || '');
+      return b.date.localeCompare(a.date);
+    });
+
     // Flag incomplete days (check_in without check_out, excluding izin/cuti/libur_tahunan)
-    const incomplete = rows.filter(r => r.check_in && !r.check_out && (!r.type || r.type === 'check_in'));
+    const incomplete = allRecords.filter(r => r.check_in && !r.check_out && (!r.type || r.type === 'check_in'));
     const totalDeduction = incomplete.length * 40000;
 
     return res.json({
-      records: rows,
+      records: allRecords,
       incomplete_days: incomplete.map(r => ({ id: r.id, employee_name: r.employee_name, date: r.date })),
       total_deduction: totalDeduction,
       total_deduction_formatted: `Rp ${totalDeduction.toLocaleString('id-ID')}`

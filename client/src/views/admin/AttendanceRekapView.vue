@@ -40,7 +40,7 @@
                 align="left"
               />
             </div>
-            <div v-if="user?.role === 'super_admin' || user?.role === 'admin'">
+            <div v-if="user?.role === 'super_admin'">
               <label class="text-[10px] font-bold text-gray-400 block mb-1">Karyawan</label>
               <select v-model="filter.user_id" @change="loadRekap" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs px-3 py-2 focus:border-red-500 focus:ring-0">
                 <option value="">-- Semua Karyawan --</option>
@@ -329,18 +329,11 @@
                       </span>
                     </td>
                     <td class="py-4 px-6 text-center hidden sm:table-cell">
-                      <span :class="typeBadgeClass(log.type)" class="px-2 py-1 text-[10px] font-bold rounded-lg uppercase">
+                      <span :class="typeBadgeClass(log.type)" class="px-2 py-1 text-[10px] font-bold rounded-lg uppercase" :title="log.leave_reason || ''">
                         {{ typeLabel(log.type) }}
                       </span>
                     </td>
                     <td class="py-4 px-6 text-center space-x-2" v-if="user?.role === 'super_admin'" @click.stop>
-                      <select @change="setType(log, $event.target.value); $event.target.value = ''" class="text-[10px] font-bold border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 dark:bg-gray-900 dark:text-white focus:ring-0 focus:border-red-500">
-                        <option value="">Set Tipe...</option>
-                        <option value="check_in">Check In</option>
-                        <option value="izin">Izin</option>
-                        <option value="cuti">Cuti</option>
-                        <option value="libur_tahunan">Libur Tahunan</option>
-                      </select>
                       <button @click="openEditModal(log)" class="text-amber-600 hover:text-amber-800">
                         <span class="material-symbols-outlined text-base">edit</span>
                       </button>
@@ -539,6 +532,10 @@ const tablePageSize = 10
 
 onMounted(async () => {
   await fetchEmployees()
+  // For admin role, auto-filter to show only their own data
+  if (user.value?.role === 'admin' && user.value?.id) {
+    filter.value.user_id = user.value.id
+  }
   await loadRekap()
 })
 
@@ -813,19 +810,5 @@ function typeBadgeClass(type) {
     libur_tahunan: 'text-orange-700 bg-orange-50 dark:bg-orange-950/20'
   }
   return classes[type] || classes.check_in
-}
-
-async function setType(log, type) {
-  if (!type) return
-  try {
-    await api.post('/api/attendance/set-type', {
-      user_id: log.user_id,
-      date: log.date ? new Date(log.date).toISOString().split('T')[0] : log.date,
-      type
-    })
-    await loadRekap()
-  } catch (err) {
-    alert(err.response?.data?.error || 'Gagal mengatur tipe absensi.')
-  }
 }
 </script>

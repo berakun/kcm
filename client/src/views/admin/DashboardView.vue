@@ -79,13 +79,15 @@
 
         <!-- Stats Counters -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 relative overflow-hidden" v-for="stat in stats" :key="stat.label">
-            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ stat.label }}</p>
-            <h3 class="text-3xl font-extrabold mt-2 text-gray-900 dark:text-white">{{ stat.val }}</h3>
-            <div class="absolute right-6 top-6 text-gray-150 dark:text-gray-700">
-              <span class="material-symbols-outlined text-4xl">{{ stat.icon }}</span>
+          <template v-for="stat in filteredStats" :key="stat.label">
+            <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 relative overflow-hidden">
+              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{{ stat.label }}</p>
+              <h3 class="text-3xl font-extrabold mt-2 text-gray-900 dark:text-white">{{ stat.val }}</h3>
+              <div class="absolute right-6 top-6 text-gray-150 dark:text-gray-700">
+                <span class="material-symbols-outlined text-4xl">{{ stat.icon }}</span>
+              </div>
             </div>
-          </div>
+          </template>
         </div>
 
         <!-- Admin Attendance Check-in/out (admin only, not superadmin) - styled like staff version -->
@@ -511,11 +513,16 @@ async function checkOut() {
 }
 
 const stats = ref([
-  { label: 'TOTAL KARYAWAN', val: 0, icon: 'groups' },
-  { label: 'PRESENSI HARI INI', val: 0, icon: 'fingerprint' },
-  { label: 'PROYEK AKTIF', val: 0, icon: 'construction' },
-  { label: 'PORTFOLIO PUBLISHED', val: 0, icon: 'imagesmode' }
+  { label: 'TOTAL KARYAWAN', val: 0, icon: 'groups', superAdminOnly: true },
+  { label: 'PRESENSI HARI INI', val: 0, icon: 'fingerprint', superAdminOnly: true },
+  { label: 'PROYEK AKTIF', val: 0, icon: 'construction', superAdminOnly: false },
+  { label: 'PORTFOLIO PUBLISHED', val: 0, icon: 'imagesmode', superAdminOnly: false }
 ])
+
+const filteredStats = computed(() => {
+  if (isSuperAdmin.value) return stats.value
+  return stats.value.filter(s => !s.superAdminOnly)
+})
 
 const attendanceList = ref([])
 const pendingLeaves = ref([])
@@ -564,9 +571,28 @@ onMounted(async () => {
   }
 
   try {
-    // 1. Fetch Total Users
-    const users = await api.get('/api/users')
-    stats.value[0].val = users.length
+    // Skip user/attendance stats for regular admin
+    if (isSuperAdmin.value) {
+      // 1. Fetch Total Users
+      const users = await api.get('/api/users')
+      stats.value[0].val = users.length
+
+      // 4. Fetch Attendance list (last 7 days)
+      const today = new Date()
+      const weekAgo = new Date(today)
+      weekAgo.setDate(today.getDate() - 6)
+      const fromStr = weekAgo.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+      const toStr = today.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+      const logs = await api.get('/api/attendance/admin-list', { from: fromStr, to: toStr })
+      attendanceList.value = logs
+      // Count today's attendance only for the stat counter
+      const todayStr = toStr
+      const todayLogs = logs.filter(l => l.date === todayStr)
+      stats.value[1].val = todayLogs.length
+
+      // Render chart
+      renderChart()
+    }
 
     // 2. Fetch Active Projects (dikerjakan)
     const rabs = await api.get('/api/rab')
@@ -576,21 +602,6 @@ onMounted(async () => {
     const portfolios = await api.get('/api/portfolio?status=published')
     stats.value[3].val = portfolios.length
 
-    // 4. Fetch Attendance list (last 7 days)
-    const today = new Date()
-    const weekAgo = new Date(today)
-    weekAgo.setDate(today.getDate() - 6)
-    const fromStr = weekAgo.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
-    const toStr = today.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
-    const logs = await api.get('/api/attendance/admin-list', { from: fromStr, to: toStr })
-    attendanceList.value = logs
-    // Count today's attendance only for the stat counter
-    const todayStr = toStr
-    const todayLogs = logs.filter(l => l.date === todayStr)
-    stats.value[1].val = todayLogs.length
-
-    // Render chart
-    renderChart()
   } catch (err) {
     console.error('Dashboard load failed:', err)
   }
