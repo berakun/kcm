@@ -162,6 +162,27 @@ import Chart from 'chart.js/auto'
 
 const api = useApi()
 
+function toLocalDateString(dateInput) {
+  if (!dateInput) return ''
+  let standardized = dateInput
+  if (typeof standardized === 'string' && standardized.includes(' ') && !standardized.includes('T')) {
+    standardized = standardized.replace(' ', 'T')
+  }
+  const date = new Date(standardized)
+  if (isNaN(date.getTime())) return ''
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+  const parts = formatter.formatToParts(date)
+  const year = parts.find(p => p.type === 'year').value
+  const month = parts.find(p => p.type === 'month').value
+  const day = parts.find(p => p.type === 'day').value
+  return `${year}-${month}-${day}`
+}
+
 const filterDateStart = ref('')
 const filterDateEnd = ref('')
 
@@ -182,13 +203,9 @@ const filteredLeakages = computed(() => {
   if (!ds && !de) return leakages.value
   return leakages.value.filter(l => {
     if (!l.date) return false
-    const d = new Date(l.date)
-    if (ds && d < new Date(ds)) return false
-    if (de) {
-      const deDate = new Date(de)
-      deDate.setHours(23,59,59,999)
-      if (d > deDate) return false
-    }
+    const dStr = toLocalDateString(l.date)
+    if (ds && dStr < ds) return false
+    if (de && dStr > de) return false
     return true
   })
 })

@@ -401,8 +401,8 @@ onMounted(async () => {
     const today = new Date()
     const weekAgo = new Date(today)
     weekAgo.setDate(today.getDate() - 6)
-    const fromStr = weekAgo.toISOString().split('T')[0]
-    const toStr = today.toISOString().split('T')[0]
+    const fromStr = weekAgo.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+    const toStr = today.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
     const logs = await api.get('/api/attendance/admin-list', { from: fromStr, to: toStr })
     attendanceList.value = logs
     // Count today's attendance only for the stat counter

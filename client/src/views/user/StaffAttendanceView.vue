@@ -283,7 +283,7 @@ const canCheckIn = computed(() => {
 const showCashbonModal = ref(false)
 const cashbonForm = ref({
   recipient: '',
-  date: new Date().toISOString().split('T')[0],
+  date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
   amount: 0,
   description: '',
   proof_file: null
@@ -388,7 +388,7 @@ function handleLogout() {
 function openCashbonModal() {
   cashbonForm.value = {
     recipient: '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
     amount: 0,
     description: '',
     proof_file: null

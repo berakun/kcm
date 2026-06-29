@@ -705,6 +705,27 @@ import { formatCurrency, formatDate } from '../../utils/helpers'
 const api = useApi()
 const appStore = useAppStore()
 
+function toLocalDateString(dateInput) {
+  if (!dateInput) return ''
+  let standardized = dateInput
+  if (typeof standardized === 'string' && standardized.includes(' ') && !standardized.includes('T')) {
+    standardized = standardized.replace(' ', 'T')
+  }
+  const date = new Date(standardized)
+  if (isNaN(date.getTime())) return ''
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+  const parts = formatter.formatToParts(date)
+  const year = parts.find(p => p.type === 'year').value
+  const month = parts.find(p => p.type === 'month').value
+  const day = parts.find(p => p.type === 'day').value
+  return `${year}-${month}-${day}`
+}
+
 const activeTab = ref('rab')
 
 const tabs = [
@@ -741,7 +762,7 @@ const rembesList = ref([])
 const showRembesModal = ref(false)
 const rembesForm = ref({
   rab_id: '',
-  date: new Date().toISOString().split('T')[0],
+  date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
   description: '',
   rab_amount: 0,
   actual_amount: 0,
@@ -760,7 +781,7 @@ const showOngkosTukangModal = ref(false)
 const ongkosTukangForm = ref({
   id: '',
   rab_id: '',
-  date: new Date().toISOString().split('T')[0],
+  date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
   description: '',
   amount: 0
 })
@@ -803,13 +824,9 @@ const filteredRabs = computed(() => {
   return rabsList.value.filter(r => {
     if (ds || de) {
       if (!r.date) return false
-      const d = new Date(r.date)
-      if (ds && d < new Date(ds)) return false
-      if (de) {
-        const deDate = new Date(de)
-        deDate.setHours(23,59,59,999)
-        if (d > deDate) return false
-      }
+      const dStr = toLocalDateString(r.date)
+      if (ds && dStr < ds) return false
+      if (de && dStr > de) return false
     }
     return r.project_name.toLowerCase().includes(q) || 
       r.code.toLowerCase().includes(q) ||
@@ -903,7 +920,7 @@ async function submitRabForm() {
 function openRembesModal() {
   rembesForm.value = {
     rab_id: '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
     description: '',
     rab_amount: 0,
     actual_amount: 0,
@@ -952,13 +969,9 @@ const filteredCashbon = computed(() => {
   return cashbonList.value.filter(c => {
     if (ds || de) {
       if (!c.date) return false
-      const d = new Date(c.date)
-      if (ds && d < new Date(ds)) return false
-      if (de) {
-        const deDate = new Date(de)
-        deDate.setHours(23,59,59,999)
-        if (d > deDate) return false
-      }
+      const dStr = toLocalDateString(c.date)
+      if (ds && dStr < ds) return false
+      if (de && dStr > de) return false
     }
     return true
   })
@@ -977,7 +990,7 @@ const cashbonUserSummary = computed(() => {
 
 function generateRabPrintHTML(rabData) {
   const r = rabData || builderForm.value
-  const rabDate = r.date || new Date().toISOString().split('T')[0]
+  const rabDate = r.date || new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
   let rabRows = ''
   let totalHarga = 0
   const items = r.items || []
@@ -1142,10 +1155,25 @@ async function printRabRow(rab) {
 }
 
 async function downloadRabRow(rab) {
+  if (typeof html2pdf === 'undefined') {
+    appStore.showAlert('Library PDF belum dimuat. Silakan coba beberapa saat lagi.', 'error')
+    return
+  }
   await loadRabIntoBuilder(rab)
-  const w = window.open('', '_blank')
-  w.document.write(generateRabPrintHTML(builderForm.value))
-  w.document.close()
+  
+  const element = document.createElement('div')
+  element.innerHTML = generateRabPrintHTML(builderForm.value)
+  
+  const filename = `RAB_${rab.project_name.replace(/\s+/g, '_')}_${rab.code}.pdf`
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }
+  
+  html2pdf().from(element).set(opt).save()
 }
 
 async function viewRabDetail(rab) {
@@ -1239,7 +1267,7 @@ function openOngkosTukangModal(ot = null) {
     ongkosTukangForm.value = {
       id: ot.id,
       rab_id: ot.rab_id,
-      date: ot.date ? ot.date.split('T')[0] : new Date().toISOString().split('T')[0],
+      date: ot.date ? ot.date.split('T')[0] : new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
       description: ot.description,
       amount: ot.amount
     }
@@ -1247,7 +1275,7 @@ function openOngkosTukangModal(ot = null) {
     ongkosTukangForm.value = {
       id: '',
       rab_id: '',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
       description: '',
       amount: 0
     }

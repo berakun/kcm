@@ -501,8 +501,8 @@ const api = useApi()
 const activeTab = ref('calendar')
 
 // Date filters defaulting to last 30 days
-const todayStr = new Date().toISOString().split('T')[0]
-const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
 
 const filter = ref({
   start: thirtyDaysAgo,

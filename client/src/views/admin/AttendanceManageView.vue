@@ -132,8 +132,8 @@ import { formatDate } from '../../utils/helpers'
 const api = useApi()
 const appStore = useAppStore()
 
-const filterDateStart = ref(new Date().toISOString().split('T')[0])
-const filterDateEnd = ref(new Date().toISOString().split('T')[0])
+const filterDateStart = ref(new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }))
+const filterDateEnd = ref(new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }))
 const logsList = ref([])
 
 onMounted(async () => {
@@ -147,7 +147,7 @@ async function fetchDailyLogs() {
       params.from = filterDateStart.value
       params.to = filterDateEnd.value
     } else {
-      params.date = new Date().toISOString().split('T')[0]
+      params.date = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
     }
     const data = await api.get('/api/attendance/admin-list', params)
     logsList.value = data
