@@ -12,7 +12,23 @@ const allowedOrigins = [
 
 module.exports = (app) => {
   app.use(helmet({
-    crossOriginResourcePolicy: false // Allows accessing uploaded portfolio images
+    crossOriginResourcePolicy: false, // Allows accessing uploaded portfolio images
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        baseUri: ["'self'"],
+        fontSrc: ["'self'", "https:", "data:"],
+        formAction: ["'self'"],
+        frameAncestors: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        objectSrc: ["'none'"],
+        scriptSrc: ["'self'", "https://www.google.com", "https://maps.googleapis.com", "https://maps.gstatic.com"],
+        scriptSrcAttr: ["'none'"],
+        styleSrc: ["'self'", "https:", "'unsafe-inline'"],
+        frameSrc: ["'self'", "https://www.google.com", "https://maps.google.com"],
+        upgradeInsecureRequests: []
+      }
+    }
   }));
   
   app.use(cors({
