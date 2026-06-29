@@ -1,15 +1,15 @@
 <template>
-  <div class="flex min-h-screen">
+  <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
     <AppSidebar />
 
     <!-- Main Content Area -->
-    <main class="flex-grow flex flex-col min-h-screen">
+    <main class="flex-grow flex flex-col h-screen overflow-hidden">
       <!-- Topbar Navigation -->
       <AppTopbar title="RAB & Anggaran Proyek" />
 
       <!-- Content Body -->
-      <div class="p-8 flex-grow space-y-6 overflow-y-auto max-h-[calc(100vh-80px)]">
+      <div class="p-8 flex-grow space-y-6 overflow-y-auto">
         <!-- Navigation Tabs -->
         <div class="flex space-x-2 border-b border-gray-200 dark:border-gray-800 pb-2 overflow-x-auto scrollbar-hide">
           <button 

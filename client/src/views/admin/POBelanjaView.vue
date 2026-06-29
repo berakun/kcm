@@ -1,9 +1,9 @@
 <template>
-  <div class="flex min-h-screen">
+  <div class="flex h-screen overflow-hidden">
     <AppSidebar />
-    <main class="flex-grow flex flex-col min-h-screen">
+    <main class="flex-grow flex flex-col h-screen overflow-hidden">
       <AppTopbar title="PO Belanja" />
-      <div class="p-6 md:p-8 flex-grow space-y-6 overflow-y-auto max-h-[calc(100vh-80px)]">
+      <div class="p-6 md:p-8 flex-grow space-y-6 overflow-y-auto">
 
         <!-- Header Bar -->
         <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">

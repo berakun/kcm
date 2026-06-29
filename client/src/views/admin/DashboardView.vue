@@ -1,15 +1,15 @@
 <template>
-  <div class="flex min-h-screen">
+  <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
     <AppSidebar />
 
     <!-- Main Content Area -->
-    <main class="flex-grow flex flex-col min-h-screen">
+    <main class="flex-grow flex flex-col h-screen overflow-hidden">
       <!-- Top Navigation -->
       <AppTopbar title="Beranda Overview" />
 
       <!-- Dashboard Body -->
-      <div class="p-8 flex-grow space-y-8 overflow-y-auto max-h-[calc(100vh-80px)]">
+      <div class="p-8 flex-grow space-y-8 overflow-y-auto">
         <!-- Welcome Banner -->
         <div class="bg-gradient-to-r from-red-900 to-red-950 text-white rounded-3xl p-8 shadow-md relative overflow-hidden">
           <div class="relative z-10 space-y-2">

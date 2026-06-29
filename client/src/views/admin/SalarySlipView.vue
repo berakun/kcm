@@ -1,9 +1,9 @@
 <template>
-  <div class="flex min-h-screen">
+  <div class="flex h-screen overflow-hidden">
     <AppSidebar />
-    <main class="flex-grow flex flex-col min-h-screen">
+    <main class="flex-grow flex flex-col h-screen overflow-hidden">
       <AppTopbar title="Slip Gaji Karyawan" />
-      <div class="p-6 md:p-8 flex-grow space-y-6 overflow-y-auto max-h-[calc(100vh-80px)]">
+      <div class="p-6 md:p-8 flex-grow space-y-6 overflow-y-auto">
 
         <!-- Premium Filter & Overview Header -->
         <div class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-850 dark:to-gray-900 p-6 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 animate-fade-in">

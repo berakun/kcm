@@ -97,11 +97,14 @@ const router = createRouter({
 })
 
 // Navigation Guards
+let isFirstTransition = true
+
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
-  // Re-check auth status with server if token exists
-  if (authStore.token && !authStore.user) {
+  // Re-check auth status with server on first load/refresh if user in localStorage exists
+  if (isFirstTransition && localStorage.getItem('kcm_user')) {
+    isFirstTransition = false
     await authStore.checkAuthStatus()
   }
 

@@ -1,15 +1,15 @@
 <template>
-  <div class="flex min-h-screen">
+  <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
     <AppSidebar />
 
     <!-- Main Content Area -->
-    <main class="flex-grow flex flex-col min-h-screen">
+    <main class="flex-grow flex flex-col h-screen overflow-hidden">
       <!-- Topbar Navigation -->
       <AppTopbar title="Manajemen Kehadiran Karyawan" />
 
       <!-- Content Body -->
-      <div class="p-8 flex-grow space-y-6 overflow-y-auto max-h-[calc(100vh-80px)]">
+      <div class="p-8 flex-grow space-y-6 overflow-y-auto">
         
         <!-- Controls & Date Range Picker -->
         <div class="bg-white dark:bg-gray-850 p-4 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between">

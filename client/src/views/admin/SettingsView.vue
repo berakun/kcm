@@ -1,15 +1,15 @@
 <template>
-  <div class="flex min-h-screen">
+  <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
     <AppSidebar />
 
     <!-- Main Content Area -->
-    <main class="flex-grow flex flex-col min-h-screen">
+    <main class="flex-grow flex flex-col h-screen overflow-hidden">
       <!-- Topbar Navigation -->
       <AppTopbar title="Pengaturan Sistem" />
 
       <!-- Content Body -->
-      <div class="p-8 flex-grow space-y-6 overflow-y-auto max-h-[calc(100vh-80px)] max-w-xl">
+      <div class="p-8 flex-grow space-y-6 overflow-y-auto max-w-xl">
         <div class="bg-white dark:bg-gray-850 p-6 rounded-3xl border border-gray-150 dark:border-gray-800 shadow-sm space-y-6">
           <div>
             <h3 class="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
