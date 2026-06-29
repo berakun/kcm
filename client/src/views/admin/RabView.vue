@@ -656,14 +656,14 @@
                         <th class="py-3 px-4 w-8 text-center">NO</th>
                         <th class="py-3 px-4">Item Pekerjaan</th>
                         <th class="py-3 px-4 w-1/4">Material</th>
-                        <th class="py-3 px-4 w-16 text-center">P</th>
-                        <th class="py-3 px-4 w-16 text-center">L</th>
+                        <th class="py-3 px-2 w-20 text-center">P</th>
+                        <th class="py-3 px-2 w-20 text-center">L</th>
                         <th class="py-3 px-4 w-32 text-right">Harga</th>
                         <th class="py-3 px-4 w-12 text-center">#</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
-                      <tr v-if="builderForm.items.length === 0">
+                       <tr v-if="builderForm.items.length === 0">
                         <td colspan="7" class="py-8 text-center text-gray-400 font-medium">Belum ada item ditambahkan. Silakan klik "Tambah Baris".</td>
                       </tr>
                       <tr v-else v-for="(item, idx) in builderForm.items" :key="idx" class="align-top">
@@ -674,10 +674,10 @@
                         <td class="py-2.5 px-3">
                           <input v-model="item.description" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Material / deskripsi"/>
                         </td>
-                        <td class="py-2.5 px-3 text-center">
+                        <td class="py-2.5 px-2 text-center">
                           <input v-model.number="item.qty" type="number" step="any" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center"/>
                         </td>
-                        <td class="py-2.5 px-3 text-center">
+                        <td class="py-2.5 px-2 text-center">
                           <input v-model="item.unit" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center"/>
                         </td>
                         <td class="py-2.5 px-3">
