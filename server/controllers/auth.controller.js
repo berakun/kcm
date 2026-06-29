@@ -23,6 +23,12 @@ exports.login = async (req, res) => {
       return res.status(403).json({ error: 'Akun Anda dinonaktifkan. Silakan hubungi Super Admin.' });
     }
 
+    // Calculate milliseconds/seconds until next 00:00 midnight in Asia/Jakarta
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+    const msUntilMidnight = tomorrow.getTime() - now.getTime();
+    const secondsUntilMidnight = Math.floor(msUntilMidnight / 1000);
+
     // Sign JWT
     const token = jwt.sign(
       {
@@ -33,7 +39,7 @@ exports.login = async (req, res) => {
         department: user.department
       },
       process.env.JWT_SECRET || 'kcm_super_secret_key_2024_change_this_in_production',
-      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+      { expiresIn: secondsUntilMidnight }
     );
 
     // Update last active
@@ -44,7 +50,7 @@ exports.login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: msUntilMidnight,
       path: '/'
     });
 

@@ -82,17 +82,58 @@
                   <td class="py-4 px-6 text-center">
                     <span :class="statusBadgeClass(po.status)" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase">{{ po.status || 'draft' }}</span>
                   </td>
-                  <td class="py-4 px-6 text-center">
-                    <div class="flex items-center justify-center gap-1">
-                      <button @click="viewPO(po)" title="Lihat" class="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
-                        <span class="material-symbols-outlined text-base">visibility</span>
+                  <td class="py-4 px-6 text-center relative">
+                    <div class="inline-block text-left">
+                      <button 
+                        @click.prevent.stop="toggleDropdown(po.id)" 
+                        class="p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center mx-auto"
+                        title="Aksi"
+                      >
+                        <span class="material-symbols-outlined text-lg">more_vert</span>
                       </button>
-                      <button @click="editPO(po)" title="Edit" class="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors">
-                        <span class="material-symbols-outlined text-base">edit</span>
-                      </button>
-                      <button @click="deletePO(po.id)" title="Hapus" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                        <span class="material-symbols-outlined text-base">delete</span>
-                      </button>
+                      
+                      <!-- Dropdown Menu -->
+                      <div 
+                        v-if="activeDropdown === po.id" 
+                        class="absolute right-6 mt-1 w-44 bg-white dark:bg-gray-850 rounded-2xl shadow-xl border border-gray-150 dark:border-gray-800 py-2 z-30 animate-fade-in"
+                      >
+                        <button 
+                          @click="activeDropdown = null; viewPO(po)" 
+                          class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+                        >
+                          <span class="material-symbols-outlined text-sm text-blue-600">visibility</span>
+                          <span>Lihat Detail</span>
+                        </button>
+                        <button 
+                          @click="activeDropdown = null; downloadPoPDF(po)" 
+                          class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+                        >
+                          <span class="material-symbols-outlined text-sm text-emerald-600">download</span>
+                          <span>Unduh PDF</span>
+                        </button>
+                        <button 
+                          @click="activeDropdown = null; viewCetak(po)" 
+                          class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+                        >
+                          <span class="material-symbols-outlined text-sm text-gray-500">print</span>
+                          <span>Cetak PO</span>
+                        </button>
+                        <button 
+                          @click="activeDropdown = null; editPO(po)" 
+                          class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+                        >
+                          <span class="material-symbols-outlined text-sm text-amber-600">edit</span>
+                          <span>Ubah / Edit</span>
+                        </button>
+                        <hr class="my-1 border-gray-100 dark:border-gray-800" />
+                        <button 
+                          @click="activeDropdown = null; deletePO(po.id)" 
+                          class="w-full px-4 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center space-x-2.5 transition-colors"
+                        >
+                          <span class="material-symbols-outlined text-sm">delete</span>
+                          <span>Hapus PO</span>
+                        </button>
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -231,7 +272,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, onBeforeUnmount } from 'vue'
 import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
 import PoFormModal from '../../components/rab/PoFormModal.vue'
@@ -242,6 +283,20 @@ import { formatCurrency, formatDate } from '../../utils/helpers'
 
 const api = useApi()
 const appStore = useAppStore()
+
+const activeDropdown = ref(null)
+
+function toggleDropdown(id) {
+  if (activeDropdown.value === id) {
+    activeDropdown.value = null
+  } else {
+    activeDropdown.value = id
+  }
+}
+
+function closeAllDropdowns() {
+  activeDropdown.value = null
+}
 
 // ─── Modal State ───
 const showPoFormModal = ref(false)
@@ -353,15 +408,178 @@ try {
 }
 
 async function deletePO(id) {
-if (!confirm('Hapus PO ini?')) return
-try {
-  await api.delete(`/api/po/${id}`)
-  appStore.showAlert('PO berhasil dihapus.', 'success')
-  await loadPOList()
-} catch (err) {
-  appStore.showAlert('Gagal menghapus PO.', 'error')
-}
+  if (!confirm('Hapus PO ini?')) return
+  try {
+    await api.delete(`/api/po/${id}`)
+    appStore.showAlert('PO berhasil dihapus.', 'success')
+    await loadPOList()
+  } catch (err) {
+    appStore.showAlert('Gagal menghapus PO.', 'error')
+  }
 }
 
-onMounted(() => { loadRabList(); loadPOList() })
+function generatePoPrintHTML(po) {
+  let itemsRows = ''
+  const items = po.items || []
+  items.forEach((item, i) => {
+    itemsRows += `<tr>
+      <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">${i + 1}</td>
+      <td style="border: 1px solid #ddd; padding: 6px;">${item.description || ''}</td>
+      <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">${item.qty || 0}</td>
+      <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">${item.satuan || ''}</td>
+      <td style="border: 1px solid #ddd; padding: 6px; text-align: right; font-family: monospace;">${formatCurrency(item.unitPrice || item.unit_price || 0)}</td>
+      <td style="border: 1px solid #ddd; padding: 6px; text-align: right; font-family: monospace;">${formatCurrency((item.qty || 0) * (item.unitPrice || item.unit_price || 0))}</td>
+    </tr>`
+  })
+
+  return `
+    <html>
+      <head>
+        <title>Purchase Order - ${po.po_number}</title>
+        <style>
+          body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #333; padding: 20px; font-size: 11px; }
+          .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+          .header h1 { font-size: 16px; margin: 0; font-weight: bold; }
+          .header p { margin: 2px 0; font-size: 9px; color: #666; }
+          .title { text-align: center; font-size: 12px; font-weight: bold; text-transform: uppercase; margin: 15px 0; letter-spacing: 2px; }
+          .info-grid { display: grid; grid-template-cols: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+          .info-grid div { margin-bottom: 4px; }
+          .info-grid span { font-weight: bold; color: #555; }
+          table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 10px; }
+          th { background: #f3f4f6; border: 1px solid #ccc; padding: 6px; font-weight: bold; }
+          td { border: 1px solid #ddd; padding: 6px; }
+          .summary-container { display: flex; justify-content: flex-end; margin-top: 10px; }
+          .summary-table { width: 220px; border-collapse: collapse; }
+          .summary-table td { border: none; padding: 4px; }
+          .summary-table tr.grand-total { font-weight: bold; background: #fee2e2; color: #991b1b; }
+          .in-words { background: #f9fafb; padding: 8px; border-radius: 4px; font-style: italic; margin: 10px 0; }
+          .signatures { display: grid; grid-template-cols: 1fr 1fr 1fr; gap: 20px; margin-top: 30px; text-align: center; }
+          .signatures p { margin: 0; }
+          .sig-line { border-bottom: 1px solid #888; height: 40px; margin-bottom: 5px; }
+          .notes { background: #f9fafb; padding: 8px; border-radius: 4px; margin-top: 15px; }
+          .notes p { margin: 3px 0; }
+          @media print {
+            @page { size: A4; margin: 15mm; }
+            body { padding: 0; }
+            .no-print { display: none !important; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <img src="/logo-transparent.png" alt="KCM Logo" style="height: 48px; object-fit: contain; margin-bottom: 4px;">
+          <h1>CV. KURNIA CIPTA MANDIRI</h1>
+          <p>Jl. Kaliurang Km. 12, Candiwinangun RT 6/ RW 13 No. 24, Sardonoharjo, Ngaglik, Sleman, Yogyakarta</p>
+          <p>Telp/Wa: 0858.6800.0012 | Email: kcm_production@ymail.com</p>
+        </div>
+        
+        <div class="title">PURCHASE ORDER</div>
+        
+        <div class="info-grid">
+          <div><span>No:</span> ${po.po_number || '-'}</div>
+          <div><span>Date:</span> ${formatDateID(po.date)}</div>
+          <div><span>To:</span> ${po.to_supplier || '-'}</div>
+          <div><span>Phone:</span> ${po.phone || '-'}</div>
+          <div><span>Attn:</span> ${po.attn || '-'}</div>
+          <div><span>Status:</span> ${po.status || 'draft'}</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 5%">No</th>
+              <th style="width: 50%">Description</th>
+              <th style="width: 10%">Qty</th>
+              <th style="width: 10%">Sat</th>
+              <th style="width: 12%">Unit Price</th>
+              <th style="width: 13%">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsRows}
+          </tbody>
+        </table>
+
+        <div class="summary-container">
+          <table class="summary-table">
+            <tr>
+              <td>Total</td>
+              <td style="text-align: right; font-family: monospace;">${formatCurrency(po.total)}</td>
+            </tr>
+            <tr>
+              <td>PPN 10%</td>
+              <td style="text-align: right; font-family: monospace;">${formatCurrency(po.ppn)}</td>
+            </tr>
+            <tr class="grand-total">
+              <td style="padding: 6px;">Grand Total</td>
+              <td style="text-align: right; font-family: monospace; padding: 6px;">${formatCurrency(po.grand_total)}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="in-words">In Words: <strong>${po.in_words || '-'}</strong></div>
+
+        <div class="signatures">
+          <div>
+            <p style="font-weight: bold; color: #555; text-transform: uppercase;">Ordered By</p>
+            <div class="sig-line"></div>
+            <p>${po.ordered_by || '-'}</p>
+          </div>
+          <div>
+            <p style="font-weight: bold; color: #555; text-transform: uppercase;">Purchasing</p>
+            <div class="sig-line"></div>
+            <p>${po.purchasing || '-'}</p>
+          </div>
+          <div>
+            <p style="font-weight: bold; color: #555; text-transform: uppercase;">Approved By</p>
+            <div class="sig-line"></div>
+            <p>${po.approved_by || '-'}</p>
+          </div>
+        </div>
+
+        <div class="notes">
+          <p><strong>Note:</strong> ${po.note || '-'}</p>
+          <p><strong>Deliver by:</strong> ${formatDateID(po.deliver_by)}</p>
+          <p><strong>Deliver to:</strong> ${po.deliver_to || '-'}</p>
+          <p><strong>Term of Payment:</strong> ${po.term_of_payment || '-'}</p>
+        </div>
+      </body>
+    </html>
+  `
+}
+
+function viewCetak(po) {
+  const w = window.open('', '_blank')
+  w.document.write(generatePoPrintHTML(po))
+  w.document.close()
+  setTimeout(() => { w.print() }, 500)
+}
+
+function downloadPoPDF(po) {
+  if (typeof html2pdf === 'undefined') {
+    appStore.showAlert('Library PDF belum dimuat. Silakan coba beberapa saat lagi.', 'error')
+    return
+  }
+  const element = document.createElement('div')
+  element.innerHTML = generatePoPrintHTML(po)
+  const filename = `PO_${po.po_number.replace(/\s+/g, '_')}.pdf`
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }
+  html2pdf().from(element).set(opt).save()
+}
+
+onMounted(() => { 
+  loadRabList()
+  loadPOList() 
+  window.addEventListener('click', closeAllDropdowns)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('click', closeAllDropdowns)
+})
 </script>

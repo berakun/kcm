@@ -128,22 +128,59 @@
                           {{ r.status }}
                         </span>
                       </td>
-                      <td class="py-4 px-6 text-center space-x-2">
-                        <button @click="viewRabDetail(r)" class="text-blue-600 hover:text-blue-800" title="Detail & PO">
-                          <span class="material-symbols-outlined text-base">visibility</span>
-                        </button>
-                        <button @click="printRabRow(r)" class="text-gray-600 hover:text-gray-800" title="Cetak RAB">
-                          <span class="material-symbols-outlined text-base">print</span>
-                        </button>
-                        <button @click="downloadRabRow(r)" class="text-gray-600 hover:text-gray-800" title="Download PDF">
-                          <span class="material-symbols-outlined text-base">download</span>
-                        </button>
-                        <button @click="editRab(r.id)" class="text-amber-600 hover:text-amber-800" title="Edit">
-                          <span class="material-symbols-outlined text-base">edit_note</span>
-                        </button>
-                        <button @click="deleteRab(r.id)" class="text-red-600 hover:text-red-800" title="Hapus">
-                          <span class="material-symbols-outlined text-base">delete</span>
-                        </button>
+                      <td class="py-4 px-6 text-center relative">
+                        <div class="inline-block text-left">
+                          <button 
+                            @click.prevent.stop="toggleDropdown(r.id)" 
+                            class="p-2 rounded-xl text-gray-500 hover:bg-gray-150 dark:hover:bg-gray-800 transition-colors flex items-center justify-center mx-auto"
+                            title="Aksi"
+                          >
+                            <span class="material-symbols-outlined text-lg">more_vert</span>
+                          </button>
+                          
+                          <!-- Dropdown Menu -->
+                          <div 
+                            v-if="activeDropdown === r.id" 
+                            class="absolute right-6 mt-1 w-44 bg-white dark:bg-gray-850 rounded-2xl shadow-xl border border-gray-150 dark:border-gray-800 py-2 z-30 animate-fade-in"
+                          >
+                            <button 
+                              @click="activeDropdown = null; viewRabDetail(r)" 
+                              class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+                            >
+                              <span class="material-symbols-outlined text-sm text-blue-600">visibility</span>
+                              <span>Detail & PO</span>
+                            </button>
+                            <button 
+                              @click="activeDropdown = null; printRabRow(r)" 
+                              class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+                            >
+                              <span class="material-symbols-outlined text-sm text-gray-500">print</span>
+                              <span>Cetak RAB</span>
+                            </button>
+                            <button 
+                              @click="activeDropdown = null; downloadRabRow(r)" 
+                              class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+                            >
+                              <span class="material-symbols-outlined text-sm text-emerald-600">download</span>
+                              <span>Unduh PDF</span>
+                            </button>
+                            <button 
+                              @click="activeDropdown = null; editRab(r.id)" 
+                              class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+                            >
+                              <span class="material-symbols-outlined text-sm text-amber-600">edit_note</span>
+                              <span>Ubah / Edit</span>
+                            </button>
+                            <hr class="my-1 border-gray-100 dark:border-gray-800" />
+                            <button 
+                              @click="activeDropdown = null; deleteRab(r.id)" 
+                              class="w-full px-4 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center space-x-2.5 transition-colors"
+                            >
+                              <span class="material-symbols-outlined text-sm">delete</span>
+                              <span>Hapus RAB</span>
+                            </button>
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   </tbody>
@@ -693,7 +730,7 @@
 </style>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
 import BaseModal from '../../components/ui/BaseModal.vue'
@@ -704,6 +741,20 @@ import { formatCurrency, formatDate } from '../../utils/helpers'
 
 const api = useApi()
 const appStore = useAppStore()
+
+const activeDropdown = ref(null)
+
+function toggleDropdown(id) {
+  if (activeDropdown.value === id) {
+    activeDropdown.value = null
+  } else {
+    activeDropdown.value = id
+  }
+}
+
+function closeAllDropdowns() {
+  activeDropdown.value = null
+}
 
 function toLocalDateString(dateInput) {
   if (!dateInput) return ''
@@ -793,6 +844,11 @@ const actionNotes = ref('')
 
 onMounted(async () => {
   await loadAllData()
+  window.addEventListener('click', closeAllDropdowns)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('click', closeAllDropdowns)
 })
 
 async function loadAllData() {

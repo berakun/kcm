@@ -14,7 +14,7 @@
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
-    <div class="flex-grow overflow-y-auto scrollbar-hide">
+    <div ref="scrollContainer" class="flex-grow overflow-y-auto scrollbar-hide" @scroll="onScroll">
       <!-- Brand Logo Header -->
       <div class="flex items-center space-x-3 px-6 py-5 border-b border-red-900/60 bg-red-900/10">
         <img src="/logo-transparent.png" alt="KCM Logo" class="w-12 h-12 rounded-lg object-contain">
@@ -79,13 +79,26 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
 import { useAppStore } from '../../stores/app'
 
 const appStore = useAppStore()
 const route = useRoute()
+
+const scrollContainer = ref(null)
+
+function onScroll(e) {
+  sessionStorage.setItem('sidebar_scroll_top', e.target.scrollTop)
+}
+
+onMounted(() => {
+  const savedScroll = sessionStorage.getItem('sidebar_scroll_top')
+  if (savedScroll && scrollContainer.value) {
+    scrollContainer.value.scrollTop = parseInt(savedScroll, 10)
+  }
+})
 
 const sidebarOpen = computed({
   get: () => appStore.sidebarOpen,
