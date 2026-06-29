@@ -76,7 +76,7 @@
     <section class="relative z-10 -mt-12 max-w-5xl mx-auto px-6">
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 py-8 px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
         <div>
-          <h3 class="text-3xl font-extrabold text-red-800 dark:text-red-500">10+ Tahun</h3>
+          <h3 class="text-3xl font-extrabold text-red-800 dark:text-red-500">20+ Tahun</h3>
           <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold uppercase mt-1">Pengalaman</p>
         </div>
         <div>
@@ -88,8 +88,8 @@
           <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold uppercase mt-1">Kepuasan Client</p>
         </div>
         <div>
-          <h3 class="text-3xl font-extrabold text-red-800 dark:text-red-500">5 Tahun</h3>
-          <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold uppercase mt-1">Garansi Konstruksi</p>
+          <h3 class="text-3xl font-extrabold text-red-800 dark:text-red-500">3 Bulan</h3>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold uppercase mt-1">Garansi Pengerjaan</p>
         </div>
       </div>
     </section>
@@ -190,8 +190,8 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/60">
             <span class="material-symbols-outlined text-4xl text-red-800 mb-4">verified_user</span>
-            <h4 class="font-bold text-base mb-2">Garansi 5 Tahun</h4>
-            <p class="text-xxs text-gray-500 dark:text-gray-400 leading-relaxed">Jaminan garansi perbaikan struktur konstruksi pasca konstruksi selama 5 tahun penuh.</p>
+            <h4 class="font-bold text-base mb-2">Garansi 3 Bulan</h4>
+            <p class="text-xxs text-gray-500 dark:text-gray-400 leading-relaxed">Jaminan garansi perbaikan pengerjaan selama 3 bulan setelah proyek selesai.</p>
           </div>
           <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/60">
             <span class="material-symbols-outlined text-4xl text-red-800 mb-4">groups</span>
@@ -207,29 +207,6 @@
             <span class="material-symbols-outlined text-4xl text-red-800 mb-4">travel_explore</span>
             <h4 class="font-bold text-base mb-2">Jangkauan Nasional</h4>
             <p class="text-xxs text-gray-500 dark:text-gray-400 leading-relaxed">Siap melayani pengerjaan proyek interior dan furniture custom ke seluruh wilayah Indonesia.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ Accordion -->
-    <section class="py-12 md:py-24">
-      <div class="max-w-4xl mx-auto px-6">
-        <div class="text-center mb-16">
-          <span class="text-red-800 dark:text-red-500 font-bold text-xs uppercase tracking-widest block">Pertanyaan Umum</span>
-          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mt-2">Frequently Asked Questions</h2>
-          <div class="w-16 h-1 bg-red-800 mx-auto mt-4 rounded-full"></div>
-        </div>
-
-        <div class="space-y-4">
-          <div class="bg-white dark:bg-gray-850 rounded-2xl border border-gray-100 dark:border-gray-700/80 overflow-hidden" v-for="(f, i) in faqs" :key="i">
-            <button class="w-full py-5 px-6 text-left font-bold flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800" @click="activeFaq = (activeFaq === i) ? null : i">
-              <span class="text-sm">{{ f.q }}</span>
-              <span class="material-symbols-outlined text-gray-400">{{ activeFaq === i ? 'expand_less' : 'expand_more' }}</span>
-            </button>
-            <div v-show="activeFaq === i" class="px-6 pb-6 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-              {{ f.a }}
-            </div>
           </div>
         </div>
       </div>
@@ -272,7 +249,7 @@
           </div>
 
           <div class="w-full h-64 rounded-2xl overflow-hidden shadow-md border border-gray-200 dark:border-gray-700">
-            <iframe class="w-full h-full border-0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.85695679462!2d110.3966113!3d-7.7326!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a591cb4570fa3%3A0xcb1b61ab20fa5bb8!2sKurnia%20Cipta%20Mandiri!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid" allowfullscreen="" loading="lazy"></iframe>
+            <iframe class="w-full h-full border-0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.85695679462!2d110.3988!3d-7.7326!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a591cb4570fa3%3A0xcb1b61ab20fa5bb8!2sKurnia%20Cipta%20Mandiri!5e0!3m2!1sid!2sid!4v1719640000000!5m2!1sid!2sid" allowfullscreen="" loading="lazy"></iframe>
           </div>
         </div>
 
@@ -362,7 +339,6 @@ const api = useApi()
 const contactName = ref('')
 const contactPhone = ref('')
 const contactMessage = ref('')
-const activeFaq = ref(null)
 const portfolioProjects = ref([])
 const mobileMenuOpen = ref(false)
 
@@ -391,12 +367,6 @@ const previewProjects = [
   { category: 'Residential', title: 'Living Room Sleek Maroon', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBT4VqcBNFcxdoSxuqnnYvQ95rnHPbgjiOA1yR_Ay-89ZGjBFOMXlPZfmrrwPpbqYtVSX_ahLsLomQ6-HCGl6YDJyMW5KBp20_mJ3--tdV7TGB0LkiR5UiHvbA0LkRaTkrsXhWpENBFUeyonIS_6_LRtHfwpTuPpfnbOYLoyvbGno5ePLOqCRpsVpwU9BMPA6ShD1oAvqYG6i7-FaA9GSnpdj-QMsYQvtTWAIonmtGtKCQQWnzJSqNkjA' },
   { category: 'Residential', title: 'Matte Black Marble Kitchen', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBIcUDAZC7ZPnxMYzZihUHMdp0IIqGGPBMvCKFgaF4Uh6TUZpvHTNSlCiUh4ZjAv0oswUmNQrtLCJNiIzeFQSfVLi-0tH-B2jkYmnu7R1mwx9ESi_ECVC962deTTxr32NaDK_yu8X29nmWoYsVckDUkrsnA4e8zi9ncL4mAJgzvkNgp1u2SrL9vIroORhaapHqh01J6W-oA-31O0Ed3r9pIGH74vPOM82QNu88ihzjjOeFr1zDRKfTinw' },
   { category: 'Office', title: 'Sophisticated Office Space', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDjIj1YhH5n-ou7BYdeP0mSVTKFvNQO1uSEPFiB5lWaOKlXGkETjjjHNMa9CcUnMFtr2lljpBNGKY7g7nGr7BqlRCIUrGkf8AxuyvYOgz1_HpTX8d5RSGFldwnKnt2KdFU6rWZACSN3qZV8eB1OtX-KNVBzEfq1TgUa_mHd693APAohOs6THgBJn_rn-Ig2Pqg6eeg__Mg_IEhMEl77Eh1Nm7a2ZJEu63RtehtWOYX_x2sbkZKYKfRg6Q' }
-]
-
-const faqs = [
-  { q: 'Bagaimana cara memulai konsultasi proyek dengan KCM?', a: 'Anda dapat menghubungi kami langsung melalui WhatsApp di nomor 085868000012 atau mengisi formulir kontak di sebelah kanan. Tim kami akan menjadwalkan survey lokasi gratis untuk area Yogyakarta.' },
-  { q: 'Apakah material mebel custom tahan terhadap rayap?', a: 'KCM menggunakan bahan multiplex berkualitas tinggi dilapisi PVC Edging dan HPL. Kami juga menyediakan PVC Board anti air dan anti rayap khusus untuk area kitchen sink.' },
-  { q: 'Apakah KCM menyediakan opsi pembayaran bertahap?', a: 'Ya. Pembayaran proyek dilakukan dalam termin kontrak kerja: DP 40%, Termin kedua 30%, Termin ketiga 25%, dan Pelunasan retensi 5% setelah uji coba selesai.' }
 ]
 
 function sendWhatsappMessage() {
