@@ -35,7 +35,7 @@
         <!-- ========================================== -->
         <div v-if="activeTab === 'rab'" class="space-y-6">
           <!-- SUB-VIEW: LIST -->
-          <div v-if="!builderMode" class="space-y-6">
+          <div class="space-y-6">
             <!-- Search & Actions -->
             <div class="bg-white dark:bg-gray-850 p-4 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div class="flex items-center gap-3 flex-wrap">
@@ -149,114 +149,6 @@
                   </tbody>
                 </table>
               </div>
-            </div>
-          </div>
-
-          <!-- SUB-VIEW: BUILDER FORM -->
-          <div v-else class="bg-white dark:bg-gray-850 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 p-6 space-y-6">
-            <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-4">
-              <div>
-                <h3 class="font-bold text-sm text-gray-800 dark:text-white">{{ builderForm.id ? 'Edit Rencana Anggaran Biaya' : 'Buat RAB Baru' }}</h3>
-                <p class="text-[10px] text-gray-400">Atur kode proyek, detail klien, dan rincian material/pekerjaan.</p>
-              </div>
-              <button @click="cancelBuilder" class="text-gray-400 hover:text-gray-600 transition-colors">
-                <span class="material-symbols-outlined text-lg">close</span>
-              </button>
-            </div>
-
-            <!-- Meta Data Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div class="md:col-span-1">
-                <label class="text-[10px] font-bold text-gray-400 block mb-1">Kode RAB</label>
-                <input v-model="builderForm.code" type="text" required class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Contoh: RAB-001"/>
-              </div>
-              <div class="md:col-span-2">
-                <label class="text-[10px] font-bold text-gray-400 block mb-1">Nama Proyek</label>
-                <input v-model="builderForm.project_name" type="text" required class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Contoh: Renovasi Dapur Modern Sleman"/>
-              </div>
-              <div class="md:col-span-1">
-                <label class="text-[10px] font-bold text-gray-400 block mb-1">Klien</label>
-                <input v-model="builderForm.client" type="text" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Contoh: Ibu Rina"/>
-              </div>
-              <div class="md:col-span-1">
-                <label class="text-[10px] font-bold text-gray-400 block mb-1">Status Proyek</label>
-                <select v-model="builderForm.status" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0">
-                  <option value="draft">Draft</option>
-                  <option value="dikerjakan">Dikerjakan</option>
-                  <option value="selesai">Selesai</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Items list table -->
-            <div class="space-y-3">
-              <div class="flex justify-between items-center">
-                <span class="text-xs font-bold text-gray-700 dark:text-gray-200">Daftar Item Rincian Biaya</span>
-                <button @click="addBuilderRow" type="button" class="border border-red-800 text-red-800 hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-950/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
-                  <span class="material-symbols-outlined text-sm font-semibold">add</span>
-                  Tambah Baris
-                </button>
-              </div>
-
-              <div class="border border-gray-150 dark:border-gray-800 rounded-xl overflow-hidden">
-                <table class="w-full text-left border-collapse">
-                  <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-xxs font-bold text-gray-400 uppercase border-b border-gray-150 dark:border-gray-800">
-                    <tr>
-                      <th class="py-3 px-4 w-8 text-center">NO</th>
-                      <th class="py-3 px-4">Item Pekerjaan</th>
-                      <th class="py-3 px-4 w-1/4">Material</th>
-                      <th class="py-3 px-4 w-16 text-center">P</th>
-                      <th class="py-3 px-4 w-16 text-center">L</th>
-                      <th class="py-3 px-4 w-32 text-right">Harga</th>
-                      <th class="py-3 px-4 w-12 text-center">#</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
-                    <tr v-if="builderForm.items.length === 0">
-                      <td colspan="7" class="py-8 text-center text-gray-400 font-medium">Belum ada item ditambahkan. Silakan klik "Tambah Baris".</td>
-                    </tr>
-                    <tr v-else v-for="(item, idx) in builderForm.items" :key="idx" class="align-top">
-                      <td class="py-2.5 px-3 text-center text-gray-400">{{ idx + 1 }}</td>
-                      <td class="py-2.5 px-3">
-                        <input v-model="item.item_name" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Nama pekerjaan"/>
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <input v-model="item.description" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Material / deskripsi"/>
-                      </td>
-                      <td class="py-2.5 px-3 text-center">
-                        <input v-model.number="item.qty" type="number" step="any" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center"/>
-                      </td>
-                      <td class="py-2.5 px-3 text-center">
-                        <input v-model="item.unit" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center"/>
-                      </td>
-                      <td class="py-2.5 px-3">
-                        <input v-model.number="item.unit_price" type="number" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-right"/>
-                      </td>
-                      <td class="py-2.5 px-3 text-center pt-3">
-                        <button @click="removeBuilderRow(idx)" type="button" class="text-red-500 hover:text-red-700">
-                          <span class="material-symbols-outlined text-base">delete</span>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Summary Total -->
-            <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900/40 p-4 rounded-xl">
-              <span class="text-xs font-bold text-gray-500">Estimasi Total Anggaran</span>
-              <span class="text-lg font-black text-red-800 dark:text-red-500 font-mono">{{ formatCurrency(builderTotalBudget) }}</span>
-            </div>
-
-            <!-- Save / Cancel button actions -->
-            <div class="flex justify-end space-x-3">
-              <button @click="cancelBuilder" class="px-5 py-2.5 rounded-xl border border-gray-250 text-gray-500 dark:text-gray-400 font-semibold text-xs hover:bg-gray-50 dark:hover:bg-gray-800">
-                Batal
-              </button>
-              <button @click="submitRabForm" class="bg-red-800 hover:bg-red-950 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-md">
-                Simpan RAB Proyek
-              </button>
             </div>
           </div>
         </div>
@@ -653,7 +545,7 @@
           <input v-model.number="ongkosTukangForm.amount" type="number" min="1" required class="w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Rp"/>
         </div>
 
-        <div class="border-t border-gray-100 dark:border-gray-800 pt-4 flex justify-end space-x-2">
+        <div class="border-t border-gray-150 dark:border-gray-800 pt-4 flex justify-end space-x-2">
           <button type="button" @click="closeOngkosTukangModal" class="px-5 py-2.5 rounded-xl border border-gray-250 text-gray-550 dark:text-gray-400 font-semibold text-xs hover:bg-gray-50">
             Batal
           </button>
@@ -664,8 +556,141 @@
       </form>
     </BaseModal>
 
+    <!-- Modal Form: RAB Builder (Popup) -->
+    <teleport to="body">
+      <transition name="modal-fade">
+        <div v-if="builderMode" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="cancelBuilder">
+          <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="cancelBuilder"></div>
+          <div class="relative bg-white dark:bg-gray-850 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto z-10">
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white dark:bg-gray-850 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+              <div>
+                <h3 class="font-bold text-sm text-gray-800 dark:text-white flex items-center gap-2">
+                  <span class="material-symbols-outlined text-base text-red-600">{{ builderForm.id ? 'edit_note' : 'add' }}</span>
+                  {{ builderForm.id ? 'Edit Rencana Anggaran Biaya' : 'Buat RAB Baru' }}
+                </h3>
+                <p class="text-[10px] text-gray-400 mt-0.5">Atur kode proyek, detail klien, dan rincian material/pekerjaan.</p>
+              </div>
+              <button @click="cancelBuilder" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <span class="material-symbols-outlined text-base">close</span>
+              </button>
+            </div>
+
+            <!-- Modal Body: RAB Form -->
+            <div class="p-6 space-y-6">
+              <!-- Meta Data Fields -->
+              <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="md:col-span-1">
+                  <label class="text-[10px] font-bold text-gray-400 block mb-1">Kode RAB</label>
+                  <input v-model="builderForm.code" type="text" required class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Contoh: RAB-001"/>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="text-[10px] font-bold text-gray-400 block mb-1">Nama Proyek</label>
+                  <input v-model="builderForm.project_name" type="text" required class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Contoh: Renovasi Dapur Modern Sleman"/>
+                </div>
+                <div class="md:col-span-1">
+                  <label class="text-[10px] font-bold text-gray-400 block mb-1">Klien</label>
+                  <input v-model="builderForm.client" type="text" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Contoh: Ibu Rina"/>
+                </div>
+                <div class="md:col-span-1">
+                  <label class="text-[10px] font-bold text-gray-400 block mb-1">Status Proyek</label>
+                  <select v-model="builderForm.status" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0">
+                    <option value="draft">Draft</option>
+                    <option value="dikerjakan">Dikerjakan</option>
+                    <option value="selesai">Selesai</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Items list table -->
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-bold text-gray-700 dark:text-gray-200">Daftar Item Rincian Biaya</span>
+                  <button @click="addBuilderRow" type="button" class="border border-red-800 text-red-800 hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-950/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
+                    <span class="material-symbols-outlined text-sm font-semibold">add</span>
+                    Tambah Baris
+                  </button>
+                </div>
+
+                <div class="border border-gray-150 dark:border-gray-800 rounded-xl overflow-hidden">
+                  <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-xxs font-bold text-gray-400 uppercase border-b border-gray-150 dark:border-gray-800">
+                      <tr>
+                        <th class="py-3 px-4 w-8 text-center">NO</th>
+                        <th class="py-3 px-4">Item Pekerjaan</th>
+                        <th class="py-3 px-4 w-1/4">Material</th>
+                        <th class="py-3 px-4 w-16 text-center">P</th>
+                        <th class="py-3 px-4 w-16 text-center">L</th>
+                        <th class="py-3 px-4 w-32 text-right">Harga</th>
+                        <th class="py-3 px-4 w-12 text-center">#</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
+                      <tr v-if="builderForm.items.length === 0">
+                        <td colspan="7" class="py-8 text-center text-gray-400 font-medium">Belum ada item ditambahkan. Silakan klik "Tambah Baris".</td>
+                      </tr>
+                      <tr v-else v-for="(item, idx) in builderForm.items" :key="idx" class="align-top">
+                        <td class="py-2.5 px-3 text-center text-gray-400">{{ idx + 1 }}</td>
+                        <td class="py-2.5 px-3">
+                          <input v-model="item.item_name" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Nama pekerjaan"/>
+                        </td>
+                        <td class="py-2.5 px-3">
+                          <input v-model="item.description" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Material / deskripsi"/>
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                          <input v-model.number="item.qty" type="number" step="any" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center"/>
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                          <input v-model="item.unit" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center"/>
+                        </td>
+                        <td class="py-2.5 px-3">
+                          <input v-model.number="item.unit_price" type="number" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-right"/>
+                        </td>
+                        <td class="py-2.5 px-3 text-center pt-3">
+                          <button @click="removeBuilderRow(idx)" type="button" class="text-red-500 hover:text-red-700">
+                            <span class="material-symbols-outlined text-base">delete</span>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Summary Total -->
+              <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900/40 p-4 rounded-xl">
+                <span class="text-xs font-bold text-gray-500">Estimasi Total Anggaran</span>
+                <span class="text-lg font-black text-red-800 dark:text-red-500 font-mono">{{ formatCurrency(builderTotalBudget) }}</span>
+              </div>
+
+              <!-- Save / Cancel button actions -->
+              <div class="flex justify-end space-x-3">
+                <button @click="cancelBuilder" class="px-5 py-2.5 rounded-xl border border-gray-250 text-gray-500 dark:text-gray-400 font-semibold text-xs hover:bg-gray-50 dark:hover:bg-gray-800">
+                  Batal
+                </button>
+                <button @click="submitRabForm" class="bg-red-800 hover:bg-red-950 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-md">
+                  Simpan RAB Proyek
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </teleport>
+
   </div>
 </template>
+
+<style>
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+</style>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
@@ -1265,5 +1290,11 @@ async function deleteOngkosTukang(id) {
 <style scoped>
 @media print {
   .no-print { display: none !important; }
+}
+.modal-fade-enter-active, .modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.modal-fade-enter-from, .modal-fade-leave-to {
+  opacity: 0;
 }
 </style>
