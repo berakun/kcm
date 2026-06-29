@@ -133,7 +133,7 @@ const allLinks = [
     label: 'Portfolio',
     icon: 'gallery_thumbnail',
     url: '/admin/portfolio',
-    roles: ['admin', 'super_admin']
+    roles: ['super_admin']
   },
   {
     id: 'rab',

@@ -32,7 +32,7 @@ const routes = [
   { 
     path: '/admin/portfolio', 
     component: PortfolioManageView, 
-    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] } 
+    meta: { requiresAuth: true, roles: ['super_admin'] } 
   },
   { 
     path: '/admin/rab', 
