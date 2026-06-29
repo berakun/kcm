@@ -21,70 +21,70 @@ const routes = [
   { path: '/', component: LandingView, name: 'landing' },
   { path: '/login', component: LoginView, name: 'login' },
   { path: '/portfolio', component: PortfolioView, name: 'portfolio' },
-  
+
   // Admin Routes (Admin & Super Admin)
-  { 
-    path: '/admin', 
-    component: DashboardView, 
+  {
+    path: '/admin',
+    component: DashboardView,
     name: 'admin-dashboard',
-    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] } 
+    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] }
   },
-  { 
-    path: '/admin/portfolio', 
-    component: PortfolioManageView, 
-    meta: { requiresAuth: true, roles: ['super_admin'] } 
+  {
+    path: '/admin/portfolio',
+    component: PortfolioManageView,
+    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] }
   },
-  { 
-    path: '/admin/rab', 
-    component: RabView, 
-    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] } 
+  {
+    path: '/admin/rab',
+    component: RabView,
+    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] }
   },
-  { 
-    path: '/admin/financial', 
-    component: FinancialView, 
-    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] } 
+  {
+    path: '/admin/financial',
+    component: FinancialView,
+    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] }
   },
-  { 
-    path: '/admin/po-belanja', 
-    component: POBelanjaView, 
-    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] } 
+  {
+    path: '/admin/po-belanja',
+    component: POBelanjaView,
+    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] }
   },
-  
+
   // Super Admin Only Routes
-  { 
-    path: '/admin/users', 
-    component: UsersView, 
-    meta: { requiresAuth: true, roles: ['super_admin'] } 
+  {
+    path: '/admin/users',
+    component: UsersView,
+    meta: { requiresAuth: true, roles: ['super_admin'] }
   },
-  { 
-    path: '/admin/salary', 
-    component: SalarySlipView, 
-    meta: { requiresAuth: true, roles: ['super_admin'] } 
+  {
+    path: '/admin/salary',
+    component: SalarySlipView,
+    meta: { requiresAuth: true, roles: ['super_admin'] }
   },
-  { 
-    path: '/admin/attendance', 
-    component: AttendanceManageView, 
-    meta: { requiresAuth: true, roles: ['super_admin'] } 
+  {
+    path: '/admin/attendance',
+    component: AttendanceManageView,
+    meta: { requiresAuth: true, roles: ['super_admin'] }
   },
-  { 
-    path: '/admin/settings', 
-    component: SettingsView, 
-    meta: { requiresAuth: true, roles: ['super_admin'] } 
+  {
+    path: '/admin/settings',
+    component: SettingsView,
+    meta: { requiresAuth: true, roles: ['super_admin'] }
   },
 
   // Admin and Super Admin Read-Only
-  { 
-    path: '/admin/attendance/rekap', 
-    component: AttendanceRekapView, 
-    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] } 
+  {
+    path: '/admin/attendance/rekap',
+    component: AttendanceRekapView,
+    meta: { requiresAuth: true, roles: ['super_admin', 'admin'] }
   },
 
   // Staff Only Route
-  { 
-    path: '/absensi', 
-    component: StaffAttendanceView, 
+  {
+    path: '/absensi',
+    component: StaffAttendanceView,
     name: 'staff-attendance',
-    meta: { requiresAuth: true, roles: ['staff'] } 
+    meta: { requiresAuth: true, roles: ['staff'] }
   },
 
   // Fallback redirect
@@ -101,7 +101,7 @@ let isFirstTransition = true
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // Re-check auth status with server on first load/refresh if user in localStorage exists
   if (isFirstTransition && localStorage.getItem('kcm_user')) {
     isFirstTransition = false
