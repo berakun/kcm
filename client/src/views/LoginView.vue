@@ -35,7 +35,7 @@
         <!-- Username Field -->
         <div class="space-y-1">
           <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 block ml-1">Username</label>
-          <div class="relative flex items-center border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 px-4 py-3 input-focus transition-all">
+          <div class="relative flex items-center border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 px-4 py-3 input-focus transition-all">
             <span class="material-symbols-outlined text-gray-400 mr-3">person</span>
             <input autocomplete="username" v-model="username" class="w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-gray-800 dark:text-white outline-none" placeholder="Masukkan username" required type="text"/>
           </div>
@@ -44,7 +44,7 @@
         <!-- Password Field -->
         <div class="space-y-1">
           <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 block ml-1">Password</label>
-          <div class="relative flex items-center border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 px-4 py-3 input-focus transition-all">
+          <div class="relative flex items-center border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 px-4 py-3 input-focus transition-all">
             <span class="material-symbols-outlined text-gray-400 mr-3">lock</span>
             <input autocomplete="current-password" :type="showPassword ? 'text' : 'password'" v-model="password" class="w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-gray-800 dark:text-white outline-none" placeholder="••••••••" required/>
             <button class="ml-2 flex items-center text-gray-400 hover:text-red-700 transition-colors" @click="showPassword = !showPassword" type="button">
@@ -64,7 +64,7 @@
         </div>
         
         <!-- Main Action Button -->
-        <button :disabled="authLoading" class="w-full bg-red-800 hover:bg-red-950 text-white font-semibold py-3.5 rounded-xl shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-200 mt-2 flex justify-center items-center gap-2" type="submit">
+        <button :disabled="authLoading" class="w-full bg-red-800 hover:bg-red-950 text-white font-semibold py-3.5 rounded-lg shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-200 mt-2 flex justify-center items-center gap-2" type="submit">
           <span v-if="authLoading">Loading...</span>
           <span v-else>Masuk</span>
         </button>
@@ -114,7 +114,7 @@ function forgotPassword() {
   background: linear-gradient(to bottom, rgba(153, 27, 27, 0.4) 0%, rgba(153, 27, 27, 0.8) 100%);
 }
 .input-focus:focus-within {
-  border-color: #991B1B;
-  box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.1);
+  border-color: #4b5563;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.15);
 }
 </style>
