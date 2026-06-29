@@ -290,11 +290,11 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="text-[10px] font-bold text-gray-400 block mb-1">Tanggal Mulai</label>
-            <input v-model="leaveForm.start_date" type="date" required class="w-full rounded-lg border border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0"/>
+            <input v-model="leaveForm.start_date" type="date" :min="todayMinDate" required class="w-full rounded-lg border border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0"/>
           </div>
           <div>
             <label class="text-[10px] font-bold text-gray-400 block mb-1">Tanggal Selesai</label>
-            <input v-model="leaveForm.end_date" type="date" required class="w-full rounded-lg border border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0"/>
+            <input v-model="leaveForm.end_date" type="date" :min="leaveForm.start_date || todayMinDate" required class="w-full rounded-lg border border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0"/>
           </div>
         </div>
 
@@ -372,6 +372,10 @@ const leaveForm = ref({
   reason: ''
 })
 const leaveHistoryList = ref([])
+
+const todayMinDate = computed(() => {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+})
 
 const filteredLeaveHistory = computed(() => {
   return leaveHistoryList.value.filter(leave => {
@@ -564,6 +568,15 @@ function closeLeaveModal() {
 async function submitLeave() {
   if (!leaveForm.value.start_date || !leaveForm.value.end_date || !leaveForm.value.reason) {
     appStore.showAlert('Semua field wajib diisi.', 'error')
+    return
+  }
+  const todayStr = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+  if (leaveForm.value.start_date < todayStr) {
+    appStore.showAlert('Tanggal mulai tidak boleh sebelum hari ini.', 'error')
+    return
+  }
+  if (leaveForm.value.end_date < leaveForm.value.start_date) {
+    appStore.showAlert('Tanggal selesai tidak boleh sebelum tanggal mulai.', 'error')
     return
   }
   try {
