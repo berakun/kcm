@@ -610,13 +610,25 @@ onMounted(async () => {
 function renderChart() {
   const ctx = document.getElementById('attendanceChart').getContext('2d')
   
+  // Build dynamic labels + data from last 7 days
+  const days = []
+  const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const dateStr = d.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+    const dayName = dayNames[d.getDay()]
+    const count = attendanceList.value.filter(l => l.date === dateStr).length
+    days.push({ label: dayName, count })
+  }
+  
   new Chart(ctx, {
     type: 'line',
     data: {
-      labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
+      labels: days.map(d => d.label),
       datasets: [{
         label: 'Kehadiran Karyawan (Orang)',
-        data: [12, 14, 13, 15, 14],
+        data: days.map(d => d.count),
         backgroundColor: 'rgba(153, 27, 27, 0.1)',
         borderColor: '#991b1b',
         borderWidth: 2,
