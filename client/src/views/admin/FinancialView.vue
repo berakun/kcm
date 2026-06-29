@@ -33,8 +33,8 @@
               <h3 class="text-2xl font-black mt-2 text-emerald-600 font-mono">{{ formatCurrency(summary.total_revenue) }}</h3>
             </div>
             <div class="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
-              <span>Berdasarkan RAB Proyek Aktif & Selesai</span>
+              <span class="material-symbols-outlined text-sm text-green-600">check_circle</span>
+              <span>Dari RAB Proyek Aktif & Selesai</span>
             </div>
           </div>
 
@@ -47,7 +47,7 @@
             </div>
             <div class="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
               <span class="material-symbols-outlined text-sm text-red-800">info</span>
-              <span>Gabungan Rembes, Cashbon, ATK & Ongkos Tukang</span>
+              <span>Gabungan PO Belanja, Ongkos Tukang & Rembes</span>
             </div>
           </div>
 

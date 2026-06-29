@@ -1,44 +1,63 @@
-// server/controllers/financial.controller.js
+// server/controllers/financial.controller.js — dynamic from RAB + PO + Rembes + Ongkos Tukang
 const db = require('../config/db');
 
 exports.getReport = async (req, res) => {
   try {
-    // 1. Seed financial reports if table empty
-    const [count] = await db.query('SELECT COUNT(*) as count FROM financial_reports');
-    if (count[0].count === 0) {
-      const insertQuery = 'INSERT INTO financial_reports (period, revenue, expenses, utilization) VALUES (?, ?, ?, ?)';
-      await db.query(insertQuery, ['Januari', 150000000, 95000000, 78.5]);
-      await db.query(insertQuery, ['Februari', 180000000, 110000000, 82.0]);
-      await db.query(insertQuery, ['Maret', 140000000, 105000000, 75.2]);
-      await db.query(insertQuery, ['April', 220000000, 130000000, 88.4]);
-      await db.query(insertQuery, ['Mei', 260000000, 145000000, 91.1]);
-      await db.query(insertQuery, ['Juni', 310000000, 180000000, 94.6]);
-    }
+    // 1. Revenue = SUM RAB total_budget (non-draft)
+    const [rev] = await db.query("SELECT COALESCE(SUM(total_budget), 0) as total FROM rab WHERE status != 'draft'");
+    const totalRevenue = parseFloat(rev[0].total) || 0;
 
-    // 2. Aggregate stats
-    const [rev] = await db.query("SELECT SUM(total_budget) as total FROM rab WHERE status != 'draft'");
-    const totalRevenue = parseFloat(rev[0].total) || 310000000;
+    // 2. Expenses = PO Belanja + Rembes + Ongkos Tukang (cashbon excluded — cash flow, bukan cost)
+    const [poTotal] = await db.query("SELECT COALESCE(SUM(grand_total), 0) as total FROM purchase_orders WHERE status IN ('approved', 'paid', 'completed')");
+    const poSum = parseFloat(poTotal[0].total) || 0;
 
-    const [cashbon] = await db.query("SELECT SUM(amount) as total FROM cashbon WHERE status = 'approved'");
-    const cashbonTotal = parseFloat(cashbon[0].total) || 0;
+    const [rembesTotal] = await db.query("SELECT COALESCE(SUM(actual_amount), 0) as total FROM rembes");
+    const rembesSum = parseFloat(rembesTotal[0].total) || 0;
 
-    const [rembes] = await db.query("SELECT SUM(actual_amount) as total FROM rembes");
-    const rembesTotal = parseFloat(rembes[0].total) || 0;
+    const [ongkosTotal] = await db.query("SELECT COALESCE(SUM(amount), 0) as total FROM ongkos_tukang");
+    const ongkosSum = parseFloat(ongkosTotal[0].total) || 0;
 
-    const [ongkosTukang] = await db.query("SELECT SUM(amount) as total FROM ongkos_tukang");
-    const ongkosTukangTotal = parseFloat(ongkosTukang[0].total) || 0;
-
-    let totalExpenses = cashbonTotal + rembesTotal + ongkosTukangTotal;
-    if (totalExpenses === 0) {
-      totalExpenses = 180000000;
-    }
-
+    const totalExpenses = poSum + rembesSum + ongkosSum;
     const totalProfit = totalRevenue - totalExpenses;
+    const utilizationRate = totalRevenue > 0 ? (totalExpenses / totalRevenue * 100) : 0;
 
-    const [util] = await db.query('SELECT AVG(utilization) as avg_util FROM financial_reports');
-    const avgUtilization = parseFloat(util[0].avg_util) || 85.0;
+    // 3. Chart bulanan: revenue dari RAB, expenses dari PO + Rembes
+    const [monthlyRevenue] = await db.query(`
+      SELECT DATE_FORMAT(date_created, '%Y-%m') as period,
+             COALESCE(SUM(total_budget), 0) as revenue
+      FROM rab WHERE status != 'draft'
+      GROUP BY period ORDER BY period ASC
+    `);
 
-    // 3. Leakages
+    const [monthlyPO] = await db.query(`
+      SELECT DATE_FORMAT(date, '%Y-%m') as period,
+             COALESCE(SUM(grand_total), 0) as expenses
+      FROM purchase_orders WHERE status IN ('approved', 'paid', 'completed')
+      GROUP BY period ORDER BY period ASC
+    `);
+
+    const [monthlyRembes] = await db.query(`
+      SELECT DATE_FORMAT(date, '%Y-%m') as period,
+             COALESCE(SUM(actual_amount), 0) as expenses
+      FROM rembes
+      GROUP BY period ORDER BY period ASC
+    `);
+
+    const periodMap = {};
+    monthlyRevenue.forEach(r => {
+      periodMap[r.period] = { period: r.period, revenue: r.revenue, expenses: 0 };
+    });
+    monthlyPO.forEach(p => {
+      if (!periodMap[p.period]) periodMap[p.period] = { period: p.period, revenue: 0, expenses: 0 };
+      periodMap[p.period].expenses += p.expenses;
+    });
+    monthlyRembes.forEach(r => {
+      if (!periodMap[r.period]) periodMap[r.period] = { period: r.period, revenue: 0, expenses: 0 };
+      periodMap[r.period].expenses += r.expenses;
+    });
+    const chartData = Object.values(periodMap).sort((a, b) => a.period.localeCompare(b.period));
+
+    // 4. Leakages = rembes actual > rab_amount
     const [leakages] = await db.query(`
       SELECT r.project_name, rem.description, rem.rab_amount, rem.actual_amount, rem.difference, rem.date 
       FROM rembes rem 
@@ -47,19 +66,16 @@ exports.getReport = async (req, res) => {
       ORDER BY rem.date DESC
     `);
 
-    // 4. Chart data
-    const [chartData] = await db.query('SELECT period, revenue, expenses, profit, utilization FROM financial_reports ORDER BY id ASC');
-
-    // 5. Project comparisons
+    // 5. Project comparisons = RAB vs actual (PO + rembes linked to RAB)
     const [projectComparisons] = await db.query(`
       SELECT r.id, r.project_name, r.total_budget, 
              (
                COALESCE((SELECT SUM(rem.actual_amount) FROM rembes rem WHERE rem.rab_id = r.id), 0) +
-               COALESCE((SELECT SUM(ot.amount) FROM ongkos_tukang ot WHERE ot.rab_id = r.id), 0)
+               COALESCE((SELECT SUM(po.grand_total) FROM purchase_orders po WHERE po.rab_id = r.id AND po.status IN ('approved','paid','completed')), 0)
              ) as total_actual 
       FROM rab r 
       ORDER BY r.id DESC 
-      LIMIT 5
+      LIMIT 10
     `);
 
     return res.json({
@@ -67,7 +83,8 @@ exports.getReport = async (req, res) => {
         total_revenue: totalRevenue,
         total_expenses: totalExpenses,
         total_profit: totalProfit,
-        utilization_rate: avgUtilization
+        utilization_rate: utilizationRate,
+        breakdown: { po: poSum, rembes: rembesSum, ongkos: ongkosSum }
       },
       chart_data: chartData,
       leakages,
