@@ -194,6 +194,56 @@
           </div>
 
           <p v-if="absenMsg" :class="['text-xs mt-2 text-center', absenError ? 'text-red-500' : absenWarning ? 'text-amber-600' : 'text-emerald-600']">{{ absenMsg }}</p>
+
+          <!-- Quick Leave Action for Admin -->
+          <div class="grid grid-cols-1 gap-4 pt-2">
+            <button @click="openLeaveModal" class="flex flex-col items-center justify-center p-5 bg-white dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-all text-center">
+              <div class="p-3.5 bg-indigo-50 dark:bg-indigo-955/40 text-indigo-600 rounded-xl mb-2">
+                <span class="material-symbols-outlined text-xl">date_range</span>
+              </div>
+              <span class="text-xs font-bold text-gray-800 dark:text-white">Ajukan Cuti Kerja</span>
+              <span class="text-[9px] text-gray-400 mt-1">Kirim pengajuan izin cuti untuk persetujuan</span>
+            </button>
+          </div>
+
+          <!-- Leave History for Admin -->
+          <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl border border-gray-150 dark:border-gray-800 shadow-sm space-y-3">
+            <h3 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Riwayat Pengajuan Cuti Anda</h3>
+            
+            <div class="space-y-2 max-h-60 overflow-y-auto">
+              <div v-if="leaveHistoryList.length === 0" class="text-center py-6 text-xs text-gray-400">
+                Belum ada pengajuan cuti.
+              </div>
+              <div 
+                v-else 
+                v-for="leave in leaveHistoryList" 
+                :key="leave.id"
+                class="p-4 rounded-xl bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-800 flex justify-between items-center"
+              >
+                <div>
+                  <div class="text-xs font-bold text-gray-800 dark:text-white">
+                    {{ formatDate(leave.start_date) }} s/d {{ formatDate(leave.end_date) }}
+                  </div>
+                  <div class="text-[10px] text-gray-400 mt-1">
+                    Alasan: {{ leave.reason }}
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span :class="[
+                    leave.status === 'approved' ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20' :
+                    leave.status === 'rejected' ? 'text-red-700 bg-red-50 dark:bg-red-955/20' :
+                    'text-amber-700 bg-amber-50 dark:bg-amber-955/20',
+                    'px-2 py-0.5 text-[9px] font-bold rounded-lg uppercase'
+                  ]">
+                    {{ 
+                      leave.status === 'approved' ? 'Disetujui' : 
+                      leave.status === 'rejected' ? 'Ditolak' : 'Pending' 
+                    }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Graphs and Attendance Logs (superadmin only) -->
@@ -295,11 +345,42 @@
         </div>
       </div>
     </main>
+
+    <!-- Modal Form: Request Leave (for Admin Only) -->
+    <BaseModal :show="showLeaveModal" title="Pengajuan Cuti Baru" @close="closeLeaveModal">
+      <form @submit.prevent="submitLeave" class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-1">Tanggal Mulai</label>
+            <input v-model="leaveForm.start_date" type="date" required class="w-full rounded-lg border border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0"/>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-1">Tanggal Selesai</label>
+            <input v-model="leaveForm.end_date" type="date" required class="w-full rounded-lg border border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-1">Alasan Pengajuan Cuti</label>
+          <textarea v-model="leaveForm.reason" required rows="3" class="w-full rounded-lg border border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs focus:border-red-500 focus:ring-0" placeholder="Jelaskan keperluan cuti Anda secara singkat..."></textarea>
+        </div>
+
+        <div class="border-t border-gray-100 dark:border-gray-800 pt-4 flex justify-end space-x-3 mt-6">
+          <button type="button" @click="closeLeaveModal" class="px-5 py-2.5 rounded-lg border border-gray-250 text-gray-500 font-semibold text-xs hover:bg-gray-50">
+            Batal
+          </button>
+          <button type="submit" class="bg-red-800 hover:bg-red-950 text-white font-semibold text-xs px-5 py-2.5 rounded-lg shadow-md">
+            Kirim Pengajuan
+          </button>
+        </div>
+      </form>
+    </BaseModal>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import BaseModal from '../../components/ui/BaseModal.vue'
 import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
 import { useAuth } from '../../composables/useAuth'
@@ -424,6 +505,15 @@ const stats = ref([
 const attendanceList = ref([])
 const pendingLeaves = ref([])
 
+// Leave form & history state for Admin Only
+const showLeaveModal = ref(false)
+const leaveForm = ref({
+  start_date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
+  end_date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
+  reason: ''
+})
+const leaveHistoryList = ref([])
+
 onMounted(async () => {
   // Start clock for admin attendance
   updateClock()
@@ -438,6 +528,10 @@ onMounted(async () => {
 
   if (isSuperAdmin.value) {
     await fetchLeaves()
+  }
+
+  if (isAdminOnly.value) {
+    await fetchLeaveHistory()
   }
 
   try {
@@ -540,6 +634,46 @@ async function rejectLeave(id) {
     await fetchLeaves()
   } catch (err) {
     appStore.showAlert('Gagal menolak cuti: ' + (err.response?.data?.error || err.message), 'error')
+  }
+}
+
+// ==========================================
+// ADMIN LEAVE REQUESTS
+// ==========================================
+async function fetchLeaveHistory() {
+  try {
+    const data = await api.get('/api/leaves/my')
+    leaveHistoryList.value = data
+  } catch (err) {
+    console.error('Failed to load leave history list.')
+  }
+}
+
+function openLeaveModal() {
+  leaveForm.value = {
+    start_date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
+    end_date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }),
+    reason: ''
+  }
+  showLeaveModal.value = true
+}
+
+function closeLeaveModal() {
+  showLeaveModal.value = false
+}
+
+async function submitLeave() {
+  if (!leaveForm.value.start_date || !leaveForm.value.end_date || !leaveForm.value.reason) {
+    appStore.showAlert('Semua field wajib diisi.', 'error')
+    return
+  }
+  try {
+    const res = await api.post('/api/leaves', leaveForm.value)
+    appStore.showAlert(res.message, 'success')
+    closeLeaveModal()
+    await fetchLeaveHistory()
+  } catch (err) {
+    appStore.showAlert('Gagal mengirim pengajuan cuti: ' + (err.response?.data?.error || err.message), 'error')
   }
 }
 </script>
