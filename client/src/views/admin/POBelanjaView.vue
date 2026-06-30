@@ -314,7 +314,7 @@ function handlePoSaved() {
 }
 
 const today = new Date()
-const todayFormatted = today.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+const todayFormatted = today.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jakarta' })
 
 const rabList = ref([])
 const poList = ref([])
@@ -366,7 +366,7 @@ function statusBadgeClass(status) {
 
 function formatDateID(d) {
   if (!d) return '-'
-  return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+  return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' })
 }
 
 async function loadRabList() {
