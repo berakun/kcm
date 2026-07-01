@@ -4,7 +4,9 @@ const cors = require('cors');
 require('dotenv').config();
 
 const allowedOrigins = [
-  process.env.CORS_ORIGIN || 'https://kcm.berakun.web.id',
+  process.env.CORS_ORIGIN || 'https://kcminteriordesign.com',
+  'https://kcminteriordesign.com',
+  'https://www.kcminteriordesign.com',
   'https://kcm.berakun.web.id',
   'http://localhost:5173',
   'http://localhost:3000'
