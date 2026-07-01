@@ -57,11 +57,11 @@
                   <td colspan="7" class="py-12 text-center text-gray-400">Data karyawan tidak ditemukan.</td>
                 </tr>
                 <tr v-else v-for="u in filteredUsers" :key="u.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-                  <td class="py-4 px-6 flex items-center space-x-2.5">
-                    <div class="w-7 h-7 rounded-full bg-red-900/10 text-red-800 font-bold flex items-center justify-center text-[10px] uppercase flex-shrink-0">
+                  <td class="py-4 px-6 font-semibold text-gray-900 dark:text-white flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-red-900/10 text-red-800 font-bold flex items-center justify-center text-sm uppercase">
                       {{ u.name.charAt(0) }}
                     </div>
-                    <span class="text-[11px] font-semibold text-gray-900 dark:text-white">{{ u.name }}</span>
+                    <span>{{ u.name }}</span>
                   </td>
                   <td class="py-4 px-6 text-gray-500 dark:text-gray-400">{{ u.username }}</td>
                   <td class="py-4 px-6 font-medium">{{ u.department || '-' }}</td>

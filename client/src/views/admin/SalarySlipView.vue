@@ -173,7 +173,7 @@
               <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 <tr v-for="(row, idx) in tableRows" :key="row.userId" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                   <td class="px-4 py-3 text-center font-bold text-gray-600 dark:text-gray-400">{{ idx + 1 }}</td>
-                  <td class="px-4 py-3 text-[11px] font-bold text-red-800 dark:text-red-500 cursor-pointer hover:underline" @click="openDeductionsModal(row)">{{ row.name }}</td>
+                  <td class="px-4 py-3 font-bold text-red-800 dark:text-red-500 cursor-pointer hover:underline" @click="openDeductionsModal(row)">{{ row.name }}</td>
                   <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ row.roleLabel }}</td>
                   <td class="px-4 py-3 text-right font-mono text-gray-700 dark:text-gray-300">{{ formatCurrency(row.gajiPokok) }}</td>
                   <td class="px-4 py-3 text-right font-mono text-gray-700 dark:text-gray-300">{{ formatCurrency(row.makanTransport) }}</td>
