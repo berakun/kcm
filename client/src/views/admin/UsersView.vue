@@ -42,7 +42,7 @@
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
+                <tr class="border-b border-gray-200 dark:border-gray-700 text-[9px] tracking-wider font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
                   <th class="py-4 px-6">Nama</th>
                   <th class="py-4 px-6">Username</th>
                   <th class="py-4 px-6">Departemen</th>

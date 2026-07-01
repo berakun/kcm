@@ -75,7 +75,7 @@
                   <div class="flex-1 overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                       <thead>
-                        <tr class="border-b-2 border-gray-200 dark:border-gray-700 text-[10px] font-bold text-gray-400 uppercase">
+                        <tr class="border-b-2 border-gray-200 dark:border-gray-700 text-[9px] tracking-wider font-bold text-gray-400 uppercase">
                           <th class="py-3 px-2 w-10 text-center">No</th>
                           <th class="py-3 px-2">Description</th>
                           <th class="py-3 px-2 w-16 text-center">Qty</th>

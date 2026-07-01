@@ -98,7 +98,7 @@
               <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                   <thead>
-                    <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
+                    <tr class="border-b border-gray-200 dark:border-gray-700 text-[9px] tracking-wider font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
                       <th class="py-4 px-6">Kode RAB</th>
                       <th class="py-4 px-6">Nama Proyek</th>
                       <th class="py-4 px-6 hidden sm:table-cell">Klien</th>
@@ -207,7 +207,7 @@
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
-                  <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
+                  <tr class="border-b border-gray-200 dark:border-gray-700 text-[9px] tracking-wider font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
                     <th class="py-4 px-6">Nama Proyek</th>
                     <th class="py-4 px-6">Tanggal</th>
                     <th class="py-4 px-6">Deskripsi Belanja</th>
@@ -266,7 +266,7 @@
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
-                  <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
+                  <tr class="border-b border-gray-200 dark:border-gray-700 text-[9px] tracking-wider font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
                     <th class="py-4 px-6">Tanggal</th>
                     <th class="py-4 px-6">Diajukan Oleh</th>
                     <th class="py-4 px-6">Penerima</th>
@@ -343,7 +343,7 @@
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
                 <thead>
-                  <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
+                  <tr class="border-b border-gray-200 dark:border-gray-700 text-[9px] tracking-wider font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
                     <th class="py-4 px-6 w-12 text-center">No</th>
                     <th class="py-4 px-6">Nama Proyek</th>
                     <th class="py-4 px-6">Tanggal</th>
@@ -482,7 +482,7 @@
             <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Rincian Item RAB</h4>
             <div class="border border-gray-150 dark:border-gray-800 rounded-xl overflow-hidden">
               <table class="w-full text-left border-collapse text-xs">
-                <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-xxs font-bold text-gray-400 uppercase">
+                <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-[9px] tracking-wider font-bold text-gray-400 uppercase">
                   <tr>
                     <th class="py-3 px-4 w-8 text-center">No</th>
                     <th class="py-3 px-4">Kategori</th>
@@ -519,7 +519,7 @@
             <div v-if="rabDetailPos.length === 0" class="text-xs text-gray-400 italic py-4">Belum ada PO terkait untuk RAB ini.</div>
             <div v-else class="border border-gray-150 dark:border-gray-800 rounded-xl overflow-hidden">
               <table class="w-full text-left border-collapse text-xs">
-                <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-xxs font-bold text-gray-400 uppercase">
+                <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-[9px] tracking-wider font-bold text-gray-400 uppercase">
                   <tr>
                     <th class="py-3 px-4">No PO</th>
                     <th class="py-3 px-4">Supplier</th>
@@ -651,7 +651,7 @@
 
                 <div class="border border-gray-150 dark:border-gray-800 rounded-xl overflow-hidden">
                   <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-xxs font-bold text-gray-400 uppercase border-b border-gray-150 dark:border-gray-800">
+                    <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-[9px] tracking-wider font-bold text-gray-400 uppercase border-b border-gray-150 dark:border-gray-800">
                       <tr>
                         <th class="py-3 px-4 w-8 text-center">NO</th>
                         <th class="py-3 px-4">Item Pekerjaan</th>

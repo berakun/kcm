@@ -158,7 +158,7 @@
           <div class="overflow-x-auto">
             <table class="w-full text-xs">
               <thead>
-                <tr class="bg-gray-50 dark:bg-gray-800 text-gray-500 uppercase text-[10px] font-bold">
+                <tr class="bg-gray-50 dark:bg-gray-800 text-gray-500 uppercase text-[9px] tracking-wider font-bold">
                   <th class="px-4 py-3 text-center w-12">No</th>
                   <th class="px-4 py-3 text-left">Nama</th>
                   <th class="px-4 py-3 text-left">Jabatan</th>

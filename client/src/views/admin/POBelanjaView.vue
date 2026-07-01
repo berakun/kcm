@@ -57,7 +57,7 @@
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="border-b border-gray-200 dark:border-gray-700 text-xxs font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
+                <tr class="border-b border-gray-200 dark:border-gray-700 text-[9px] tracking-wider font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
                   <th class="py-4 px-6 w-12 text-center hidden sm:table-cell">No</th>
                   <th class="py-4 px-6">No PO</th>
                   <th class="py-4 px-6">Supplier</th>
@@ -203,13 +203,13 @@
               <!-- Items -->
               <table class="w-full border-collapse text-[10px] mt-2">
                 <thead>
-                  <tr class="bg-gray-100">
-                    <th class="border border-gray-300 px-2 py-1.5 text-center">No</th>
-                    <th class="border border-gray-300 px-2 py-1.5 text-left">Description</th>
-                    <th class="border border-gray-300 px-2 py-1.5 text-center">Qty</th>
-                    <th class="border border-gray-300 px-2 py-1.5 text-center">Sat</th>
-                    <th class="border border-gray-300 px-2 py-1.5 text-right">Unit Price</th>
-                    <th class="border border-gray-300 px-2 py-1.5 text-right">Total</th>
+                  <tr class="bg-gray-100 dark:bg-gray-800 text-[9px] uppercase tracking-wider text-gray-550 dark:text-gray-400 font-bold">
+                    <th class="border border-gray-300 dark:border-gray-700 px-2 py-1.5 text-center">No</th>
+                    <th class="border border-gray-300 dark:border-gray-700 px-2 py-1.5 text-left">Description</th>
+                    <th class="border border-gray-300 dark:border-gray-700 px-2 py-1.5 text-center">Qty</th>
+                    <th class="border border-gray-300 dark:border-gray-700 px-2 py-1.5 text-center">Sat</th>
+                    <th class="border border-gray-300 dark:border-gray-700 px-2 py-1.5 text-right">Unit Price</th>
+                    <th class="border border-gray-300 dark:border-gray-700 px-2 py-1.5 text-right">Total</th>
                   </tr>
                 </thead>
                 <tbody>
