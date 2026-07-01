@@ -12,7 +12,14 @@ const pool = mysql.createPool({
   connectionLimit: 15,
   queueLimit: 0,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0
+  keepAliveInitialDelay: 0,
+  timezone: '+07:00',
+  charset: 'utf8mb4'
+});
+
+// Ensure every connection uses WIB timezone
+pool.on('connection', (connection) => {
+  connection.query("SET time_zone = '+07:00'");
 });
 
 module.exports = pool;
