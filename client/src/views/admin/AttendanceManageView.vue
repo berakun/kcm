@@ -81,11 +81,11 @@
                 </tr>
                 <tr v-else v-for="log in logsList" :key="log.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                   <td class="py-4 px-6 font-medium text-gray-550 dark:text-gray-400 font-mono">{{ formatDate(log.date) }}</td>
-                  <td class="py-4 px-6 font-semibold text-gray-900 dark:text-white flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-full bg-red-900/10 text-red-800 font-bold flex items-center justify-center text-sm uppercase">
+                  <td class="py-4 px-6 flex items-center space-x-2.5">
+                    <div class="w-7 h-7 rounded-full bg-red-900/10 text-red-800 font-bold flex items-center justify-center text-[10px] uppercase flex-shrink-0">
                       {{ log.employee_name.charAt(0) }}
                     </div>
-                    <span>{{ log.employee_name }}</span>
+                    <span class="text-[11px] font-semibold text-gray-900 dark:text-white">{{ log.employee_name }}</span>
                   </td>
                   <td class="py-4 px-6 font-medium text-gray-550 dark:text-gray-400">{{ log.department || 'Staff' }}</td>
                   <td class="py-4 px-6 text-center text-emerald-600 font-semibold font-mono">{{ log.check_in ? formatTime(log.check_in) : '--:--' }}</td>

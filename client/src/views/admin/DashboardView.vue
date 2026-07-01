@@ -291,7 +291,7 @@
                 </thead>
                 <tbody>
                   <tr v-for="log in attendanceList" :key="log.id" class="border-b border-gray-50 dark:border-gray-800/50 last:border-b-0">
-                    <td class="py-2 font-semibold text-gray-900 dark:text-white">{{ log.employee_name }}</td>
+                    <td class="py-2 text-[11px] font-semibold text-gray-900 dark:text-white">{{ log.employee_name }}</td>
                     <td class="py-2 text-gray-500">{{ formatAttendanceDate(log.date) }}</td>
                     <td class="py-2 text-gray-500">{{ log.check_in ? formatTime(log.check_in) : '--:--' }}</td>
                     <td class="py-2 text-gray-500">{{ log.check_out ? formatTime(log.check_out) : '--:--' }}</td>
@@ -334,7 +334,7 @@
                 </thead>
                 <tbody>
                   <tr v-for="leave in pendingLeaves" :key="leave.id" class="border-b border-gray-50 dark:border-gray-800/50 last:border-b-0">
-                    <td class="py-3 font-semibold text-gray-900 dark:text-white">{{ leave.employee_name }}</td>
+                    <td class="py-3 text-[11px] font-semibold text-gray-900 dark:text-white">{{ leave.employee_name }}</td>
                     <td class="py-3 text-gray-500">{{ leave.employee_department || '-' }}</td>
                     <td class="py-3 text-gray-500 font-semibold">{{ formatDate(leave.start_date) }} s/d {{ formatDate(leave.end_date) }}</td>
                     <td class="py-3 text-gray-500 max-w-[200px] truncate" :title="leave.reason">{{ leave.reason }}</td>
