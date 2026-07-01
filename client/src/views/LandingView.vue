@@ -249,7 +249,7 @@
           </div>
 
           <div class="w-full h-64 rounded-2xl overflow-hidden shadow-md border border-gray-200 dark:border-gray-700">
-            <iframe class="w-full h-full border-0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.85695679462!2d110.3988!3d-7.7326!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a591cb4570fa3%3A0xcb1b61ab20fa5bb8!2sKurnia%20Cipta%20Mandiri!5e0!3m2!1sid!2sid!4v1719640000000!5m2!1sid!2sid" allowfullscreen="" loading="lazy"></iframe>
+            <iframe class="w-full h-full border-0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.123456789!2d110.405383!3d-7.6982573!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5f4a84f4b169%3A0xf95f12767979571!2sKCM%20interior%20design!5e0!3m2!1sid!2sid!4v1719640000000!5m2!1sid!2sid" allowfullscreen="" loading="lazy"></iframe>
           </div>
         </div>
 
