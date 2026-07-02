@@ -196,7 +196,7 @@
               </div>
               <div class="text-[10px] text-gray-500 italic bg-gray-50 px-3 py-2 rounded">In Words: <strong>{{ viewModal.po?.in_words || '-' }}</strong></div>
               <!-- Signatures -->
-              <div class="grid grid-cols-3 gap-4 mt-4 text-center text-[10px]">
+              <div class="flex justify-end gap-6 mt-4 text-center text-[10px]">
                 <div>
                   <p class="font-bold text-gray-400 uppercase mb-1">Ordered By</p>
                   <div class="border-b border-gray-400 h-8 mb-1"></div>
@@ -216,7 +216,7 @@
               <!-- Notes -->
               <div class="bg-gray-50 px-3 py-2 rounded text-[10px] space-y-1 mt-2">
                 <p><span class="font-bold">Note:</span> {{ viewModal.po?.note || '-' }}</p>
-                <p><span class="font-bold">Deliver by:</span> {{ formatDateID(viewModal.po?.deliver_by) }}</p>
+                <p><span class="font-bold">Deliver by:</span> {{ viewModal.po?.deliver_by || '-' }}</p>
                 <p><span class="font-bold">Deliver to:</span> {{ viewModal.po?.deliver_to || '-' }}</p>
                 <p><span class="font-bold">Term of Payment:</span> {{ viewModal.po?.term_of_payment || '-' }}</p>
               </div>
@@ -478,7 +478,7 @@ function generatePoPrintHTML(po) {
           .summary-table td { border: none; padding: 4px; }
           .summary-table tr.grand-total { font-weight: bold; background: #fee2e2; color: #991b1b; }
           .in-words { background: #f9fafb; padding: 8px; border-radius: 4px; font-style: italic; margin: 10px 0; }
-          .signatures { display: grid; grid-template-cols: 1fr 1fr 1fr; gap: 20px; margin-top: 30px; text-align: center; }
+          .signatures { display: flex; justify-content: flex-end; gap: 30px; margin-top: 30px; text-align: center; }
           .signatures p { margin: 0; }
           .sig-line { border-bottom: 1px solid #888; height: 40px; margin-bottom: 5px; }
           .notes { background: #f9fafb; padding: 8px; border-radius: 4px; margin-top: 15px; }
@@ -564,7 +564,7 @@ function generatePoPrintHTML(po) {
 
         <div class="notes">
           <p><strong>Note:</strong> ${po.note || '-'}</p>
-          <p><strong>Deliver by:</strong> ${formatDateID(po.deliver_by)}</p>
+          <p><strong>Deliver by:</strong> ${po.deliver_by || '-'}</p>
           <p><strong>Deliver to:</strong> ${po.deliver_to || '-'}</p>
           <p><strong>Term of Payment:</strong> ${po.term_of_payment || '-'}</p>
         </div>

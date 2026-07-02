@@ -165,7 +165,7 @@
 
                 <!-- Ordered By, Purchasing, Prepared By, Approved By -->
                 <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Ordered By</label>
                       <input v-model="form.orderedBy" type="text" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0" placeholder="Nama">
@@ -173,10 +173,6 @@
                     <div>
                       <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Purchasing</label>
                       <input v-model="form.purchasing" type="text" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0" placeholder="Nama">
-                    </div>
-                    <div>
-                      <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Prepared By</label>
-                      <input v-model="form.preparedBy" type="text" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0" placeholder="Nama">
                     </div>
                     <div>
                       <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Approved By</label>
@@ -193,7 +189,7 @@
                   </div>
                   <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Deliver By</label>
-                    <input v-model="form.deliverBy" type="date" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0">
+                    <input v-model="form.deliverBy" type="text" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0" placeholder="Contoh: 3 hari setelah PO / 15 Juli 2026">
                   </div>
                   <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Deliver To</label>
@@ -202,9 +198,9 @@
                 </div>
 
                 <!-- Term of Payment -->
-                <div class="mt-4 px-4 py-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl flex items-center gap-3">
-                  <span class="text-[10px] font-bold text-gray-400 uppercase">Term of Payment:</span>
-                  <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Anriko K, ST.</span>
+                <div class="mt-4">
+                  <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Term of Payment</label>
+                  <input v-model="form.termOfPayment" type="text" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0" placeholder="Contoh: Transfer / Cash / Tempo 30 Hari">
                 </div>
 
                 <!-- Office Footer -->
@@ -341,8 +337,8 @@ function resetForm() {
     nomorRef: '',
     tanggal: today.toISOString().split('T')[0],
     to: '', phone: '', attn: '', projectNames: '', materialRef: '', notes: '',
-    deliverBy: '', deliverTo: '', orderedBy: '', purchasing: '', preparedBy: '',
-    approvedBy: 'Anriko K, ST.',
+    deliverBy: '', deliverTo: '', orderedBy: '', purchasing: '',
+    approvedBy: 'Anriko K, ST.', termOfPayment: 'Anriko K, ST.',
     items: [{ description: '', qty: 0, satuan: 'pcs', unitPrice: 0 }]
   }
   selectedRabId.value = ''
@@ -368,9 +364,8 @@ function buildPayload() {
     deliver_to: form.value.deliverTo,
     ordered_by: form.value.orderedBy,
     purchasing: form.value.purchasing,
-    prepared_by: form.value.preparedBy,
     approved_by: form.value.approvedBy,
-    term_of_payment: 'Anriko K, ST.' // Hardcoded for now, can be dynamic later
+    term_of_payment: form.value.termOfPayment
   }
 }
 
@@ -406,12 +401,12 @@ function loadPOIntoForm(full) {
   form.value.projectNames = full.projects || ''
   form.value.materialRef = full.material_ref || ''
   form.value.notes = full.note || ''
-  form.value.deliverBy = full.deliver_by ? full.deliver_by.split('T')[0] : ''
+  form.value.deliverBy = full.deliver_by || ''
   form.value.deliverTo = full.deliver_to || ''
   form.value.orderedBy = full.ordered_by || ''
   form.value.purchasing = full.purchasing || ''
-  form.value.preparedBy = full.prepared_by || ''
   form.value.approvedBy = full.approved_by || 'Anriko K, ST.'
+  form.value.termOfPayment = full.term_of_payment || 'Anriko K, ST.'
   selectedRabId.value = full.rab_id || ''
   if (full.items && Array.isArray(full.items)) {
     form.value.items = full.items.map(i => ({
