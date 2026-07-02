@@ -1242,7 +1242,7 @@ function generateRabPrintHTML(rabData) {
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif; padding:12mm; color:#333; font-size:13px; line-height: 1.5; }
-  @media print { @media page { size:A4; margin:10mm; } .page-break{page-break-before:always;} }
+  @media print { @page { size:A4; margin:10mm; } .page-break{page-break-before:always; page-break-after:always; } }
   table.rab{width:100%;border-collapse:collapse;margin-top:10px;}
   table.rab th,table.rab td{border:1px solid #333;padding:6px 8px;font-size:12px;}
   table.rab th{background:#f5f5f5;font-weight:bold;text-transform:uppercase;font-size:11px;}
@@ -1257,7 +1257,7 @@ function generateRabPrintHTML(rabData) {
     <img src="/logo_no_background.png" style="height:120px; max-width:340px; object-fit:contain;" alt="CV. KURNIA CIPTA MANDIRI Logo" />
   </div>
   <div style="text-align:right;">
-    <h1 style="font-size:18px; font-weight:bold; color:#991B1B; margin-bottom:2px;">Rencana Anggaran Biaya</h1>
+    <h1 style="font-size:22px; font-weight:900; color:#991B1B; margin-bottom:2px; text-transform:uppercase; letter-spacing:1px;">RENCANA ANGGARAN BIAYA</h1>
     <p style="font-size:10px; color:#555; font-weight:600;">CV. KURNIA CIPTA MANDIRI</p>
   </div>
 </div>
@@ -1328,8 +1328,9 @@ function generateRabPrintHTML(rabData) {
 
 ${officeFooter}
 
+<div style="page-break-before:always; break-before:page;"></div>
 <!-- PAGE 2: SURAT PENAWARAN -->
-<div class="page-break"></div>
+<div style="page-break-before:always; break-before:page;"></div>
 
 <!-- PAGE 2 HEADER WITH BRAND LOGO -->
 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:12px; margin-bottom:16px;">
@@ -1337,7 +1338,7 @@ ${officeFooter}
     <img src="/logo_no_background.png" style="height:120px; max-width:340px; object-fit:contain;" alt="CV. KURNIA CIPTA MANDIRI Logo" />
   </div>
   <div style="text-align:right;">
-    <h1 style="font-size:18px; font-weight:bold; color:#991B1B; margin-bottom:2px;">Surat Penawaran</h1>
+    <h1 style="font-size:22px; font-weight:900; color:#991B1B; margin-bottom:2px; text-transform:uppercase; letter-spacing:1px;">SURAT PENAWARAN</h1>
     <p style="font-size:10px; color:#555; font-weight:600;">CV. KURNIA CIPTA MANDIRI</p>
   </div>
 </div>
