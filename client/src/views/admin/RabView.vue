@@ -1318,7 +1318,7 @@ function generateRabPrintHTML(rabData) {
     <p>Yogyakarta, ${new Date(rabDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' })}</p>
     <p style="margin-top:5px; margin-bottom:5px;"><strong>CV. KURNIA CIPTA MANDIRI</strong></p>
     <div style="height:60px;margin:5px 0;display:flex;align-items:center;justify-content:center;">
-      <img src="/ttd_anriko.png" style="max-height:60px; max-width:145px; object-fit:contain;" alt="(Tanda Tangan)" onerror="this.style.display='none'" />
+      <img src="/ttd-direktur.jpeg" style="max-height:60px; max-width:145px; object-fit:contain;" alt="(Tanda Tangan)" onerror="this.style.display='none'" />
     </div>
     <p><u><strong>Anriko K., ST.</strong></u></p>
     <p style="font-size:10px;color:#555;">Pemilik / Direktur</p>
@@ -1390,7 +1390,7 @@ ${officeFooter}
       <p>Yogyakarta, ${new Date(rabDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' })}</p>
       <p style="margin-top:5px; margin-bottom:5px;"><strong>CV. KURNIA CIPTA MANDIRI</strong></p>
       <div style="height:60px;margin:5px 0;display:flex;align-items:center;justify-content:center;">
-        <img src="/ttd_anriko.png" style="max-height:60px; max-width:145px; object-fit:contain;" alt="(Tanda Tangan)" onerror="this.style.display='none'" />
+        <img src="/ttd-direktur.jpeg" style="max-height:60px; max-width:145px; object-fit:contain;" alt="(Tanda Tangan)" onerror="this.style.display='none'" />
       </div>
       <p><u><strong>Anriko K., ST.</strong></u></p>
       <p style="font-size:10px;color:#555;">Pemilik / Direktur</p>
