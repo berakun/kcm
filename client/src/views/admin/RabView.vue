@@ -1223,7 +1223,7 @@ function generateRabPrintHTML(rabData) {
     }
   })
 
-  const officeFooter = `<div style="margin-top:36px;text-align:center;font-size:10px;color:#666;border-top:2px double #333;padding-top:12px;clear:both;">
+  const officeFooter = `<div style="margin-top:12px;text-align:center;font-size:10px;color:#666;border-top:2px double #333;padding-top:8px;clear:both;page-break-inside:avoid;">
     <p><strong>OFFICE:</strong></p>
     <p>Jl. Kaliurang Km. 12, Candiwinangun RT 6/ RW 13 No. 24</p>
     <p>Sardonoharjo, Ngaglik, Sleman, Yogyakarta</p>
@@ -1380,16 +1380,16 @@ ${officeFooter}
   <p>Demikian surat penawaran ini kami buat dengan sebenar-benarnya. Atas perhatian dan kerjasamanya, kami ucapkan terima kasih.</p>
 
   <!-- PAGE 2 SIGNATURES -->
-  <div style="margin-top:32px; display:flex; justify-content:space-between; font-size:12px;">
+  <div style="margin-top:12px; display:flex; justify-content:space-between; font-size:12px;">
     <div style="text-align:center; width:200px;">
       <p style="visibility:hidden;">Tanggal</p>
-      <p style="margin-top:5px; margin-bottom:55px;">Menyetujui,</p>
+      <p style="margin-top:5px; margin-bottom:28px;">Menyetujui,</p>
       <p><strong>Customer</strong></p>
     </div>
     <div style="text-align:center; width:220px; float:right;">
       <p>Yogyakarta, ${new Date(rabDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' })}</p>
-      <p style="margin-top:5px; margin-bottom:5px;"><strong>CV. KURNIA CIPTA MANDIRI</strong></p>
-      <div style="height:60px;margin:5px 0;display:flex;align-items:center;justify-content:center;">
+      <p style="margin-top:5px; margin-bottom:2px;"><strong>CV. KURNIA CIPTA MANDIRI</strong></p>
+      <div style="height:50px;margin:2px 0;display:flex;align-items:center;justify-content:center;">
         <img src="/ttd-direktur.jpeg" style="max-height:60px; max-width:145px; object-fit:contain;" alt="(Tanda Tangan)" onerror="this.style.display='none'" />
       </div>
       <p><u><strong>Anriko K., ST.</strong></u></p>
