@@ -454,6 +454,19 @@ function updateClock() {
   todayDate.value = formatDate(now)
 }
 
+function parseTime(val) {
+  if (!val) return null
+  if (typeof val === 'string') {
+    const parts = val.split(' ')
+    const t = parts.length > 1 ? parts[1] : parts[0]
+    return t.substring(0, 5)
+  }
+  if (val instanceof Date) {
+    return val.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':')
+  }
+  return null
+}
+
 async function loadTodayStatus() {
   if (!isAdminOnly.value) return
   try {
@@ -462,8 +475,8 @@ async function loadTodayStatus() {
     todayStatus.value = {
       checkedIn: data.has_checked_in,
       checkedOut: data.has_checked_out,
-      checkIn: data.data?.check_in ? data.data.check_in.split(' ')[1]?.substring(0, 5) : null,
-      checkOut: data.data?.check_out ? data.data.check_out.split(' ')[1]?.substring(0, 5) : null
+      checkIn: parseTime(data.data?.check_in),
+      checkOut: parseTime(data.data?.check_out)
     }
   } catch (e) { /* ignore */ }
 }

@@ -14,7 +14,8 @@ const pool = mysql.createPool({
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
   timezone: '+07:00',
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  dateStrings: true
 });
 
 // Ensure every connection uses WIB timezone

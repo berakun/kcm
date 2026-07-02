@@ -532,9 +532,22 @@ async function submitCashbon() {
 
 function formatTime(dateStr) {
   if (!dateStr) return '--:--'
+  if (typeof dateStr === 'string') {
+    const parts = dateStr.split(' ')
+    const timePart = parts.length > 1 ? parts[1] : parts[0]
+    if (timePart.includes(':')) {
+      const t = timePart.split(':')
+      return `${t[0].padStart(2, '0')}:${t[1].padStart(2, '0')}`
+    }
+  }
   try {
-    const d = new Date(dateStr)
-    return d.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' }).split('.').slice(0, 2).join(':')
+    let standardized = dateStr
+    if (typeof standardized === 'string' && standardized.includes(' ') && !standardized.includes('T')) {
+      standardized = standardized.replace(' ', 'T')
+    }
+    const d = new Date(standardized)
+    if (isNaN(d.getTime())) return '--:--'
+    return d.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':')
   } catch (e) {
     return '--:--'
   }
