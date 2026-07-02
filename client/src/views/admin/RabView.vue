@@ -1242,7 +1242,7 @@ function generateRabPrintHTML(rabData) {
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif; padding:12mm; color:#333; font-size:13px; line-height: 1.5; }
-  @media print { @page { size:A4; margin:10mm; } .page-break{page-break-before:always; page-break-after:always; } }
+  @media print { @page { size:A4; margin:15mm; } .page-break{page-break-before:always; } }
   table.rab{width:100%;border-collapse:collapse;margin-top:10px;}
   table.rab th,table.rab td{border:1px solid #333;padding:6px 8px;font-size:12px;}
   table.rab th{background:#f5f5f5;font-weight:bold;text-transform:uppercase;font-size:11px;}
@@ -1328,7 +1328,6 @@ function generateRabPrintHTML(rabData) {
 
 ${officeFooter}
 
-<div style="page-break-before:always; break-before:page;"></div>
 <!-- PAGE 2: SURAT PENAWARAN -->
 <div style="page-break-before:always; break-before:page;"></div>
 
