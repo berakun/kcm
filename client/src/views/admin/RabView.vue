@@ -95,7 +95,7 @@
 
             <!-- Table -->
             <div class="bg-white dark:bg-gray-850 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 overflow-hidden">
-              <div class="overflow-x-auto">
+              <div class="overflow-x-auto min-h-[220px]">
                 <table class="w-full text-left border-collapse">
                   <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-700 text-[9px] tracking-wider font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
@@ -112,7 +112,7 @@
                     <tr v-if="filteredRabs.length === 0">
                       <td colspan="7" class="py-12 text-center text-gray-400">Rancangan RAB tidak ditemukan.</td>
                     </tr>
-                    <tr v-else v-for="r in filteredRabs" :key="r.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                    <tr v-else v-for="(r, idx) in filteredRabs" :key="r.id" class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
                       <td class="py-4 px-6 font-bold text-red-800 dark:text-red-500">{{ r.code }}</td>
                       <td class="py-4 px-6 font-semibold text-gray-900 dark:text-white">{{ r.project_name }}</td>
                       <td class="py-4 px-6 text-gray-500 dark:text-gray-400 hidden sm:table-cell">{{ r.client || '-' }}</td>
@@ -141,7 +141,10 @@
                           <!-- Dropdown Menu -->
                           <div 
                             v-if="activeDropdown === r.id" 
-                            class="absolute right-6 mt-1 w-44 bg-white dark:bg-gray-850 rounded-2xl shadow-xl border border-gray-150 dark:border-gray-800 py-2 z-30 animate-fade-in"
+                            :class="[
+                              idx >= filteredRabs.length - 1 ? 'bottom-full mb-1' : 'top-full mt-1',
+                              'absolute right-6 w-44 bg-white dark:bg-gray-850 rounded-2xl shadow-xl border border-gray-150 dark:border-gray-800 py-2 z-30 animate-fade-in'
+                            ]"
                           >
                             <button 
                               @click="activeDropdown = null; viewRabDetail(r)" 

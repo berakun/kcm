@@ -54,7 +54,7 @@
 
         <!-- Table Card -->
         <div class="bg-white dark:bg-gray-850 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto min-h-[220px]">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="border-b border-gray-200 dark:border-gray-700 text-[9px] tracking-wider font-bold text-gray-400 uppercase bg-gray-50/50 dark:bg-gray-900/10">
@@ -95,7 +95,10 @@
                       <!-- Dropdown Menu -->
                       <div 
                         v-if="activeDropdown === po.id" 
-                        class="absolute right-6 mt-1 w-44 bg-white dark:bg-gray-850 rounded-2xl shadow-xl border border-gray-150 dark:border-gray-800 py-2 z-30 animate-fade-in"
+                        :class="[
+                          idx >= paginatedPoList.length - 1 ? 'bottom-full mb-1' : 'top-full mt-1',
+                          'absolute right-6 w-44 bg-white dark:bg-gray-850 rounded-2xl shadow-xl border border-gray-150 dark:border-gray-800 py-2 z-30 animate-fade-in'
+                        ]"
                       >
                         <button 
                           @click="activeDropdown = null; viewPO(po)" 
