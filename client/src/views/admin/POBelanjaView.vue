@@ -284,6 +284,7 @@ import DateRangePicker from '../../components/ui/DateRangePicker.vue'
 import { useApi } from '../../composables/useApi'
 import { useAppStore } from '../../stores/app'
 import { formatCurrency, formatDate } from '../../utils/helpers'
+import html2pdf from 'html2pdf.js'
 
 const api = useApi()
 const appStore = useAppStore()
@@ -491,7 +492,7 @@ function generatePoPrintHTML(po) {
       </head>
       <body>
         <div class="header">
-          <img src="/logo-transparent.png" alt="KCM Logo" style="height: 48px; object-fit: contain; margin-bottom: 4px;">
+          <img src="/logo_no_background.png" alt="KCM Logo" style="height: 110px; max-width: 320px; object-fit: contain; margin-bottom: 8px;">
           <h1>CV. KURNIA CIPTA MANDIRI</h1>
           <p>Jl. Kaliurang Km. 12, Candiwinangun RT 6/ RW 13 No. 24, Sardonoharjo, Ngaglik, Sleman, Yogyakarta</p>
           <p>Telp/Wa: 0858.6800.0012 | Email: kcm_production@ymail.com</p>
@@ -580,10 +581,6 @@ function viewCetak(po) {
 }
 
 function downloadPoPDF(po) {
-  if (typeof html2pdf === 'undefined') {
-    appStore.showAlert('Library PDF belum dimuat. Silakan coba beberapa saat lagi.', 'error')
-    return
-  }
   const element = document.createElement('div')
   element.innerHTML = generatePoPrintHTML(po)
   const filename = `PO_${po.po_number.replace(/\s+/g, '_')}.pdf`

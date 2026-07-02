@@ -41,6 +41,7 @@ exports.saveRab = async (req, res) => {
   let totalBudget = 0;
   if (items && Array.isArray(items)) {
     items.forEach(item => {
+      if (item.is_header) return;
       const qty = parseFloat(item.qty) || 0;
       const price = parseFloat(item.unit_price) || 0;
       totalBudget += (qty * price);
@@ -72,7 +73,7 @@ exports.saveRab = async (req, res) => {
 
     // Insert items
     if (items && Array.isArray(items)) {
-      const insertQuery = 'INSERT INTO rab_items (rab_id, section, item_name, description, unit, qty, unit_price) VALUES (?, ?, ?, ?, ?, ?, ?)';
+      const insertQuery = 'INSERT INTO rab_items (rab_id, section, item_name, description, unit, qty, unit_price, is_header) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
       for (const item of items) {
         if (!item.item_name) continue;
         await connection.query(insertQuery, [
@@ -81,8 +82,9 @@ exports.saveRab = async (req, res) => {
           item.item_name,
           item.description || null,
           item.unit || 'pcs',
-          parseFloat(item.qty) || 1,
-          parseFloat(item.unit_price) || 0
+          parseFloat(item.qty) || 0,
+          parseFloat(item.unit_price) || 0,
+          item.is_header ? 1 : 0
         ]);
       }
     }

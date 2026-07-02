@@ -453,15 +453,18 @@
                   <tr v-if="!rabDetail.items || rabDetail.items.length === 0">
                     <td colspan="8" class="py-6 text-center text-gray-400">Tidak ada item</td>
                   </tr>
-                  <tr v-for="(item, idx) in (rabDetail.items || [])" :key="idx">
-                    <td class="py-2.5 px-4 text-center">{{ idx + 1 }}</td>
-                    <td class="py-2.5 px-4 uppercase">{{ item.section || '-' }}</td>
-                    <td class="py-2.5 px-4 font-semibold">{{ item.item_name || '-' }}</td>
-                    <td class="py-2.5 px-4 text-gray-500">{{ item.description || '-' }}</td>
-                    <td class="py-2.5 px-4 text-center">{{ item.unit || '-' }}</td>
-                    <td class="py-2.5 px-4 text-center">{{ item.qty }}</td>
-                    <td class="py-2.5 px-4 text-right font-mono">{{ formatCurrency(item.unit_price) }}</td>
-                    <td class="py-2.5 px-4 text-right font-mono font-semibold">{{ formatCurrency((item.qty || 0) * (item.unit_price || 0)) }}</td>
+                  <tr v-for="(item, idx) in (rabDetail.items || [])" :key="idx" :class="{'bg-gray-50/50 dark:bg-gray-800/20 font-bold': item.is_header}">
+                    <td class="py-2.5 px-4 text-center">
+                      <span v-if="item.is_header">{{ getDetailHeaderLetter(rabDetail.items, idx) }}</span>
+                      <span v-else>{{ getDetailItemNumber(rabDetail.items, idx) }}</span>
+                    </td>
+                    <td class="py-2.5 px-4 uppercase">{{ item.is_header ? '-' : (item.section || '-') }}</td>
+                    <td class="py-2.5 px-4 font-semibold" :class="{'text-red-800 dark:text-red-500': item.is_header}">{{ item.item_name || '-' }}</td>
+                    <td class="py-2.5 px-4 text-gray-500">{{ item.is_header ? '-' : (item.description || '-') }}</td>
+                    <td class="py-2.5 px-4 text-center">{{ item.is_header ? '-' : (item.unit || '-') }}</td>
+                    <td class="py-2.5 px-4 text-center">{{ item.is_header ? '-' : item.qty }}</td>
+                    <td class="py-2.5 px-4 text-right font-mono">{{ item.is_header ? '-' : formatCurrency(item.unit_price) }}</td>
+                    <td class="py-2.5 px-4 text-right font-mono font-semibold">{{ item.is_header ? '-' : formatCurrency((item.qty || 0) * (item.unit_price || 0)) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -574,7 +577,7 @@
               <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div class="md:col-span-1">
                   <label class="text-[10px] font-bold text-gray-400 block mb-1">Kode RAB</label>
-                  <input v-model="builderForm.code" type="text" required class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs py-2.5 px-4 focus:border-red-500 focus:ring-0" placeholder="Contoh: RAB-001"/>
+                  <input v-model="builderForm.code" type="text" class="w-full rounded-xl border-gray-250 dark:border-gray-700 dark:bg-gray-900 text-xs py-2.5 px-4 focus:border-red-500 focus:ring-0" :placeholder="'Contoh: ' + generatedRabCode"/>
                 </div>
                 <div class="md:col-span-2">
                   <label class="text-[10px] font-bold text-gray-400 block mb-1">Nama Proyek</label>
@@ -600,7 +603,7 @@
                   <span class="text-xs font-bold text-gray-700 dark:text-gray-200">Daftar Item Rincian Biaya</span>
                   <button @click="addBuilderRow" type="button" class="border border-red-800 text-red-800 hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-950/20 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
                     <span class="material-symbols-outlined text-sm font-semibold">add</span>
-                    Tambah Baris
+                    Tambah Pekerjaan Utama
                   </button>
                 </div>
 
@@ -608,40 +611,75 @@
                   <table class="w-full text-left border-collapse">
                     <thead class="bg-gray-50/70 dark:bg-gray-900/10 text-[9px] tracking-wider font-bold text-gray-400 uppercase border-b border-gray-150 dark:border-gray-800">
                       <tr>
-                        <th class="py-3 px-4 w-8 text-center">NO</th>
-                        <th class="py-3 px-4">Item Pekerjaan</th>
-                        <th class="py-3 px-4 w-1/4">Material</th>
-                        <th class="py-3 px-2 w-20 text-center">P</th>
-                        <th class="py-3 px-2 w-20 text-center">L</th>
-                        <th class="py-3 px-4 w-32 text-right">Harga</th>
-                        <th class="py-3 px-4 w-12 text-center">#</th>
+                        <th class="py-3 px-2 w-12 text-center">NO</th>
+                        <th class="py-3 px-3">Item Pekerjaan / Sub-Pekerjaan</th>
+                        <th class="py-3 px-3 w-1/4">Material</th>
+                        <th class="py-3 px-2 w-16 text-center">P</th>
+                        <th class="py-3 px-2 w-16 text-center">L</th>
+                        <th class="py-3 px-3 w-28 text-right">Harga</th>
+                        <th class="py-3 px-3 w-20 text-center">Aksi</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
                        <tr v-if="builderForm.items.length === 0">
-                        <td colspan="7" class="py-8 text-center text-gray-400 font-medium">Belum ada item ditambahkan. Silakan klik "Tambah Baris".</td>
+                        <td colspan="7" class="py-8 text-center text-gray-400 font-medium">Belum ada pekerjaan ditambahkan. Silakan klik "+ Tambah Pekerjaan Utama".</td>
                       </tr>
-                      <tr v-else v-for="(item, idx) in builderForm.items" :key="idx" class="align-top">
-                        <td class="py-2.5 px-3 text-center text-gray-400">{{ idx + 1 }}</td>
-                        <td class="py-2.5 px-3">
-                          <input v-model="item.item_name" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Nama pekerjaan"/>
+                      <tr v-else v-for="(item, idx) in builderForm.items" :key="idx" class="align-middle hover:bg-gray-50/50 dark:hover:bg-gray-800/10" :class="{'bg-red-50/20 dark:bg-red-955/5': item.is_header}">
+                        <!-- NO Column -->
+                        <td class="py-2.5 px-2 text-center text-gray-400 font-bold">
+                          <span v-if="item.is_header" class="text-red-800 dark:text-red-500 text-xs">{{ getHeaderLetter(idx) }}</span>
+                          <span v-else class="pl-3 text-[10px]">{{ getItemNumber(idx) }}</span>
                         </td>
-                        <td class="py-2.5 px-3">
-                          <input v-model="item.description" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" placeholder="Material / deskripsi"/>
+                        <!-- Item Pekerjaan Column -->
+                        <td class="py-2.5 px-2">
+                          <div :class="{'pl-6': !item.is_header}" class="flex items-center">
+                            <span v-if="!item.is_header" class="text-gray-400 mr-1.5 font-bold">↳</span>
+                            <input 
+                              v-model="item.item_name" 
+                              type="text" 
+                              class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0" 
+                              :class="{'font-bold text-red-800 dark:text-red-500 bg-red-50/10': item.is_header}" 
+                              :placeholder="item.is_header ? 'Nama Pekerjaan Utama (misal: Pekerjaan Kitchen)' : 'Nama Sub-Pekerjaan'"
+                            />
+                          </div>
                         </td>
+                        <!-- Description Column -->
+                        <td class="py-2.5 px-2">
+                          <input v-model="item.description" :disabled="!!item.is_header" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:opacity-50" placeholder="Material / deskripsi"/>
+                        </td>
+                        <!-- Qty P Column -->
+                        <td class="py-2.5 px-1 text-center">
+                          <input v-model.number="item.qty" :disabled="!!item.is_header" type="number" step="any" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center disabled:opacity-50" placeholder="0"/>
+                        </td>
+                        <!-- Unit L Column -->
+                        <td class="py-2.5 px-1 text-center">
+                          <input v-model="item.unit" :disabled="!!item.is_header" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center disabled:opacity-50" placeholder="1"/>
+                        </td>
+                        <!-- Unit Price Column -->
+                        <td class="py-2.5 px-2">
+                          <input v-model.number="item.unit_price" :disabled="!!item.is_header" type="number" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-right disabled:opacity-50" placeholder="0"/>
+                        </td>
+                        <!-- Actions Column -->
                         <td class="py-2.5 px-2 text-center">
-                          <input v-model.number="item.qty" type="number" step="any" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center"/>
-                        </td>
-                        <td class="py-2.5 px-2 text-center">
-                          <input v-model="item.unit" type="text" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-center"/>
-                        </td>
-                        <td class="py-2.5 px-3">
-                          <input v-model.number="item.unit_price" type="number" min="0" class="w-full border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-lg p-1.5 text-xs focus:ring-0 text-right"/>
-                        </td>
-                        <td class="py-2.5 px-3 text-center pt-3">
-                          <button @click="removeBuilderRow(idx)" type="button" class="text-red-500 hover:text-red-700">
-                            <span class="material-symbols-outlined text-base">delete</span>
-                          </button>
+                          <div class="flex items-center justify-center space-x-1">
+                            <button 
+                              v-if="item.is_header" 
+                              @click="addSubItem(idx)" 
+                              type="button" 
+                              class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-colors flex items-center justify-center" 
+                              title="Tambah Sub-Item Pekerjaan"
+                            >
+                              <span class="material-symbols-outlined text-lg">add_circle</span>
+                            </button>
+                            <button 
+                              @click="removeBuilderRow(idx)" 
+                              type="button" 
+                              class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-955/20 transition-colors flex items-center justify-center"
+                              title="Hapus"
+                            >
+                              <span class="material-symbols-outlined text-lg">delete</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     </tbody>
@@ -739,6 +777,7 @@ import DateRangePicker from '../../components/ui/DateRangePicker.vue'
 import { useApi } from '../../composables/useApi'
 import { useAppStore } from '../../stores/app'
 import { formatCurrency, formatDate } from '../../utils/helpers'
+import html2pdf from 'html2pdf.js'
 
 const api = useApi()
 const appStore = useAppStore()
@@ -746,6 +785,7 @@ const appStore = useAppStore()
 const activeDropdown = ref(null)
 const selectedRab = ref(null)
 const dropdownStyle = ref({})
+const generatedRabCode = ref('')
 
 function toggleDropdown(event, r) {
   if (activeDropdown.value === r.id) {
@@ -912,9 +952,10 @@ const filteredRabs = computed(() => {
 })
 
 function startNewRab() {
+  generatedRabCode.value = 'KCM-RAB-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900)
   builderForm.value = {
     id: '',
-    code: 'KCM-RAB-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900),
+    code: '',
     project_name: '',
     client: '',
     status: 'draft',
@@ -953,19 +994,72 @@ async function deleteRab(id) {
 
 const builderTotalBudget = computed(() => {
   return builderForm.value.items.reduce((sum, item) => {
+    if (item.is_header) return sum
     return sum + (parseFloat(item.unit_price) || 0)
   }, 0)
 })
+
+function getHeaderLetter(idx) {
+  let count = 0
+  for (let i = 0; i <= idx; i++) {
+    if (builderForm.value.items[i]?.is_header) {
+      count++
+    }
+  }
+  return String.fromCharCode(64 + count) // 65 is 'A'
+}
+
+function getItemNumber(idx) {
+  let num = 0
+  for (let i = 0; i <= idx; i++) {
+    if (builderForm.value.items[i]?.is_header) {
+      num = 0
+    } else {
+      num++
+    }
+  }
+  return num
+}
+
+function addSubItem(parentIdx) {
+  builderForm.value.items.splice(parentIdx + 1, 0, {
+    section: 'bahan',
+    item_name: '',
+    description: '',
+    unit: '1',
+    qty: 1,
+    unit_price: 0,
+    is_header: 0
+  })
+}
 
 function addBuilderRow() {
   builderForm.value.items.push({
     section: 'bahan',
     item_name: '',
     description: '',
-    unit: '1',
-    qty: 1,
-    unit_price: 0
+    unit: '',
+    qty: 0,
+    unit_price: 0,
+    is_header: 1
   })
+}
+
+function getDetailHeaderLetter(items, idx) {
+  let count = 0
+  for (let i = 0; i <= idx; i++) {
+    if (items[i]?.is_header) count++
+  }
+  return String.fromCharCode(64 + count)
+}
+
+function getDetailItemNumber(items, idx) {
+  let num = 0
+  for (let i = 0; i <= idx; i++) {
+    if (items[i]?.is_header) num = 0
+    else num++
+  }
+  return num
 }
 
 function removeBuilderRow(idx) {
@@ -977,6 +1071,9 @@ function cancelBuilder() {
 }
 
 async function submitRabForm() {
+  if (!builderForm.value.code) {
+    builderForm.value.code = generatedRabCode.value
+  }
   if (!builderForm.value.code || !builderForm.value.project_name) {
     appStore.showAlert('Kode RAB dan Nama Proyek wajib diisi.', 'error')
     return
@@ -1072,25 +1169,52 @@ function generateRabPrintHTML(rabData) {
   let totalHarga = 0
   const items = r.items || []
   let no = 1
+  let headerCount = 0
+  let itemCount = 0
+
   // Build rows: qty=P, unit=L, unit_price=Harga
   items.forEach(item => {
-    const p = parseFloat(item.qty) || 0
-    const l = parseFloat(item.unit) || 0
-    const v = p * l
-    const harga = parseFloat(item.unit_price) || 0
-    totalHarga += harga
-    rabRows += `<tr>
-      <td style="text-align:center;border:1px solid #333;padding:4px 6px;font-size:10px;">${no++}</td>
-      <td style="border:1px solid #333;padding:4px 6px;font-size:10px;text-align:left;">${item.item_name || '-'}</td>
-      <td style="border:1px solid #333;padding:4px 6px;font-size:10px;text-align:left;">${item.description || '-'}</td>
-      <td style="text-align:center;border:1px solid #333;padding:4px 6px;font-size:10px;">${p ? p.toLocaleString('id-ID', {minimumFractionDigits:1, maximumFractionDigits:2}) : '-'}</td>
-      <td style="text-align:center;border:1px solid #333;padding:4px 6px;font-size:10px;">${l ? l.toLocaleString('id-ID', {minimumFractionDigits:1, maximumFractionDigits:2}) : '-'}</td>
-      <td style="text-align:center;border:1px solid #333;padding:4px 6px;font-size:10px;">${v ? v.toLocaleString('id-ID', {minimumFractionDigits:1, maximumFractionDigits:2}) : '-'}</td>
-      <td style="text-align:right;border:1px solid #333;padding:4px 6px;font-size:10px;font-family:monospace;">${Number(harga).toLocaleString('id-ID')}</td>
-    </tr>`
+    if (item.is_header) {
+      headerCount++
+      itemCount = 0 // reset item counter for new category
+      const letter = String.fromCharCode(64 + headerCount) // A, B, C...
+      let displayName = item.item_name || ''
+      
+      // Ensure the display name starts with standard 'A. ', 'B. ' style matching current sequence
+      const pattern = new RegExp(`^${letter}\\s*\\.?\\s*`, 'i')
+      if (!pattern.test(displayName)) {
+        displayName = displayName.replace(/^[A-Z]\s*\.?\s*/i, '') // remove old letter prefix
+        displayName = `${letter}. ${displayName}`
+      }
+      
+      rabRows += `<tr style="background-color: #f9f9f9; font-weight: bold;">
+        <td style="text-align:center;border:1px solid #333;padding:6px 8px;font-size:12px;"><strong>${letter}</strong></td>
+        <td style="border:1px solid #333;padding:6px 8px;font-size:12px;text-align:left;" colspan="2"><strong>${displayName}</strong></td>
+        <td style="text-align:center;border:1px solid #333;padding:6px 8px;font-size:12px;">-</td>
+        <td style="text-align:center;border:1px solid #333;padding:6px 8px;font-size:12px;">-</td>
+        <td style="text-align:center;border:1px solid #333;padding:6px 8px;font-size:12px;">-</td>
+        <td style="text-align:right;border:1px solid #333;padding:6px 8px;font-size:12px;">-</td>
+      </tr>`
+    } else {
+      itemCount++
+      const p = parseFloat(item.qty) || 0
+      const l = parseFloat(item.unit) || 0
+      const v = p * l
+      const harga = parseFloat(item.unit_price) || 0
+      totalHarga += harga
+      rabRows += `<tr>
+        <td style="text-align:center;border:1px solid #333;padding:6px 8px;font-size:12px;">${itemCount}</td>
+        <td style="border:1px solid #333;padding:6px 8px;font-size:12px;text-align:left;">${item.item_name || '-'}</td>
+        <td style="border:1px solid #333;padding:6px 8px;font-size:12px;text-align:left;">${item.description || '-'}</td>
+        <td style="text-align:center;border:1px solid #333;padding:6px 8px;font-size:12px;">${p ? p.toLocaleString('id-ID', {minimumFractionDigits:0, maximumFractionDigits:2}) : '-'}</td>
+        <td style="text-align:center;border:1px solid #333;padding:6px 8px;font-size:12px;">${l ? l.toLocaleString('id-ID', {minimumFractionDigits:0, maximumFractionDigits:2}) : '-'}</td>
+        <td style="text-align:center;border:1px solid #333;padding:6px 8px;font-size:12px;">${v ? v.toLocaleString('id-ID', {minimumFractionDigits:0, maximumFractionDigits:2}) : '-'}</td>
+        <td style="text-align:right;border:1px solid #333;padding:6px 8px;font-size:12px;font-family:monospace;">${Number(harga).toLocaleString('id-ID')}</td>
+      </tr>`
+    }
   })
 
-  const officeFooter = `<div style="margin-top:24px;text-align:center;font-size:9px;color:#888;border-top:2px double #333;padding-top:10px;">
+  const officeFooter = `<div style="margin-top:36px;text-align:center;font-size:10px;color:#666;border-top:2px double #333;padding-top:12px;clear:both;">
     <p><strong>OFFICE:</strong></p>
     <p>Jl. Kaliurang Km. 12, Candiwinangun RT 6/ RW 13 No. 24</p>
     <p>Sardonoharjo, Ngaglik, Sleman, Yogyakarta</p>
@@ -1099,7 +1223,7 @@ function generateRabPrintHTML(rabData) {
   </div>`
 
   if (items.length === 0) {
-    rabRows = `<tr><td colspan="7" style="text-align:center;border:1px solid #333;padding:8px;font-size:10px;">-</td></tr>`
+    rabRows = `<tr><td colspan="7" style="text-align:center;border:1px solid #333;padding:8px;font-size:12px;">-</td></tr>`
   }
   return `<!DOCTYPE html>
 <html>
@@ -1108,22 +1232,50 @@ function generateRabPrintHTML(rabData) {
 <title>Surat Penawaran - ${r.project_name || 'KCM'}</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Segoe UI',Arial,Helvetica,sans-serif; padding:12mm; color:#333; font-size:11px; }
-  @media print { @page { size:A4; margin:10mm; } .page-break{page-break-before:always;} }
+  body { font-family:'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif; padding:12mm; color:#333; font-size:13px; line-height: 1.5; }
+  @media print { @media page { size:A4; margin:10mm; } .page-break{page-break-before:always;} }
   table.rab{width:100%;border-collapse:collapse;margin-top:10px;}
-  table.rab th,table.rab td{border:1px solid #333;padding:4px 6px;font-size:10px;}
-  table.rab th{background:#f0f0f0;font-weight:bold;text-transform:uppercase;font-size:9px;}
-  .footer{margin-top:24px;text-align:center;font-size:9px;color:#888;border-top:2px double #333;padding-top:10px;}
+  table.rab th,table.rab td{border:1px solid #333;padding:6px 8px;font-size:12px;}
+  table.rab th{background:#f5f5f5;font-weight:bold;text-transform:uppercase;font-size:11px;}
+  .footer{margin-top:24px;text-align:center;font-size:10px;color:#666;border-top:2px double #333;padding-top:10px;}
 </style>
 </head>
 <body>
 
-<div style="margin-bottom:14px;font-size:11px;">
-  <p><strong>Nomor Ref</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ${r.code || '-'}</p>
-  <p><strong>Pekerjaan</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ${r.project_name || '-'}</p>
-  <p><strong>Lokasi</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ${r.client || 'Yogyakarta'}</p>
-  <p><strong>Nama Customer</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : ${r.client || '-'}</p>
+<!-- HEADER WITH BRAND LOGO -->
+<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:12px; margin-bottom:16px;">
+  <div>
+    <img src="/logo_no_background.png" style="height:120px; max-width:340px; object-fit:contain;" alt="CV. KURNIA CIPTA MANDIRI Logo" />
+  </div>
+  <div style="text-align:right;">
+    <h1 style="font-size:18px; font-weight:bold; color:#991B1B; margin-bottom:2px;">SURAT PENAWARAN HARGA (RAB)</h1>
+    <p style="font-size:10px; color:#555; font-weight:600;">CV. KURNIA CIPTA MANDIRI</p>
+  </div>
 </div>
+
+<!-- METADATA INFORMATION TABLE (ALIGNED COLONS) -->
+<table style="width:auto; border-collapse:collapse; margin-bottom:16px; font-size:12px; border:none;">
+  <tr style="border:none;">
+    <td style="padding:2px 0; border:none; width:120px; font-weight:bold; text-align:left;">Nomor Ref</td>
+    <td style="padding:2px 4px; border:none; width:10px; text-align:center;">:</td>
+    <td style="padding:2px 0; border:none; text-align:left;">${r.code || '-'}</td>
+  </tr>
+  <tr style="border:none;">
+    <td style="padding:2px 0; border:none; font-weight:bold; text-align:left;">Pekerjaan</td>
+    <td style="padding:2px 4px; border:none; text-align:center;">:</td>
+    <td style="padding:2px 0; border:none; text-align:left;">${r.project_name || '-'}</td>
+  </tr>
+  <tr style="border:none;">
+    <td style="padding:2px 0; border:none; font-weight:bold; text-align:left;">Lokasi</td>
+    <td style="padding:2px 4px; border:none; text-align:center;">:</td>
+    <td style="padding:2px 0; border:none; text-align:left;">${r.client || 'Yogyakarta'}</td>
+  </tr>
+  <tr style="border:none;">
+    <td style="padding:2px 0; border:none; font-weight:bold; text-align:left;">Nama Customer</td>
+    <td style="padding:2px 4px; border:none; text-align:center;">:</td>
+    <td style="padding:2px 0; border:none; text-align:left;">${r.client || '-'}</td>
+  </tr>
+</table>
 
 <table class="rab">
   <thead>
@@ -1142,23 +1294,53 @@ function generateRabPrintHTML(rabData) {
   </tbody>
 </table>
 
-<div style="margin-top:6px;text-align:right;font-size:11px;">
-  <strong>TOTAL &nbsp;&nbsp; ${Number(totalHarga).toLocaleString('id-ID')}</strong>
+<div style="margin-top:10px;text-align:right;font-size:13px;margin-bottom:20px;">
+  <strong>TOTAL &nbsp;&nbsp; Rp ${Number(totalHarga).toLocaleString('id-ID')}</strong>
 </div>
+
+<!-- PAGE 1 SIGNATURES -->
+<div style="margin-top:24px; display:flex; justify-content:space-between; font-size:12px;">
+  <div style="text-align:center; width:200px;">
+    <p>Menyetujui,</p>
+    <p style="margin-top:5px; margin-bottom:55px;"><strong>Customer</strong></p>
+    <p>_______________________</p>
+  </div>
+  <div style="text-align:center; width:220px;">
+    <p>Yogyakarta, ${new Date(rabDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' })}</p>
+    <p style="margin-top:5px; margin-bottom:5px;"><strong>CV. KURNIA CIPTA MANDIRI</strong></p>
+    <div style="height:60px;margin:5px 0;display:flex;align-items:center;justify-content:center;">
+      <img src="/ttd_anriko.png" style="max-height:60px; max-width:145px; object-fit:contain;" alt="(Tanda Tangan)" onerror="this.style.display='none'" />
+    </div>
+    <p><u><strong>Anriko K., ST.</strong></u></p>
+    <p style="font-size:10px;color:#555;">Pemilik / Direktur</p>
+  </div>
+</div>
+<div style="clear:both;"></div>
 
 ${officeFooter}
 
 <!-- PAGE 2: SURAT PENAWARAN -->
 <div class="page-break"></div>
 
-<div style="text-align:right;font-size:11px;margin-bottom:10px;">
-  <p><strong>${formatDate(rabDate)}</strong></p>
+<!-- PAGE 2 HEADER WITH BRAND LOGO -->
+<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:12px; margin-bottom:16px;">
+  <div>
+    <img src="/logo_no_background.png" style="height:120px; max-width:340px; object-fit:contain;" alt="CV. KURNIA CIPTA MANDIRI Logo" />
+  </div>
+  <div style="text-align:right;">
+    <h1 style="font-size:18px; font-weight:bold; color:#991B1B; margin-bottom:2px;">SURAT PENAWARAN HARGA (RAB)</h1>
+    <p style="font-size:10px; color:#555; font-weight:600;">CV. KURNIA CIPTA MANDIRI</p>
+  </div>
+</div>
+
+<div style="text-align:right;font-size:12px;margin-bottom:16px;">
+  <p><strong>Yogyakarta, ${new Date(rabDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' })}</strong></p>
   <p>Ref.No: ${r.code || '-'}</p>
 </div>
 
-<p style="font-size:11px;margin-bottom:2px;"><strong>Perihal : Penawaran ${r.project_name || '-'}</strong></p>
+<p style="font-size:12px;margin-bottom:8px;"><strong>Perihal : Penawaran ${r.project_name || '-'}</strong></p>
 
-<div style="font-size:11px;line-height:1.6;margin-top:10px;">
+<div style="font-size:12px;line-height:1.6;margin-top:10px;">
   <p>Kepada Yth.</p>
   <p><strong>${r.client || '_________________'}</strong></p>
   <p>di ${r.client || 'Yogyakarta'}</p>
@@ -1166,11 +1348,11 @@ ${officeFooter}
   <p style="margin-top:14px;">Dengan hormat,</p>
   <p>Bersama ini kami sampaikan penawaran untuk Pekerjaan <strong>${r.project_name || '-'}</strong> dengan penawaran sebagai berikut (rincian terlampir),</p>
 
-  <div style="margin:8px 0;padding:6px 10px;border:1px solid #ddd;background:#f9f9f9;font-size:10px;">
-    <strong>${r.project_name || '-'}</strong> &nbsp;&nbsp; <span style="float:right;font-family:monospace;font-weight:bold;">${Number(totalHarga).toLocaleString('id-ID')}</span>
+  <div style="margin:12px 0;padding:8px 12px;border:1px solid #ddd;background:#f9f9f9;font-size:12px;">
+    <strong>${r.project_name || '-'}</strong> &nbsp;&nbsp; <span style="float:right;font-family:monospace;font-weight:bold;">Rp ${Number(totalHarga).toLocaleString('id-ID')}</span>
   </div>
 
-  <div style="background:#f9f9f9;padding:6px 10px;font-size:10px;margin-bottom:10px;font-style:italic;border:1px solid #ddd;">
+  <div style="background:#f9f9f9;padding:8px 12px;font-size:11px;margin-bottom:12px;font-style:italic;border:1px solid #ddd;">
     Terbilang: <strong>${terbilang(totalHarga)}</strong>
   </div>
 
@@ -1178,22 +1360,34 @@ ${officeFooter}
   <p style="padding-left:20px;">DP 50% sebelum pekerjaan dimulai.</p>
   <p style="padding-left:20px;">Pelunasan 100% setelah pekerjaan selesai.</p>
 
-  <p style="margin-top:10px;"><strong>Masa berlaku penawaran ini adalah 21 hari sejak tanggal surat.</strong></p>
-  <p style="padding-left:20px;font-size:10px;color:#666;">Harga dapat berubah sewaktu-waktu tanpa pemberitahuan terlebih dahulu.</p>
+  <p style="margin-top:14px;"><strong>Masa berlaku penawaran ini adalah 21 hari sejak tanggal surat.</strong></p>
+  <p style="padding-left:20px;font-size:11px;color:#666;">Harga dapat berubah sewaktu-waktu tanpa pemberitahuan terlebih dahulu.</p>
 
-  <div style="border:1px solid #999;padding:8px 12px;margin:10px 0;font-size:10px;">
+  <div style="border:1px solid #999;padding:10px 14px;margin:12px 0;font-size:11px;width:fit-content;">
     <p><strong>No. Rekening Pembayaran:</strong></p>
     <p>Bank BCA &nbsp; a.n. <strong>Anriko K</strong> &nbsp; No. <strong>0151 343 642</strong></p>
   </div>
 
   <p>Demikian surat penawaran ini kami buat dengan sebenar-benarnya. Atas perhatian dan kerjasamanya, kami ucapkan terima kasih.</p>
 
-  <div style="text-align:right;margin-top:24px;font-size:10px;">
-    <p>Hormat kami,</p>
-    <div style="display:inline-block;width:140px;border-bottom:1px solid #333;height:36px;margin-bottom:2px;"></div>
-    <p><strong>Anriko K, ST.</strong></p>
-    <p>CV. KURNIA CIPTA MANDIRI</p>
+  <!-- PAGE 2 SIGNATURES -->
+  <div style="margin-top:32px; display:flex; justify-content:space-between; font-size:12px;">
+    <div style="text-align:center; width:200px;">
+      <p style="visibility:hidden;">Tanggal</p>
+      <p style="margin-top:5px; margin-bottom:55px;">Menyetujui,</p>
+      <p><strong>Customer</strong></p>
+    </div>
+    <div style="text-align:center; width:220px; float:right;">
+      <p>Yogyakarta, ${new Date(rabDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' })}</p>
+      <p style="margin-top:5px; margin-bottom:5px;"><strong>CV. KURNIA CIPTA MANDIRI</strong></p>
+      <div style="height:60px;margin:5px 0;display:flex;align-items:center;justify-content:center;">
+        <img src="/ttd_anriko.png" style="max-height:60px; max-width:145px; object-fit:contain;" alt="(Tanda Tangan)" onerror="this.style.display='none'" />
+      </div>
+      <p><u><strong>Anriko K., ST.</strong></u></p>
+      <p style="font-size:10px;color:#555;">Pemilik / Direktur</p>
+    </div>
   </div>
+  <div style="clear:both;"></div>
 </div>
 
 ${officeFooter}
@@ -1232,10 +1426,6 @@ async function printRabRow(rab) {
 }
 
 async function downloadRabRow(rab) {
-  if (typeof html2pdf === 'undefined') {
-    appStore.showAlert('Library PDF belum dimuat. Silakan coba beberapa saat lagi.', 'error')
-    return
-  }
   await loadRabIntoBuilder(rab)
   
   const element = document.createElement('div')

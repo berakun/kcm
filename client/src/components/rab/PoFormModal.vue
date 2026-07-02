@@ -39,8 +39,8 @@
                 <!-- PO Info Fields -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">No</label>
-                    <input v-model="form.nomorRef" type="text" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0" placeholder="B.803/KCM/VI/2026">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Nomor PO (Bisa Diedit Manual)</label>
+                    <input v-model="form.nomorRef" type="text" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0" :placeholder="'Contoh: ' + generatedPoNumber">
                   </div>
                   <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Date</label>
@@ -246,21 +246,21 @@ const monthRoman = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII
 const form = ref({})
 const rabList = ref([])
 const selectedRabId = ref('')
+const generatedPoNumber = ref('')
 
-// Watch for changes in initialData to populate form
-watch(() => props.initialData, (newVal) => {
-  if (newVal && props.show) {
-    loadPOIntoForm(newVal)
+// Watch props.show and props.initialData together to populate or reset form
+watch([() => props.show, () => props.initialData], ([show, initialData]) => {
+  if (show) {
+    loadRabList()
+    if (initialData && Object.keys(initialData).length > 0) {
+      loadPOIntoForm(initialData)
+    } else {
+      resetForm()
+    }
   } else {
     resetForm()
   }
 }, { immediate: true })
-
-watch(() => props.show, (newVal) => {
-  if (newVal) {
-    loadRabList()
-  }
-})
 
 function closeModal() {
   emit('update:show', false)
@@ -322,7 +322,7 @@ async function loadRabData() {
     return
   }
   try {
-    const rab = await api.get(`/api/rab/${selectedRabId.value}`)
+    const rab = await api.get('/api/rab', { id: selectedRabId.value })
     form.value.projectNames = rab.project_name || ''
     if (rab.items && rab.items.length > 0) {
       form.value.items = rab.items.map(i => ({
@@ -336,8 +336,9 @@ async function loadRabData() {
 }
 
 function resetForm() {
+  generatedPoNumber.value = `B.803/KCM/${monthRoman}/${today.getFullYear()}`
   form.value = {
-    nomorRef: `B.803/KCM/${monthRoman}/${today.getFullYear()}`,
+    nomorRef: '',
     tanggal: today.toISOString().split('T')[0],
     to: '', phone: '', attn: '', projectNames: '', materialRef: '', notes: '',
     deliverBy: '', deliverTo: '', orderedBy: '', purchasing: '', preparedBy: '',
@@ -374,6 +375,9 @@ function buildPayload() {
 }
 
 async function savePO() {
+  if (!form.value.nomorRef) {
+    form.value.nomorRef = generatedPoNumber.value
+  }
   if (!form.value.nomorRef) {
     appStore.showAlert('Nomor PO wajib diisi.', 'error')
     return
