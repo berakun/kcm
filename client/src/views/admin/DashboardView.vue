@@ -194,8 +194,8 @@
               </div>
               <div>
                 <div class="text-[9px] font-bold text-gray-400 uppercase">Durasi Kerja</div>
-                <div class="text-xs font-black mt-1" :class="todayStatusRaw?.duration ? 'text-emerald-600' : 'text-gray-400'">
-                  {{ todayStatusRaw?.duration || '0j' }}
+                <div class="text-xs font-black mt-1" :class="todayStatusRaw?.data?.duration ? 'text-emerald-600' : 'text-gray-400'">
+                  {{ todayStatusRaw?.data?.duration || '0j' }}
                 </div>
               </div>
             </div>
