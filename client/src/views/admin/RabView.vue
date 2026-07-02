@@ -1257,7 +1257,7 @@ function generateRabPrintHTML(rabData) {
     <img src="/logo_no_background.png" style="height:120px; max-width:340px; object-fit:contain;" alt="CV. KURNIA CIPTA MANDIRI Logo" />
   </div>
   <div style="text-align:right;">
-    <h1 style="font-size:18px; font-weight:bold; color:#991B1B; margin-bottom:2px;">SURAT PENAWARAN HARGA (RAB)</h1>
+    <h1 style="font-size:18px; font-weight:bold; color:#991B1B; margin-bottom:2px;">Rencana Anggaran Biaya</h1>
     <p style="font-size:10px; color:#555; font-weight:600;">CV. KURNIA CIPTA MANDIRI</p>
   </div>
 </div>
@@ -1337,7 +1337,7 @@ ${officeFooter}
     <img src="/logo_no_background.png" style="height:120px; max-width:340px; object-fit:contain;" alt="CV. KURNIA CIPTA MANDIRI Logo" />
   </div>
   <div style="text-align:right;">
-    <h1 style="font-size:18px; font-weight:bold; color:#991B1B; margin-bottom:2px;">SURAT PENAWARAN HARGA (RAB)</h1>
+    <h1 style="font-size:18px; font-weight:bold; color:#991B1B; margin-bottom:2px;">Surat Penawaran</h1>
     <p style="font-size:10px; color:#555; font-weight:600;">CV. KURNIA CIPTA MANDIRI</p>
   </div>
 </div>
