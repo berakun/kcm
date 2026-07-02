@@ -128,62 +128,14 @@
                           {{ r.status }}
                         </span>
                       </td>
-                      <td class="py-4 px-6 text-center relative">
-                        <div class="inline-block text-left">
-                          <button 
-                            @click.prevent.stop="toggleDropdown(r.id)" 
-                            class="p-2 rounded-xl text-gray-500 hover:bg-gray-150 dark:hover:bg-gray-800 transition-colors flex items-center justify-center mx-auto"
-                            title="Aksi"
-                          >
-                            <span class="material-symbols-outlined text-lg">more_vert</span>
-                          </button>
-                          
-                          <!-- Dropdown Menu -->
-                          <div 
-                            v-if="activeDropdown === r.id" 
-                            :class="[
-                              idx >= filteredRabs.length - 1 ? 'bottom-full mb-1' : 'top-full mt-1',
-                              'absolute right-6 w-44 bg-white dark:bg-gray-850 rounded-2xl shadow-xl border border-gray-150 dark:border-gray-800 py-2 z-30 animate-fade-in'
-                            ]"
-                          >
-                            <button 
-                              @click="activeDropdown = null; viewRabDetail(r)" 
-                              class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
-                            >
-                              <span class="material-symbols-outlined text-sm text-blue-600">visibility</span>
-                              <span>Detail & PO</span>
-                            </button>
-                            <button 
-                              @click="activeDropdown = null; printRabRow(r)" 
-                              class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
-                            >
-                              <span class="material-symbols-outlined text-sm text-gray-500">print</span>
-                              <span>Cetak RAB</span>
-                            </button>
-                            <button 
-                              @click="activeDropdown = null; downloadRabRow(r)" 
-                              class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
-                            >
-                              <span class="material-symbols-outlined text-sm text-emerald-600">download</span>
-                              <span>Unduh PDF</span>
-                            </button>
-                            <button 
-                              @click="activeDropdown = null; editRab(r.id)" 
-                              class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
-                            >
-                              <span class="material-symbols-outlined text-sm text-amber-600">edit_note</span>
-                              <span>Ubah / Edit</span>
-                            </button>
-                            <hr class="my-1 border-gray-100 dark:border-gray-800" />
-                            <button 
-                              @click="activeDropdown = null; deleteRab(r.id)" 
-                              class="w-full px-4 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center space-x-2.5 transition-colors"
-                            >
-                              <span class="material-symbols-outlined text-sm">delete</span>
-                              <span>Hapus RAB</span>
-                            </button>
-                          </div>
-                        </div>
+                      <td class="py-4 px-6 text-center">
+                        <button 
+                          @click.prevent.stop="toggleDropdown($event, r)" 
+                          class="p-2 rounded-xl text-gray-500 hover:bg-gray-150 dark:hover:bg-gray-800 transition-colors flex items-center justify-center mx-auto"
+                          title="Aksi"
+                        >
+                          <span class="material-symbols-outlined text-lg">more_vert</span>
+                        </button>
                       </td>
                     </tr>
                   </tbody>
@@ -718,6 +670,52 @@
       </transition>
     </teleport>
 
+    <!-- Action Dropdown Teleport -->
+    <teleport to="body">
+      <div 
+        v-if="activeDropdown && selectedRab" 
+        :style="dropdownStyle"
+        class="fixed w-44 bg-white dark:bg-gray-850 rounded-2xl shadow-xl border border-gray-150 dark:border-gray-800 py-2 z-[9999] animate-fade-in"
+      >
+        <button 
+          @click="viewRabDetail(selectedRab); closeAllDropdowns()" 
+          class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+        >
+          <span class="material-symbols-outlined text-sm text-blue-600">visibility</span>
+          <span>Detail & PO</span>
+        </button>
+        <button 
+          @click="printRabRow(selectedRab); closeAllDropdowns()" 
+          class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+        >
+          <span class="material-symbols-outlined text-sm text-gray-500">print</span>
+          <span>Cetak RAB</span>
+        </button>
+        <button 
+          @click="downloadRabRow(selectedRab); closeAllDropdowns()" 
+          class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+        >
+          <span class="material-symbols-outlined text-sm text-emerald-600">download</span>
+          <span>Unduh PDF</span>
+        </button>
+        <button 
+          @click="editRab(selectedRab.id); closeAllDropdowns()" 
+          class="w-full px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center space-x-2.5 transition-colors"
+        >
+          <span class="material-symbols-outlined text-sm text-amber-600">edit_note</span>
+          <span>Ubah / Edit</span>
+        </button>
+        <hr class="my-1 border-gray-100 dark:border-gray-800" />
+        <button 
+          @click="deleteRab(selectedRab.id); closeAllDropdowns()" 
+          class="w-full px-4 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center space-x-2.5 transition-colors"
+        >
+          <span class="material-symbols-outlined text-sm">delete</span>
+          <span>Hapus RAB</span>
+        </button>
+      </div>
+    </teleport>
+
   </div>
 </template>
 
@@ -746,17 +744,37 @@ const api = useApi()
 const appStore = useAppStore()
 
 const activeDropdown = ref(null)
+const selectedRab = ref(null)
+const dropdownStyle = ref({})
 
-function toggleDropdown(id) {
-  if (activeDropdown.value === id) {
-    activeDropdown.value = null
-  } else {
-    activeDropdown.value = id
+function toggleDropdown(event, r) {
+  if (activeDropdown.value === r.id) {
+    closeAllDropdowns()
+    return
   }
+  activeDropdown.value = r.id
+  selectedRab.value = r
+  
+  const rect = event.currentTarget.getBoundingClientRect()
+  
+  dropdownStyle.value = {
+    position: 'fixed',
+    top: `${rect.bottom + 4}px`,
+    left: `${rect.right - 176}px`,
+    zIndex: 9999
+  }
+  
+  setTimeout(() => {
+    window.addEventListener('click', closeAllDropdowns)
+    window.addEventListener('scroll', closeAllDropdowns, { capture: true, passive: true })
+  }, 0)
 }
 
 function closeAllDropdowns() {
   activeDropdown.value = null
+  selectedRab.value = null
+  window.removeEventListener('click', closeAllDropdowns)
+  window.removeEventListener('scroll', closeAllDropdowns, { capture: true })
 }
 
 function toLocalDateString(dateInput) {
