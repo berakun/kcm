@@ -713,7 +713,7 @@
       <div 
         v-if="activeDropdown && selectedRab" 
         :style="dropdownStyle"
-        class="fixed w-44 bg-white dark:bg-gray-850 rounded-2xl shadow-xl border border-gray-150 dark:border-gray-800 py-2 z-[9999] animate-fade-in"
+        class="fixed w-40 bg-white dark:bg-gray-850 rounded-2xl shadow-xl border border-gray-150 dark:border-gray-800 py-2 z-[9999] animate-fade-in"
       >
         <button 
           @click="viewRabDetail(selectedRab); closeAllDropdowns()" 
@@ -796,11 +796,19 @@ function toggleDropdown(event, r) {
   selectedRab.value = r
   
   const rect = event.currentTarget.getBoundingClientRect()
+  const DW = 160, DH = 220
+  
+  let left = rect.right - DW
+  if (left < 8) left = 8
+  if (left + DW > window.innerWidth - 8) left = window.innerWidth - DW - 8
+  
+  let top = rect.bottom + 4
+  if (top + DH > window.innerHeight - 8) top = rect.top - DH - 4
   
   dropdownStyle.value = {
     position: 'fixed',
-    top: `${rect.bottom + 4}px`,
-    left: `${rect.right - 176}px`,
+    top: `${top}px`,
+    left: `${left}px`,
     zIndex: 9999
   }
   
@@ -809,6 +817,7 @@ function toggleDropdown(event, r) {
     window.addEventListener('scroll', closeAllDropdowns, { capture: true, passive: true })
   }, 0)
 }
+
 
 function closeAllDropdowns() {
   activeDropdown.value = null
