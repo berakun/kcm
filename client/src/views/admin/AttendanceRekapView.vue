@@ -759,8 +759,8 @@ function openEditModal(log) {
   editForm.value = {
     id: log.id,
     employee_name: log.employee_name,
-    check_in: log.check_in ? new Date(log.check_in).toISOString().replace('T', ' ').substring(0, 19) : '',
-    check_out: log.check_out ? new Date(log.check_out).toISOString().replace('T', ' ').substring(0, 19) : '',
+    check_in: log.check_in ? String(log.check_in).replace('T', ' ').substring(0, 19) : '',
+    check_out: log.check_out ? String(log.check_out).replace('T', ' ').substring(0, 19) : '',
     status: log.status,
     distance: log.distance
   }
