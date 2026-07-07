@@ -8,6 +8,9 @@ const roleMiddleware = require('../middleware/role');
 router.get('/settings', authMiddleware, attendanceController.getSettings);
 router.post('/settings', authMiddleware, roleMiddleware(['super_admin']), attendanceController.saveSettings);
 
+// WiFi status check (pre-flight, sebelum user klik tombol)
+router.get('/check-wifi', authMiddleware, attendanceController.checkWifi);
+
 router.get('/status', authMiddleware, attendanceController.getStatus);
 router.get('/history', authMiddleware, attendanceController.getHistory);
 router.get('/admin-list', authMiddleware, roleMiddleware(['admin', 'super_admin']), attendanceController.getAdminList);

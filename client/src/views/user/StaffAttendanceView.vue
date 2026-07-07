@@ -45,8 +45,14 @@
         <!-- Clock button -->
         <button 
           v-if="!attendanceStatus.has_checked_in" 
-          @click="performCheckIn" 
-          class="w-32 h-32 rounded-full flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+          @click="performCheckIn"
+          :disabled="!wifiStatus.connected"
+          :class="[
+            'w-32 h-32 rounded-full flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200 text-white',
+            wifiStatus.connected 
+              ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer' 
+              : 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
+          ]"
         >
           <span class="material-symbols-outlined text-[48px] font-bold">login</span>
           <span class="text-[11px] font-bold tracking-wider">CHECK IN</span>
@@ -55,7 +61,13 @@
         <button 
           v-else-if="!attendanceStatus.has_checked_out" 
           @click="performCheckOut"
-          class="w-32 h-32 rounded-full bg-red-600 hover:bg-red-700 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200"
+          :disabled="!wifiStatus.connected"
+          :class="[
+            'w-32 h-32 rounded-full text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200',
+            wifiStatus.connected 
+              ? 'bg-red-600 hover:bg-red-700 cursor-pointer' 
+              : 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
+          ]"
         >
           <span class="material-symbols-outlined text-[48px] font-bold">logout</span>
           <span class="text-[11px] font-bold tracking-wider">CHECK OUT</span>
@@ -67,27 +79,38 @@
         </div>
 
         <p class="text-[10px] text-gray-400">
-          Pastikan terhubung ke WiFi kantor untuk melakukan absensi.
+          {{ wifiStatus.connected ? 'Terhubung ke WiFi kantor. Siap absen.' : '⚠️ Terputus dari WiFi kantor. Hubungkan ke jaringan kantor untuk absen.' }}
         </p>
       </div>
 
       <!-- WiFi Connection Status -->
       <div class="bg-white dark:bg-gray-850 border border-gray-150 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex items-center justify-between">
         <div class="flex items-center space-x-3">
-          <div class="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-500">
+          <div :class="[
+            'p-2.5 rounded-xl',
+            wifiStatus.connected 
+              ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600' 
+              : 'bg-red-50 dark:bg-red-950/20 text-red-500'
+          ]">
             <span class="material-symbols-outlined text-lg">wifi</span>
           </div>
           <div>
             <div class="text-[10px] font-bold text-gray-400 uppercase">WiFi Kantor</div>
-            <div class="text-xs font-bold mt-0.5 text-amber-700">
-              Pastikan terhubung ke jaringan WiFi kantor
+            <div :class="[
+              'text-xs font-bold mt-0.5',
+              wifiStatus.connected ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+            ]">
+              {{ wifiStatus.connected ? 'Terhubung — IP: ' + (wifiStatus.clientIp || '-') : 'Tidak terhubung ke WiFi kantor' }}
             </div>
           </div>
         </div>
         <div class="text-right">
           <div class="text-[9px] font-bold text-gray-400 uppercase">Status</div>
-          <div class="text-[10px] font-bold text-gray-400">
-            Server yang memvalidasi
+          <div :class="[
+            'text-[10px] font-bold',
+            wifiStatus.connected ? 'text-emerald-600' : 'text-red-500'
+          ]">
+            {{ wifiStatus.connected ? '✓ Tervalidasi' : '✗ Ditolak' }}
           </div>
         </div>
       </div>
@@ -310,6 +333,9 @@ const appStore = useAppStore()
 const currentTime = ref('00:00:00')
 const formattedDate = computed(() => formatDate(new Date()))
 let clockTimer = null
+let wifiTimer = null
+
+const wifiStatus = ref({ connected: false, clientIp: null })
 
 const attendanceStatus = ref({
   has_checked_in: false,
@@ -353,6 +379,8 @@ const filteredLeaveHistory = computed(() => {
 
 onMounted(async () => {
   startClock()
+  await fetchWifiStatus()
+  wifiTimer = setInterval(fetchWifiStatus, 30000) // cek tiap 30 detik
   await fetchStatus()
   await fetchHistory()
   await fetchLeaveHistory()
@@ -360,6 +388,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   stopClock()
+  if (wifiTimer) clearInterval(wifiTimer)
 })
 
 function startClock() {
@@ -370,6 +399,15 @@ function startClock() {
 
 function stopClock() {
   if (clockTimer) clearInterval(clockTimer)
+}
+
+async function fetchWifiStatus() {
+  try {
+    const data = await api.get('/api/attendance/check-wifi')
+    wifiStatus.value = data
+  } catch {
+    wifiStatus.value = { connected: false, clientIp: null }
+  }
 }
 
 async function fetchStatus() {
@@ -391,6 +429,10 @@ async function fetchHistory() {
 }
 
 async function performCheckIn() {
+  if (!wifiStatus.connected) {
+    appStore.showAlert('Anda tidak terhubung ke WiFi kantor. Hubungkan ke jaringan kantor terlebih dahulu.', 'error')
+    return
+  }
   try {
     const result = await api.post('/api/attendance/check-in', {})
     appStore.showAlert(result.message, 'success')
@@ -403,6 +445,10 @@ async function performCheckIn() {
 
 async function performCheckOut() {
   if (!confirm('Apakah Anda yakin ingin check-out presensi hari ini?')) return
+  if (!wifiStatus.connected) {
+    appStore.showAlert('Anda tidak terhubung ke WiFi kantor. Hubungkan ke jaringan kantor terlebih dahulu.', 'error')
+    return
+  }
   try {
     const result = await api.post('/api/attendance/check-out', {})
     appStore.showAlert(result.message, 'success')

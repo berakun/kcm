@@ -537,3 +537,13 @@ exports.getGpsLogs = async (req, res) => {
     return res.status(500).json({ error: 'Gagal mengambil GPS logs: ' + err.message });
   }
 };
+
+// === WIFI STATUS CHECK (Client-Side Indicator) ===
+exports.checkWifi = async (req, res) => {
+  const ipCheck = checkOfficeIp(req);
+  return res.json({
+    connected: ipCheck.allowed,
+    clientIp: ipCheck.clientIp || null,
+    officeIps: ipCheck.officeIps || []
+  });
+};
