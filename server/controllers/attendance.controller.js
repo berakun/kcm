@@ -225,8 +225,7 @@ exports.checkOut = async (req, res) => {
     let distance = null;
     let status = 'di_kantor';
 
-    if (!isAdminRole && latitude && longitude) {
-      // Get settings for GPS validation (staff only)
+    if (latitude && longitude) {
       const [settingsRows] = await db.query('SELECT setting_key, setting_value FROM office_settings');
       const settings = {};
       settingsRows.forEach(r => settings[r.setting_key] = r.setting_value);
@@ -236,7 +235,8 @@ exports.checkOut = async (req, res) => {
       const oRad = parseFloat(settings.office_radius || '20');
 
       distance = calculateDistance(latitude, longitude, oLat, oLng);
-      if (distance > oRad) {
+      // Admin diluar radius: tetap checkout, staff ditolak
+      if (!isAdminRole && distance > oRad) {
         return res.status(400).json({ error: `Anda berada di luar radius kantor. Jarak Anda: ${Math.round(distance)} meter dari kantor` });
       }
     }
