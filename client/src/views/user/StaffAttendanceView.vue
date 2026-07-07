@@ -46,11 +46,7 @@
         <button 
           v-if="!attendanceStatus.has_checked_in" 
           @click="performCheckIn" 
-          :disabled="!canCheckIn"
-          class="w-32 h-32 rounded-full flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200"
-          :class="canCheckIn 
-            ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer' 
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
+          class="w-32 h-32 rounded-full flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
         >
           <span class="material-symbols-outlined text-[48px] font-bold">login</span>
           <span class="text-[11px] font-bold tracking-wider">CHECK IN</span>
@@ -58,9 +54,8 @@
 
         <button 
           v-else-if="!attendanceStatus.has_checked_out" 
-          @click="performCheckOut" 
-          :disabled="!canCheckOut"
-          class="w-32 h-32 rounded-full bg-red-600 hover:bg-red-700 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200 disabled:opacity-50"
+          @click="performCheckOut"
+          class="w-32 h-32 rounded-full bg-red-600 hover:bg-red-700 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200"
         >
           <span class="material-symbols-outlined text-[48px] font-bold">logout</span>
           <span class="text-[11px] font-bold tracking-wider">CHECK OUT</span>
@@ -72,45 +67,28 @@
         </div>
 
         <p class="text-[10px] text-gray-400">
-          {{ gpsLoading ? 'Sedang mengakses lokasi GPS...' : 'Pastikan Anda berada dalam radius kantor.' }}
-        </p>
-
-        <!-- Tambahkan error message di bawah tombol -->
-        <p v-if="!gpsGranted" class="text-red-500 text-[11px] font-medium text-center mt-2 max-w-xs">
-          ⚠️ Aktifkan GPS untuk melakukan absensi. Akses lokasi diperlukan.
-        </p>
-        <p v-else-if="distance !== null && distance > 20" class="text-red-500 text-[11px] font-medium text-center mt-2 max-w-xs">
-          🚫 Anda berada di luar radius kantor. Jarak Anda: {{ Math.round(distance) }} meter dari kantor.
+          Pastikan terhubung ke WiFi kantor untuk melakukan absensi.
         </p>
       </div>
 
-      <!-- Live GPS Geofence Check -->
+      <!-- WiFi Connection Status -->
       <div class="bg-white dark:bg-gray-850 border border-gray-150 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex items-center justify-between">
         <div class="flex items-center space-x-3">
           <div class="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-500">
-            <span class="material-symbols-outlined text-lg">location_on</span>
+            <span class="material-symbols-outlined text-lg">wifi</span>
           </div>
           <div>
-            <div class="text-[10px] font-bold text-gray-400 uppercase">Geofencing Status</div>
-            <div class="text-xs font-bold mt-0.5 flex items-center gap-1" :class="gpsResult?.status === 'di_kantor' ? 'text-emerald-700' : 'text-amber-700'">
-              <span class="material-symbols-outlined text-sm">{{ gpsResult?.status === 'di_kantor' ? 'verified' : 'warning' }}</span>
-              <span>
-                {{ 
-                  gpsResult?.status === 'di_kantor' ? 'Di Area Kantor' : 
-                  gpsResult?.status === 'luar_kantor' ? 'Di Luar Area' : 
-                  gpsResult?.status === 'error' ? (gpsResult.message || 'GPS Tidak Aktif') : 
-                  'Memuat...' 
-                }}
-              </span>
+            <div class="text-[10px] font-bold text-gray-400 uppercase">WiFi Kantor</div>
+            <div class="text-xs font-bold mt-0.5 text-amber-700">
+              Pastikan terhubung ke jaringan WiFi kantor
             </div>
           </div>
         </div>
         <div class="text-right">
-          <div class="text-[9px] font-bold text-gray-400 uppercase">Jarak</div>
-          <div class="text-sm font-black text-gray-850 dark:text-white">
-            {{ gpsResult?.distance !== undefined ? gpsResult.distance + ' m' : '-- m' }}
+          <div class="text-[9px] font-bold text-gray-400 uppercase">Status</div>
+          <div class="text-[10px] font-bold text-gray-400">
+            Server yang memvalidasi
           </div>
-          <div class="text-[8px] font-bold text-gray-400 mt-0.5">Radius: {{ officeRadius }}m</div>
         </div>
       </div>
 
@@ -322,13 +300,11 @@ import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import BaseModal from '../../components/ui/BaseModal.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useApi } from '../../composables/useApi'
-import { useGps } from '../../composables/useGps'
 import { useAppStore } from '../../stores/app'
 import { formatDate, formatCurrency } from '../../utils/helpers'
 
 const { user, logout } = useAuth()
 const api = useApi()
-const { getCurrentPosition, startTracking, stopTracking, officeRadius, loading: gpsLoading } = useGps()
 const appStore = useAppStore()
 
 const currentTime = ref('00:00:00')
@@ -342,23 +318,6 @@ const attendanceStatus = ref({
 })
 
 const historyList = ref([])
-const gpsResult = ref(null)
-
-const gpsGranted = computed(() => {
-  return gpsResult.value !== null && gpsResult.value.status !== 'error'
-})
-
-const distance = computed(() => {
-  return (gpsResult.value && gpsResult.value.distance !== undefined) ? gpsResult.value.distance : null
-})
-
-const canCheckIn = computed(() => {
-  return gpsGranted.value && distance.value !== null && distance.value <= officeRadius.value
-})
-
-const canCheckOut = computed(() => {
-  return gpsGranted.value && distance.value !== null && distance.value <= officeRadius.value
-})
 
 // Forms
 const showCashbonModal = ref(false)
@@ -397,16 +356,10 @@ onMounted(async () => {
   await fetchStatus()
   await fetchHistory()
   await fetchLeaveHistory()
-  await triggerGpsCheck()
-  // Kalau sudah check-in tapi belum check-out, mulai tracking
-  if (attendanceStatus.value.has_checked_in && !attendanceStatus.value.has_checked_out) {
-    startTracking()
-  }
 })
 
 onBeforeUnmount(() => {
   stopClock()
-  stopTracking()
 })
 
 function startClock() {
@@ -437,77 +390,25 @@ async function fetchHistory() {
   }
 }
 
-async function triggerGpsCheck() {
-  try {
-    const res = await getCurrentPosition()
-    gpsResult.value = res
-  } catch (err) {
-    console.warn('GPS scanning failed:', err.message)
-    gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
-  }
-}
-
 async function performCheckIn() {
-  // Refresh GPS dulu
   try {
-    await triggerGpsCheck()
-  } catch (e) { /* ignore */ }
-
-  // Cek radius sebelum konfirmasi
-  if (distance.value === null || distance.value > officeRadius.value) {
-    appStore.showAlert('Anda berada di luar radius kantor. Check-in tidak bisa dilakukan. Jarak: ' + (distance.value || '?') + 'm dari kantor', 'error')
-    return
-  }
-
-  try {
-    const pos = await getCurrentPosition()
-    gpsResult.value = pos
-    
-    const result = await api.post('/api/attendance/check-in', {
-      latitude: pos.latitude,
-      longitude: pos.longitude
-    })
-    
+    const result = await api.post('/api/attendance/check-in', {})
     appStore.showAlert(result.message, 'success')
-    // Start real-time GPS tracking setelah check-in
-    startTracking()
     await fetchStatus()
     await fetchHistory()
   } catch (err) {
-    gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
     appStore.showAlert('Check-In gagal: ' + (err.response?.data?.error || err.message), 'error')
   }
 }
 
 async function performCheckOut() {
-  // Refresh GPS dulu
-  try {
-    await triggerGpsCheck()
-  } catch (e) { /* ignore */ }
-
-  // Cek radius sebelum konfirmasi
-  if (distance.value === null || distance.value > officeRadius.value) {
-    appStore.showAlert('Anda berada di luar radius kantor. Check-out tidak bisa dilakukan.', 'error')
-    return
-  }
-
   if (!confirm('Apakah Anda yakin ingin check-out presensi hari ini?')) return
   try {
-    const pos = await getCurrentPosition()
-    gpsResult.value = pos
-    
-    const result = await api.post('/api/attendance/check-out', {
-      latitude: pos.latitude,
-      longitude: pos.longitude
-    })
-    
+    const result = await api.post('/api/attendance/check-out', {})
     appStore.showAlert(result.message, 'success')
-    // Stop GPS tracking setelah check-out
-    stopTracking()
     await fetchStatus()
     await fetchHistory()
   } catch (err) {
-    gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
     appStore.showAlert('Check-Out gagal: ' + (err.response?.data?.error || err.message), 'error')
   }
 }
