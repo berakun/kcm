@@ -99,6 +99,9 @@
                 </span>
               </div>
               <h3 class="font-bold text-base text-gray-900 dark:text-white group-hover:text-red-800 transition-colors">{{ p.title }}</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">
+                {{ p.description }}
+              </p>
             </div>
           </div>
         </div>
