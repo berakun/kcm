@@ -59,7 +59,7 @@
         <button 
           v-else-if="!attendanceStatus.has_checked_out" 
           @click="performCheckOut" 
-          :disabled="gpsLoading"
+          :disabled="!canCheckOut"
           class="w-32 h-32 rounded-full bg-red-600 hover:bg-red-700 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200 disabled:opacity-50"
         >
           <span class="material-symbols-outlined text-[48px] font-bold">logout</span>
@@ -110,6 +110,7 @@
           <div class="text-sm font-black text-gray-850 dark:text-white">
             {{ gpsResult?.distance !== undefined ? gpsResult.distance + ' m' : '-- m' }}
           </div>
+          <div class="text-[8px] font-bold text-gray-400 mt-0.5">Radius: {{ officeRadius }}m</div>
         </div>
       </div>
 
@@ -327,7 +328,7 @@ import { formatDate, formatCurrency } from '../../utils/helpers'
 
 const { user, logout } = useAuth()
 const api = useApi()
-const { getCurrentPosition, loading: gpsLoading } = useGps()
+const { getCurrentPosition, startTracking, stopTracking, officeRadius, loading: gpsLoading } = useGps()
 const appStore = useAppStore()
 
 const currentTime = ref('00:00:00')
@@ -352,7 +353,11 @@ const distance = computed(() => {
 })
 
 const canCheckIn = computed(() => {
-  return gpsGranted.value && distance.value !== null && distance.value <= 20
+  return gpsGranted.value && distance.value !== null && distance.value <= officeRadius.value
+})
+
+const canCheckOut = computed(() => {
+  return gpsGranted.value && distance.value !== null && distance.value <= officeRadius.value
 })
 
 // Forms
@@ -393,10 +398,15 @@ onMounted(async () => {
   await fetchHistory()
   await fetchLeaveHistory()
   await triggerGpsCheck()
+  // Kalau sudah check-in tapi belum check-out, mulai tracking
+  if (attendanceStatus.value.has_checked_in && !attendanceStatus.value.has_checked_out) {
+    startTracking()
+  }
 })
 
 onBeforeUnmount(() => {
   stopClock()
+  stopTracking()
 })
 
 function startClock() {
@@ -438,6 +448,17 @@ async function triggerGpsCheck() {
 }
 
 async function performCheckIn() {
+  // Refresh GPS dulu
+  try {
+    await triggerGpsCheck()
+  } catch (e) { /* ignore */ }
+
+  // Cek radius sebelum konfirmasi
+  if (distance.value === null || distance.value > officeRadius.value) {
+    appStore.showAlert('Anda berada di luar radius kantor. Check-in tidak bisa dilakukan. Jarak: ' + (distance.value || '?') + 'm dari kantor', 'error')
+    return
+  }
+
   try {
     const pos = await getCurrentPosition()
     gpsResult.value = pos
@@ -448,6 +469,8 @@ async function performCheckIn() {
     })
     
     appStore.showAlert(result.message, 'success')
+    // Start real-time GPS tracking setelah check-in
+    startTracking()
     await fetchStatus()
     await fetchHistory()
   } catch (err) {
@@ -457,6 +480,17 @@ async function performCheckIn() {
 }
 
 async function performCheckOut() {
+  // Refresh GPS dulu
+  try {
+    await triggerGpsCheck()
+  } catch (e) { /* ignore */ }
+
+  // Cek radius sebelum konfirmasi
+  if (distance.value === null || distance.value > officeRadius.value) {
+    appStore.showAlert('Anda berada di luar radius kantor. Check-out tidak bisa dilakukan.', 'error')
+    return
+  }
+
   if (!confirm('Apakah Anda yakin ingin check-out presensi hari ini?')) return
   try {
     const pos = await getCurrentPosition()
@@ -468,6 +502,8 @@ async function performCheckOut() {
     })
     
     appStore.showAlert(result.message, 'success')
+    // Stop GPS tracking setelah check-out
+    stopTracking()
     await fetchStatus()
     await fetchHistory()
   } catch (err) {

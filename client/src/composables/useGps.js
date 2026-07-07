@@ -6,6 +6,12 @@ export function useGps() {
   const position = ref(null)
   const error = ref(null)
   const loading = ref(false)
+  const isTracking = ref(false)
+  const lastTrackingResult = ref(null)
+  const officeRadius = ref(20) // default, akan di-update dari server
+
+  let watchId = null
+  let trackingInterval = null
 
   // Haversine formula
   function calculateDistance(lat1, lng1, lat2, lng2) {
@@ -23,18 +29,19 @@ export function useGps() {
     loading.value = true
     error.value = null
     
-    // Fetch dynamic office settings
-    let officeLat = -7.7326
-    let officeLng = 110.3988
-    let radiusMeters = 20
+    // Fetch dynamic office settings (termasuk radius)
+    let officeLat = -7.6982573
+    let officeLng = 110.405383
+    let radiusMeters = 5
     
     try {
       const res = await axios.get('/api/attendance/settings')
       officeLat = parseFloat(res.data.office_latitude)
       officeLng = parseFloat(res.data.office_longitude)
-      radiusMeters = parseFloat(res.data.office_radius)
+      radiusMeters = parseFloat(res.data.office_radius || '5')
+      officeRadius.value = radiusMeters
     } catch (e) {
-      console.warn('Failed to load office settings from server, using hardcoded fallback coordinates.')
+      console.warn('Failed to load office settings from server, using hardcoded fallback.')
     }
 
     return new Promise((resolve, reject) => {
@@ -56,6 +63,7 @@ export function useGps() {
           resolve({
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
             distance: Math.round(distance),
             status: distance <= radiusMeters ? 'di_kantor' : 'luar_kantor'
           })
@@ -82,5 +90,72 @@ export function useGps() {
     })
   }
 
-  return { position, error, loading, getCurrentPosition, calculateDistance }
+  // === REAL-TIME GPS TRACKING (Anti-Cheat) ===
+  function startTracking() {
+    if (isTracking.value) return
+    isTracking.value = true
+
+    // Kirim GPS pertama kali sekarang
+    sendGpsUpdate()
+
+    // Kirim GPS tiap 60 detik
+    trackingInterval = setInterval(() => {
+      sendGpsUpdate()
+    }, 60000)
+
+    // Watch position untuk perubahan real-time (fallback)
+    if (navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          position.value = pos.coords
+        },
+        () => {}, // silent fail
+        { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 }
+      )
+    }
+  }
+
+  function stopTracking() {
+    isTracking.value = false
+    if (trackingInterval) {
+      clearInterval(trackingInterval)
+      trackingInterval = null
+    }
+    if (watchId !== null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchId)
+      watchId = null
+    }
+  }
+
+  async function sendGpsUpdate() {
+    try {
+      const pos = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          (p) => resolve(p.coords),
+          (e) => reject(e),
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        )
+      })
+
+      const res = await axios.post('/api/attendance/track-gps', {
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        accuracy: pos.accuracy
+      })
+
+      lastTrackingResult.value = res.data
+      return res.data
+    } catch (e) {
+      console.warn('GPS tracking error:', e.message)
+      return null
+    }
+  }
+
+  return {
+    position, error, loading,
+    isTracking, lastTrackingResult, officeRadius,
+    getCurrentPosition,
+    startTracking, stopTracking, sendGpsUpdate,
+    calculateDistance
+  }
 }

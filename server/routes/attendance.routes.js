@@ -19,4 +19,8 @@ router.post('/set-type', authMiddleware, roleMiddleware(['admin', 'super_admin']
 router.post('/check-in', authMiddleware, attendanceController.checkIn);
 router.post('/check-out', authMiddleware, attendanceController.checkOut);
 
+// GPS Tracking (Anti-Cheat)
+router.post('/track-gps', authMiddleware, attendanceController.trackGps);
+router.get('/gps-logs/:attendanceId', authMiddleware, roleMiddleware(['admin', 'super_admin']), attendanceController.getGpsLogs);
+
 module.exports = router;

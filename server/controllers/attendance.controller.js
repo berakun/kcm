@@ -429,3 +429,138 @@ exports.setType = async (req, res) => {
     return res.status(500).json({ error: 'Gagal mengatur tipe absensi: ' + err.message });
   }
 };
+
+// === GPS TRACKING (Anti-Cheat Real-Time) ===
+
+// Hitung jarak Haversine (server-side, gak bisa diakalin)
+function haversineDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+// POST /api/attendance/track-gps — frontend kirim GPS tiap 60 detik setelah check-in
+exports.trackGps = async (req, res) => {
+  try {
+    const { latitude, longitude, accuracy } = req.body;
+    if (!latitude || !longitude) {
+      return res.status(400).json({ error: 'GPS coordinates required.' });
+    }
+
+    // Cari attendance aktif hari ini (belum check-out)
+    const [rows] = await db.query(
+      'SELECT id, check_in, latitude AS checkin_lat, longitude AS checkin_lng FROM attendance WHERE user_id = ? AND date = CURDATE() AND check_out IS NULL ORDER BY id DESC LIMIT 1',
+      [req.user.id]
+    );
+    if (rows.length === 0) {
+      return res.json({ success: true, message: 'No active attendance to track.' });
+    }
+
+    const attendance = rows[0];
+    const userLat = parseFloat(latitude);
+    const userLng = parseFloat(longitude);
+    const acc = parseFloat(accuracy) || 0;
+
+    // Ambil office settings
+    const [settingsRows] = await db.query('SELECT setting_key, setting_value FROM office_settings');
+    const settings = {};
+    settingsRows.forEach(r => settings[r.setting_key] = r.setting_value);
+    const officeLat = parseFloat(settings.office_latitude || '-7.7326');
+    const officeLng = parseFloat(settings.office_longitude || '110.3988');
+    const officeRadius = parseFloat(settings.office_radius || '20');
+
+    // Server-side distance calculation (bukan client-side)
+    const distanceFromOffice = haversineDistance(userLat, userLng, officeLat, officeLng);
+
+    // === ANOMALY DETECTION ===
+    let isSuspicious = false;
+    let suspiciousReasons = [];
+
+    // 1. GPS accuracy terlalu tinggi (kemungkinan fake/mock location)
+    if (acc > 0 && acc < 5) {
+      isSuspicious = true;
+      suspiciousReasons.push('accuracy_suspiciously_high');
+    }
+
+    // 2. Cek distance dari check-in location (jump terlalu jauh)
+    if (attendance.checkin_lat && attendance.checkin_lng) {
+      const distFromCheckin = haversineDistance(
+        userLat, userLng,
+        parseFloat(attendance.checkin_lat), parseFloat(attendance.checkin_lng)
+      );
+      // Kalau geser > 500m dari posisi check-in dalam satu tracking interval
+      if (distFromCheckin > 500) {
+        isSuspicious = true;
+        suspiciousReasons.push(`jump_${Math.round(distFromCheckin)}m_from_checkin`);
+      }
+    }
+
+    // 3. Cek GPS log sebelumnya untuk speed anomaly
+    const [prevLogs] = await db.query(
+      'SELECT latitude, longitude, created_at FROM attendance_gps_logs WHERE attendance_id = ? ORDER BY id DESC LIMIT 1',
+      [attendance.id]
+    );
+    if (prevLogs.length > 0) {
+      const prev = prevLogs[0];
+      const prevLat = parseFloat(prev.latitude);
+      const prevLng = parseFloat(prev.longitude);
+      const prevTime = new Date(prev.created_at).getTime();
+      const now = Date.now();
+      const timeDiffSeconds = (now - prevTime) / 1000;
+
+      if (timeDiffSeconds > 0) {
+        const distMoved = haversineDistance(userLat, userLng, prevLat, prevLng);
+        const speedMps = distMoved / timeDiffSeconds; // meters per second
+        const speedKmh = speedMps * 3.6;
+
+        // Kalau speed > 200 km/h (kemungkinan GPS spoof / coordinate jump)
+        if (speedKmh > 200) {
+          isSuspicious = true;
+          suspiciousReasons.push(`impossible_speed_${Math.round(speedKmh)}kmh`);
+        }
+      }
+    }
+
+    // 4. Koordinat nol atau default (belum dapat GPS)
+    if (userLat === 0 && userLng === 0) {
+      isSuspicious = true;
+      suspiciousReasons.push('zero_coordinates');
+    }
+
+    // Simpan GPS log
+    const reason = suspiciousReasons.length > 0 ? suspiciousReasons.join(', ') : null;
+    await db.query(
+      'INSERT INTO attendance_gps_logs (attendance_id, user_id, latitude, longitude, accuracy, distance_from_office, is_suspicious, suspicious_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [attendance.id, req.user.id, userLat, userLng, acc, distanceFromOffice, isSuspicious ? 1 : 0, reason]
+    );
+
+    return res.json({
+      success: true,
+      distance: Math.round(distanceFromOffice),
+      status: distanceFromOffice <= officeRadius ? 'di_kantor' : 'luar_kantor',
+      is_suspicious: isSuspicious,
+      suspicious_reasons: suspiciousReasons
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'GPS tracking error: ' + err.message });
+  }
+};
+
+// GET /api/attendance/gps-logs/:attendanceId — admin cek GPS trail
+exports.getGpsLogs = async (req, res) => {
+  try {
+    const { attendanceId } = req.params;
+    const [logs] = await db.query(
+      'SELECT * FROM attendance_gps_logs WHERE attendance_id = ? ORDER BY created_at ASC',
+      [attendanceId]
+    );
+    return res.json(logs);
+  } catch (err) {
+    return res.status(500).json({ error: 'Gagal mengambil GPS logs: ' + err.message });
+  }
+};
