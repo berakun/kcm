@@ -8,16 +8,25 @@ function getJakartaDate() {
   return localDate.toISOString().split('T')[0];
 }
 
-// Haversine formula
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // in meters
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+// === IP WHITELIST (Anti-Cheat via WiFi) ===
+// Semua device yang pakai WiFi kantor punya IP publik yang SAMA
+function getClientIp(req) {
+  // Cloudflare: CF-Connecting-IP langsung kasih IP asli client
+  // Behind proxy: X-Forwarded-For (ambil IP pertama, bukan proxy IP)
+  // Direct: req.socket.remoteAddress
+  return req.headers['cf-connecting-ip']
+    || (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+    || req.socket.remoteAddress
+    || '';
+}
+
+function checkOfficeIp(req) {
+  const officeIps = (process.env.OFFICE_IP || '').split(',').map(ip => ip.trim()).filter(Boolean);
+  if (officeIps.length === 0) return { allowed: true, message: 'No IP restriction configured' };
+  
+  const clientIp = getClientIp(req);
+  const allowed = officeIps.includes(clientIp);
+  return { allowed, clientIp, officeIps };
 }
 
 exports.getSettings = async (req, res) => {
@@ -136,17 +145,21 @@ exports.getAdminList = async (req, res) => {
 };
 
 exports.checkIn = async (req, res) => {
-  const { latitude, longitude } = req.body;
-
-  // Admin/super_admin can check in without GPS (from dashboard)
   const isAdminRole = ['admin', 'super_admin'].includes(req.user.role);
-
-  if (!isAdminRole && (!latitude || !longitude)) {
-    return res.status(400).json({ error: 'Koordinat GPS wajib disediakan.' });
-  }
-
   const today = getJakartaDate();
-  const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const ip = getClientIp(req);
+
+  // IP whitelist check (skip for admin via dashboard API)
+  if (!isAdminRole || !req.headers['x-dashboard-key']) {
+    const ipCheck = checkOfficeIp(req);
+    if (!ipCheck.allowed) {
+      return res.status(403).json({ 
+        error: 'Hanya bisa absen dari WiFi kantor.', 
+        clientIp: ipCheck.clientIp,
+        detail: `IP Anda (${ipCheck.clientIp}) tidak terdaftar sebagai WiFi kantor.`
+      });
+    }
+  }
 
   try {
     // Check duplication
@@ -155,43 +168,18 @@ exports.checkIn = async (req, res) => {
       return res.status(400).json({ error: 'Anda sudah check-in hari ini.' });
     }
 
-    let distance = null;
-    let status = 'di_kantor';
-    let warning = null;
-
-    if (latitude && longitude) {
-      // Get GPS settings for distance calculation
-      const [settingsRows] = await db.query('SELECT setting_key, setting_value FROM office_settings');
-      const settings = {};
-      settingsRows.forEach(r => settings[r.setting_key] = r.setting_value);
-
-      const oLat = parseFloat(settings.office_latitude || '-7.7326');
-      const oLng = parseFloat(settings.office_longitude || '110.3988');
-      const oRad = parseFloat(settings.office_radius || '20');
-
-      distance = calculateDistance(latitude, longitude, oLat, oLng);
-      if (distance > oRad) {
-        if (isAdminRole) {
-          // Admin gets warning but still allowed to check in
-          status = 'di_luar_kantor';
-          warning = `Anda berada di luar radius kantor (${Math.round(distance)}m). Check-in tetap dicatat.`;
-        } else {
-          return res.status(400).json({ error: `Anda berada di luar radius kantor. Jarak Anda: ${Math.round(distance)} meter dari kantor` });
-        }
-      }
-    }
+    const status = 'di_kantor';
 
     await db.query(
-      'INSERT INTO attendance (user_id, check_in, latitude, longitude, distance, status, ip_address, date) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)',
-      [req.user.id, latitude || null, longitude || null, distance, status, ip, today]
+      'INSERT INTO attendance (user_id, check_in, status, ip_address, date) VALUES (?, NOW(), ?, ?, ?)',
+      [req.user.id, status, ip, today]
     );
 
     return res.json({
       success: true,
-      message: warning || 'Check-in berhasil disimpan!',
-      distance: Math.round(distance),
+      message: 'Check-in berhasil disimpan!',
       status,
-      warning
+      ip
     });
   } catch (err) {
     return res.status(500).json({ error: 'Gagal menyimpan check-in: ' + err.message });
@@ -199,76 +187,61 @@ exports.checkIn = async (req, res) => {
 };
 
 exports.checkOut = async (req, res) => {
-  const { latitude, longitude } = req.body;
+    const isAdminRole = ['admin', 'super_admin'].includes(req.user.role);
+    const today = getJakartaDate();
+    const ip = getClientIp(req);
 
-  // Admin/super_admin can check out without GPS (from dashboard)
-  const isAdminRole = ['admin', 'super_admin'].includes(req.user.role);
-
-  if (!isAdminRole && (!latitude || !longitude)) {
-    return res.status(400).json({ error: 'Koordinat GPS wajib disediakan.' });
-  }
-
-  const today = getJakartaDate();
-  const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-
-  try {
-    // Find checking today without check_out
-    const [check] = await db.query(
-      'SELECT id, check_in FROM attendance WHERE user_id = ? AND date = ? AND check_out IS NULL ORDER BY id DESC LIMIT 1',
-      [req.user.id, today]
-    );
-
-    if (check.length === 0) {
-      return res.status(400).json({ error: 'Anda belum check-in hari ini, atau sudah melakukan check-out.' });
-    }
-
-    let distance = null;
-    let status = 'di_kantor';
-
-    if (latitude && longitude) {
-      const [settingsRows] = await db.query('SELECT setting_key, setting_value FROM office_settings');
-      const settings = {};
-      settingsRows.forEach(r => settings[r.setting_key] = r.setting_value);
-
-      const oLat = parseFloat(settings.office_latitude || '-7.7326');
-      const oLng = parseFloat(settings.office_longitude || '110.3988');
-      const oRad = parseFloat(settings.office_radius || '20');
-
-      distance = calculateDistance(latitude, longitude, oLat, oLng);
-      // Admin diluar radius: tetap checkout, staff ditolak
-      if (!isAdminRole && distance > oRad) {
-        return res.status(400).json({ error: `Anda berada di luar radius kantor. Jarak Anda: ${Math.round(distance)} meter dari kantor` });
+    // IP whitelist check (skip for admin via dashboard API)
+    if (!isAdminRole || !req.headers['x-dashboard-key']) {
+      const ipCheck = checkOfficeIp(req);
+      if (!ipCheck.allowed) {
+        return res.status(403).json({ 
+          error: 'Hanya bisa check-out dari WiFi kantor.', 
+          clientIp: ipCheck.clientIp,
+          detail: `IP Anda (${ipCheck.clientIp}) tidak terdaftar sebagai WiFi kantor.`
+        });
       }
     }
 
-    // Calculate duration
-    const checkInTime = new Date(check[0].check_in);
-    const checkOutTime = new Date();
-    const diffMs = checkOutTime - checkInTime;
-    const diffHrs = Math.floor(diffMs / 3600000);
-    const diffMins = Math.floor((diffMs % 3600000) / 60000);
-    const diffSecs = Math.floor((diffMs % 60000) / 1000);
-    const duration = [
-      diffHrs.toString().padStart(2, '0'),
-      diffMins.toString().padStart(2, '0'),
-      diffSecs.toString().padStart(2, '0')
-    ].join(':');
+    try {
+      // Find checking today without check_out
+      const [check] = await db.query(
+        'SELECT id, check_in FROM attendance WHERE user_id = ? AND date = ? AND check_out IS NULL ORDER BY id DESC LIMIT 1',
+        [req.user.id, today]
+      );
 
-    await db.query(
-      'UPDATE attendance SET check_out = NOW(), duration = ?, latitude = ?, longitude = ?, distance = ?, status = ?, ip_address = ? WHERE id = ?',
-      [duration, latitude || null, longitude || null, distance, status, ip, check[0].id]
-    );
+      if (check.length === 0) {
+        return res.status(400).json({ error: 'Anda belum check-in hari ini, atau sudah melakukan check-out.' });
+      }
 
-    return res.json({
-      success: true,
-      message: 'Check-out berhasil disimpan!',
-      duration,
-      distance: Math.round(distance),
-      status
-    });
-  } catch (err) {
-    return res.status(500).json({ error: 'Gagal menyimpan check-out: ' + err.message });
-  }
+      // Calculate duration
+      const checkInTime = new Date(check[0].check_in);
+      const checkOutTime = new Date();
+      const diffMs = checkOutTime - checkInTime;
+      const diffHrs = Math.floor(diffMs / 3600000);
+      const diffMins = Math.floor((diffMs % 3600000) / 60000);
+      const diffSecs = Math.floor((diffMs % 60000) / 1000);
+      const duration = [
+        diffHrs.toString().padStart(2, '0'),
+        diffMins.toString().padStart(2, '0'),
+        diffSecs.toString().padStart(2, '0')
+      ].join(':');
+
+      await db.query(
+        'UPDATE attendance SET check_out = NOW(), duration = ?, ip_address = ? WHERE id = ?',
+        [duration, ip, check[0].id]
+      );
+
+      return res.json({
+        success: true,
+        message: 'Check-out berhasil disimpan!',
+        duration,
+        status: 'di_kantor',
+        ip
+      });
+    } catch (err) {
+      return res.status(500).json({ error: 'Gagal menyimpan check-out: ' + err.message });
+    }
 };
 
 exports.deleteAttendance = async (req, res) => {
