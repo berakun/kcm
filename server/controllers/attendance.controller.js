@@ -152,6 +152,8 @@ exports.checkIn = async (req, res) => {
   // IP whitelist check (skip for admin via dashboard API)
   if (!isAdminRole || !req.headers['x-dashboard-key']) {
     const ipCheck = checkOfficeIp(req);
+    // DEBUG: log actual IP received
+    console.log(`[checkIn] user=${req.user?.id} clientIp=${ipCheck.clientIp} allowed=${ipCheck.allowed}`);
     if (!ipCheck.allowed) {
       return res.status(403).json({ 
         error: 'Hanya bisa absen dari WiFi kantor.', 
@@ -540,7 +542,14 @@ exports.getGpsLogs = async (req, res) => {
 
 // === WIFI STATUS CHECK (Client-Side Indicator) ===
 exports.checkWifi = async (req, res) => {
+  // Disable Cloudflare/CDN caching — IP check must be real-time
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   const ipCheck = checkOfficeIp(req);
+  // DEBUG: log actual IP received
+  console.log(`[checkWifi] user=${req.user?.id} clientIp=${ipCheck.clientIp} allowed=${ipCheck.allowed} officeIps=${JSON.stringify(ipCheck.officeIps)}`);
   return res.json({
     connected: ipCheck.allowed,
     clientIp: ipCheck.clientIp || null,

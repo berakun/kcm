@@ -111,7 +111,7 @@
             <button 
               v-if="!todayStatus.checkedIn"
               @click="checkIn" 
-              :disabled="loadingAbsen || gpsLoading || !canCheckIn"
+              :disabled="loadingAbsen || !canCheckIn"
               class="w-28 h-28 rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200"
             >
               <span class="material-symbols-outlined text-[40px]">login</span>
@@ -120,7 +120,7 @@
             <button 
               v-else-if="!todayStatus.checkedOut"
               @click="checkOut"
-              :disabled="loadingAbsen || gpsLoading || !canCheckIn"
+              :disabled="loadingAbsen || !canCheckIn"
               class="w-28 h-28 rounded-full bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white flex flex-col items-center justify-center shadow-xl active:scale-95 transition-transform duration-200"
             >
               <span class="material-symbols-outlined text-[40px]">logout</span>
@@ -131,44 +131,28 @@
               <span class="text-[9px] font-bold tracking-wider uppercase mt-1">SELESAI</span>
             </div>
  
-            <p class="text-[10px] text-gray-400" v-if="gpsLoading">
-              Sedang mengakses lokasi GPS...
+            <p class="text-[10px] text-gray-400">
+              {{ wifiStatus.connected ? 'Terhubung ke WiFi kantor. Siap absen.' : '⚠️ Terputus dari WiFi kantor. Hubungkan ke jaringan kantor untuk absen.' }}
             </p>
-            
-            <!-- Warnings / Error Texts if GPS disabled or outside office -->
-            <div v-if="!gpsLoading && !gpsGranted" class="w-full max-w-xs p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-xl text-center">
-              <span class="text-xs font-semibold text-amber-800 dark:text-amber-500 block">⚠️ Aktifkan GPS untuk melakukan absensi. Akses lokasi diperlukan.</span>
-            </div>
-            <div v-else-if="!gpsLoading && gpsResult?.status === 'luar_kantor'" class="w-full max-w-xs p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-center">
-              <span class="text-xs font-semibold text-red-800 dark:text-red-500 block">🚫 Anda berada di luar radius kantor. Jarak Anda: {{ distance }} meter dari kantor.</span>
-            </div>
           </div>
 
-          <!-- GPS Geofence Status -->
+          <!-- WiFi Connection Status -->
           <div class="bg-white dark:bg-gray-850 border border-gray-150 dark:border-gray-800 p-4 rounded-2xl shadow-sm flex items-center justify-between">
             <div class="flex items-center space-x-3">
-              <div class="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-500">
-                <span class="material-symbols-outlined text-lg">location_on</span>
+              <div :class="['p-2.5 rounded-xl', wifiStatus.connected ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600' : 'bg-red-50 dark:bg-red-950/20 text-red-500']">
+                <span class="material-symbols-outlined text-lg">wifi</span>
               </div>
               <div>
-                <div class="text-[10px] font-bold text-gray-400 uppercase">Geofencing Status</div>
-                <div class="text-xs font-bold mt-0.5 flex items-center gap-1" :class="gpsResult?.status === 'di_kantor' ? 'text-emerald-700' : 'text-amber-700'">
-                  <span class="material-symbols-outlined text-sm">{{ gpsResult?.status === 'di_kantor' ? 'verified' : 'warning' }}</span>
-                  <span>
-                    {{ 
-                      gpsResult?.status === 'di_kantor' ? 'Di Area Kantor' : 
-                      gpsResult?.status === 'luar_kantor' ? 'Di Luar Area' : 
-                      gpsResult?.status === 'error' ? (gpsResult.message || 'GPS Tidak Aktif') : 
-                      'Memuat...' 
-                    }}
-                  </span>
+                <div class="text-[10px] font-bold text-gray-400 uppercase">WiFi Kantor</div>
+                <div :class="['text-xs font-bold mt-0.5', wifiStatus.connected ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400']">
+                  {{ wifiStatus.connected ? 'Terhubung — IP: ' + (wifiStatus.clientIp || '-') : 'Tidak terhubung ke WiFi kantor' }}
                 </div>
               </div>
             </div>
             <div class="text-right">
-              <div class="text-[9px] font-bold text-gray-400 uppercase">Jarak</div>
-              <div class="text-sm font-black text-gray-850 dark:text-white">
-                {{ gpsResult?.distance !== undefined ? gpsResult.distance + ' m' : '-- m' }}
+              <div class="text-[9px] font-bold text-gray-400 uppercase">Status</div>
+              <div :class="['text-[10px] font-bold', wifiStatus.connected ? 'text-emerald-600' : 'text-red-500']">
+                {{ wifiStatus.connected ? '✓ Tervalidasi' : '✗ Ditolak' }}
               </div>
             </div>
           </div>
@@ -402,7 +386,7 @@ import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useApi } from '../../composables/useApi'
-import { useGps } from '../../composables/useGps'
+
 import { useAppStore } from '../../stores/app'
 import { formatTime, formatDate } from '../../utils/helpers'
 import Chart from 'chart.js/auto'
@@ -411,7 +395,7 @@ const appStore = useAppStore()
 
 const { user } = useAuth()
 const api = useApi()
-const { getCurrentPosition, loading: gpsLoading } = useGps()
+
 
 const isSuperAdmin = computed(() => user.value?.role === 'super_admin')
 const isAdminOnly = computed(() => user.value?.role === 'admin')
@@ -425,21 +409,18 @@ const loadingAbsen = ref(false)
 const absenMsg = ref('')
 const absenError = ref(false)
 const absenWarning = ref(false)
-const gpsResult = ref(null)
+const wifiStatus = ref({ connected: false, clientIp: null })
 
-const gpsGranted = computed(() => {
-  return gpsResult.value && gpsResult.value.status !== 'error' && gpsResult.value.status !== 'loading'
-})
+async function fetchWifiStatus() {
+  try {
+    const res = await api.get('/api/attendance/check-wifi?t=' + Date.now())
+    wifiStatus.value = { connected: !!res.connected, clientIp: res.clientIp || null }
+  } catch {
+    wifiStatus.value = { connected: false, clientIp: null }
+  }
+}
 
-const distance = computed(() => {
-  return gpsResult.value?.distance
-})
-
-const canCheckIn = computed(() => {
-  if (!gpsGranted.value) return false
-  if (gpsResult.value?.status !== 'di_kantor') return false
-  return true
-})
+const canCheckIn = computed(() => wifiStatus.value.connected)
 
 function formatAttendanceDate(dateStr) {
   if (!dateStr) return ''
@@ -482,20 +463,16 @@ async function loadTodayStatus() {
 }
 
 async function checkIn() {
+  if (!wifiStatus.value.connected) {
+    appStore.showAlert('Anda tidak terhubung ke WiFi kantor.', 'error')
+    return
+  }
   loadingAbsen.value = true
   absenMsg.value = ''
-  absenWarning.value = false
   try {
-    const pos = await getCurrentPosition().catch(err => {
-      gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
-      return null
-    })
-    const payload = pos ? { latitude: pos.latitude, longitude: pos.longitude } : {}
-    if (pos) gpsResult.value = pos
-    const res = await api.post('/api/attendance/check-in', payload)
+    const res = await api.post('/api/attendance/check-in', {})
     absenMsg.value = res.message || 'Berhasil check-in!'
     absenError.value = false
-    absenWarning.value = !!res.warning
     await loadTodayStatus()
   } catch (e) {
     absenMsg.value = e.response?.data?.error || 'Gagal check-in'
@@ -505,16 +482,14 @@ async function checkIn() {
 }
 
 async function checkOut() {
+  if (!wifiStatus.value.connected) {
+    appStore.showAlert('Anda tidak terhubung ke WiFi kantor.', 'error')
+    return
+  }
   loadingAbsen.value = true
   absenMsg.value = ''
   try {
-    const pos = await getCurrentPosition().catch(err => {
-      gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
-      return null
-    })
-    const payload = pos ? { latitude: pos.latitude, longitude: pos.longitude } : {}
-    if (pos) gpsResult.value = pos
-    await api.post('/api/attendance/check-out', payload)
+    await api.post('/api/attendance/check-out', {})
     absenMsg.value = 'Berhasil check-out!'
     absenError.value = false
     await loadTodayStatus()
@@ -568,12 +543,9 @@ onMounted(async () => {
   updateClock()
   setInterval(updateClock, 1000)
   loadTodayStatus()
-  // Scan GPS on load for geofence display
-  getCurrentPosition()
-    .then(pos => { gpsResult.value = pos })
-    .catch(err => {
-      gpsResult.value = { status: 'error', message: err.message || 'GPS Tidak Aktif' }
-    })
+  // WiFi IP validation on load
+  await fetchWifiStatus()
+  setInterval(fetchWifiStatus, 30000)
 
   if (isSuperAdmin.value) {
     await fetchLeaves()

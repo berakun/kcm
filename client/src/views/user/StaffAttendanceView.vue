@@ -403,7 +403,8 @@ function stopClock() {
 
 async function fetchWifiStatus() {
   try {
-    const data = await api.get('/api/attendance/check-wifi')
+    // Cache-busting: prevent stale Cloudflare/CDN response
+    const data = await api.get('/api/attendance/check-wifi?t=' + Date.now())
     wifiStatus.value = data
   } catch {
     wifiStatus.value = { connected: false, clientIp: null }

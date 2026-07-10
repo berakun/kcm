@@ -69,7 +69,8 @@
                   <th class="py-4 px-6 text-center font-semibold">Check-In</th>
                   <th class="py-4 px-6 text-center font-semibold">Check-Out</th>
                   <th class="py-4 px-6 text-center">Durasi</th>
-                  <th class="py-4 px-6 text-center">Jarak Geofence</th>
+                  <th class="py-4 px-6 text-center">Jarak</th>
+
                   <th class="py-4 px-6 text-center">IP Address</th>
                   <th class="py-4 px-6 text-center">Status</th>
                   <th class="py-4 px-6 text-center">Aksi</th>
@@ -91,10 +92,11 @@
                   <td class="py-4 px-6 text-center text-emerald-600 font-semibold font-mono">{{ log.check_in ? formatTime(log.check_in) : '--:--' }}</td>
                   <td class="py-4 px-6 text-center text-red-750 font-semibold font-mono">{{ log.check_out ? formatTime(log.check_out) : '--:--' }}</td>
                   <td class="py-4 px-6 text-center font-mono font-medium">{{ log.duration || '--:--:--' }}</td>
-                  <td class="py-4 px-6 text-center font-mono font-medium">
-                    <span v-if="log.distance !== null">{{ log.distance }} meter</span>
-                    <span v-else class="text-gray-400">-</span>
+                  <td class="py-4 px-6 text-center font-mono text-[10px] text-gray-400">
+                    <span v-if="log.distance !== null">{{ log.distance }} m</span>
+                    <span v-else>-</span>
                   </td>
+
                   <td class="py-4 px-6 text-center text-gray-400 font-mono">{{ log.ip_address || '-' }}</td>
                   <td class="py-4 px-6 text-center">
                     <span :class="[
