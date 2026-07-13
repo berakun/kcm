@@ -20,13 +20,28 @@ function getClientIp(req) {
     || '';
 }
 
+// === CIDR MATCHING ===
+// Check if a single IP falls within a CIDR range (e.g. 157.85.210.0/23)
+function ipToLong(ip) {
+  const parts = ip.split('.').map(Number);
+  return ((parts[0] << 24) | (parts[1] << 16) | (parts[2] << 8) | parts[3]) >>> 0;
+}
+
+function isIpInCidr(ip, cidr) {
+  const [range, bits] = cidr.split('/');
+  if (!bits) return ip === range; // no prefix = exact match
+  const prefix = parseInt(bits, 10);
+  const mask = (~0 << (32 - prefix)) >>> 0;
+  return (ipToLong(ip) & mask) === (ipToLong(range) & mask);
+}
+
 function checkOfficeIp(req) {
-  const officeIps = (process.env.OFFICE_IP || '').split(',').map(ip => ip.trim()).filter(Boolean);
-  if (officeIps.length === 0) return { allowed: true, message: 'No IP restriction configured' };
-  
+  const entries = (process.env.OFFICE_IP || '').split(',').map(e => e.trim()).filter(Boolean);
+  if (entries.length === 0) return { allowed: true, message: 'No IP restriction configured' };
+
   const clientIp = getClientIp(req);
-  const allowed = officeIps.includes(clientIp);
-  return { allowed, clientIp, officeIps };
+  const allowed = entries.some(entry => isIpInCidr(clientIp, entry));
+  return { allowed, clientIp, officeIps: entries };
 }
 
 exports.getSettings = async (req, res) => {
