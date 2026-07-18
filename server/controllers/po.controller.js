@@ -56,7 +56,7 @@ exports.createPo = async (req, res) => {
         total || 0, ppn || 0, grand_total || 0, in_words || null, note || null,
         deliver_by || null, deliver_to || null,
         ordered_by || null, purchasing || null, prepared_by || null,
-        approved_by || 'Anriko K, ST.', term_of_payment || 'Anriko K, ST.',
+        approved_by || 'Anriko K.', term_of_payment || 'Anriko K.',
         status || 'draft',
         req.user ? req.user.id : null
       ]
@@ -90,7 +90,7 @@ exports.updatePo = async (req, res) => {
         rab_id || null, JSON.stringify(items || []), projects || null, material_ref || null,
         total || 0, ppn || 0, grand_total || 0, in_words || null, note || null,
         deliver_by || null, deliver_to || null, ordered_by || null, purchasing || null,
-        prepared_by || null, approved_by || 'Anriko K, ST.', term_of_payment || 'Anriko K, ST.',
+        prepared_by || null, approved_by || 'Anriko K.', term_of_payment || 'Anriko K.',
         status || 'draft', id
       ]
     );

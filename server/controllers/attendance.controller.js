@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const crypto = require('crypto');
 
 function getJakartaDate() {
   const tzOffset = 7 * 60; // Jakarta is UTC+7
@@ -43,6 +44,63 @@ function checkOfficeIp(req) {
   const allowed = entries.some(entry => isIpInCidr(clientIp, entry));
   return { allowed, clientIp, officeIps: entries };
 }
+
+// === DEVICE TOKEN (Anti-Cheat via Registered PC) ===
+function getDeviceToken(req) {
+  return req.cookies?.kcm_device || null;
+}
+
+async function verifyDeviceToken(userId, token) {
+  if (!token || !userId) return false;
+  const [rows] = await db.query(
+    'SELECT id FROM users WHERE id = ? AND device_token = ?',
+    [userId, token]
+  );
+  return rows.length > 0;
+}
+
+// Combined check: IP match OR device cookie match
+async function checkWifiOrDevice(req) {
+  const ipCheck = checkOfficeIp(req);
+  if (ipCheck.allowed) return { ...ipCheck, method: 'wifi' };
+
+  const deviceToken = getDeviceToken(req);
+  if (deviceToken && await verifyDeviceToken(req.user?.id, deviceToken)) {
+    console.log(`[checkWifi] user=${req.user?.id} device_verified=true (IP fallback, clientIp=${ipCheck.clientIp})`);
+    return { allowed: true, clientIp: ipCheck.clientIp, officeIps: ipCheck.officeIps, method: 'device' };
+  }
+
+  return { ...ipCheck, method: 'none' };
+}
+
+exports.registerDevice = async (req, res) => {
+  // Only register if IP matches office WiFi (prevents remote registration)
+  const ipCheck = checkOfficeIp(req);
+  if (!ipCheck.allowed) {
+    return res.status(403).json({ error: 'Device hanya bisa didaftarkan dari WiFi kantor.' });
+  }
+
+  const token = crypto.randomBytes(32).toString('hex');
+  try {
+    await db.query(
+      'UPDATE users SET device_token = ?, device_registered_at = NOW() WHERE id = ?',
+      [token, req.user.id]
+    );
+
+    res.cookie('kcm_device', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+      path: '/'
+    });
+
+    console.log(`[registerDevice] user=${req.user.id} registered from IP=${ipCheck.clientIp}`);
+    return res.json({ success: true, message: 'Device berhasil didaftarkan.' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Gagal mendaftarkan device: ' + err.message });
+  }
+};
 
 exports.getSettings = async (req, res) => {
   try {
@@ -164,16 +222,15 @@ exports.checkIn = async (req, res) => {
   const today = getJakartaDate();
   const ip = getClientIp(req);
 
-  // IP whitelist check (skip for admin via dashboard API)
+  // WiFi IP check + device cookie fallback (skip for admin via dashboard API)
   if (!isAdminRole || !req.headers['x-dashboard-key']) {
-    const ipCheck = checkOfficeIp(req);
-    // DEBUG: log actual IP received
-    console.log(`[checkIn] user=${req.user?.id} clientIp=${ipCheck.clientIp} allowed=${ipCheck.allowed}`);
-    if (!ipCheck.allowed) {
+    const result = await checkWifiOrDevice(req);
+    console.log(`[checkIn] user=${req.user?.id} clientIp=${result.clientIp} allowed=${result.allowed} method=${result.method}`);
+    if (!result.allowed) {
       return res.status(403).json({ 
-        error: 'Hanya bisa absen dari WiFi kantor.', 
-        clientIp: ipCheck.clientIp,
-        detail: `IP Anda (${ipCheck.clientIp}) tidak terdaftar sebagai WiFi kantor.`
+        error: 'Hanya bisa absen dari WiFi kantor.',
+        clientIp: result.clientIp,
+        detail: `IP Anda (${result.clientIp}) tidak terdaftar sebagai WiFi kantor.`
       });
     }
   }
@@ -208,14 +265,14 @@ exports.checkOut = async (req, res) => {
     const today = getJakartaDate();
     const ip = getClientIp(req);
 
-    // IP whitelist check (skip for admin via dashboard API)
+    // WiFi IP check + device cookie fallback (skip for admin via dashboard API)
     if (!isAdminRole || !req.headers['x-dashboard-key']) {
-      const ipCheck = checkOfficeIp(req);
-      if (!ipCheck.allowed) {
+      const result = await checkWifiOrDevice(req);
+      if (!result.allowed) {
         return res.status(403).json({ 
-          error: 'Hanya bisa check-out dari WiFi kantor.', 
-          clientIp: ipCheck.clientIp,
-          detail: `IP Anda (${ipCheck.clientIp}) tidak terdaftar sebagai WiFi kantor.`
+          error: 'Hanya bisa check-out dari WiFi kantor.',
+          clientIp: result.clientIp,
+          detail: `IP Anda (${result.clientIp}) tidak terdaftar sebagai WiFi kantor.`
         });
       }
     }
@@ -562,12 +619,12 @@ exports.checkWifi = async (req, res) => {
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 
-  const ipCheck = checkOfficeIp(req);
-  // DEBUG: log actual IP received
-  console.log(`[checkWifi] user=${req.user?.id} clientIp=${ipCheck.clientIp} allowed=${ipCheck.allowed} officeIps=${JSON.stringify(ipCheck.officeIps)}`);
+  const result = await checkWifiOrDevice(req);
+  console.log(`[checkWifi] user=${req.user?.id} clientIp=${result.clientIp} allowed=${result.allowed} method=${result.method} officeIps=${JSON.stringify(result.officeIps)}`);
   return res.json({
-    connected: ipCheck.allowed,
-    clientIp: ipCheck.clientIp || null,
-    officeIps: ipCheck.officeIps || []
+    connected: result.allowed,
+    clientIp: result.clientIp || null,
+    officeIps: result.officeIps || [],
+    method: result.method
   });
 };

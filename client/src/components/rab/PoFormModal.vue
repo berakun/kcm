@@ -176,7 +176,7 @@
                     </div>
                     <div>
                       <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Approved By</label>
-                      <input v-model="form.approvedBy" type="text" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0" placeholder="Anriko K, ST." readonly>
+                      <input v-model="form.approvedBy" type="text" class="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm dark:bg-gray-900 dark:text-white focus:border-red-500 focus:ring-0" placeholder="Anriko K." readonly>
                     </div>
                   </div>
                 </div>
@@ -338,7 +338,7 @@ function resetForm() {
     tanggal: today.toISOString().split('T')[0],
     to: '', phone: '', attn: '', projectNames: '', materialRef: '', notes: '',
     deliverBy: '', deliverTo: '', orderedBy: '', purchasing: '',
-    approvedBy: 'Anriko K, ST.', termOfPayment: 'Anriko K, ST.',
+    approvedBy: 'Anriko K.', termOfPayment: 'Anriko K.',
     items: [{ description: '', qty: 0, satuan: 'pcs', unitPrice: 0 }]
   }
   selectedRabId.value = ''
@@ -405,8 +405,8 @@ function loadPOIntoForm(full) {
   form.value.deliverTo = full.deliver_to || ''
   form.value.orderedBy = full.ordered_by || ''
   form.value.purchasing = full.purchasing || ''
-  form.value.approvedBy = full.approved_by || 'Anriko K, ST.'
-  form.value.termOfPayment = full.term_of_payment || 'Anriko K, ST.'
+  form.value.approvedBy = full.approved_by || 'Anriko K.'
+  form.value.termOfPayment = full.term_of_payment || 'Anriko K.'
   selectedRabId.value = full.rab_id || ''
   if (full.items && Array.isArray(full.items)) {
     form.value.items = full.items.map(i => ({

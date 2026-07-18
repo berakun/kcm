@@ -24,6 +24,9 @@ export const useAuthStore = defineStore('auth', {
         this.user = user
         localStorage.setItem('kcm_user', JSON.stringify(user))
         
+        // Auto-register device if on office WiFi (backend checks IP)
+        axios.post('/api/attendance/register-device').catch(() => {})
+        
         return user
       } catch (err) {
         this.error = err.response?.data?.error || 'Login gagal.'
@@ -48,6 +51,8 @@ export const useAuthStore = defineStore('auth', {
         const res = await axios.get('/api/auth/me')
         this.user = res.data.user
         localStorage.setItem('kcm_user', JSON.stringify(this.user))
+        // Auto-register device if on office WiFi
+        axios.post('/api/attendance/register-device').catch(() => {})
         return this.user
       } catch (err) {
         this.logout()
