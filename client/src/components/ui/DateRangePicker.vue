@@ -19,32 +19,6 @@
     >
       <!-- Calendar Section -->
       <div class="p-4">
-        <!-- Date Inputs -->
-        <div class="flex gap-3 mb-4">
-          <div class="flex items-center gap-2 border border-blue-500 rounded px-2 py-1.5">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            <input
-              type="date"
-              :value="startDate"
-              @input="updateStartDate($event.target.value)"
-              class="text-sm border-0 outline-none w-28"
-            />
-          </div>
-          <div class="flex items-center gap-2 border border-gray-300 rounded px-2 py-1.5">
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            <input
-              type="date"
-              :value="endDate"
-              @input="updateEndDate($event.target.value)"
-              class="text-sm border-0 outline-none w-28"
-            />
-          </div>
-        </div>
-
         <!-- Calendars -->
         <div class="flex gap-4">
           <!-- Left Calendar -->
@@ -124,20 +98,12 @@
             {{ preset.label }}
           </button>
         </div>
-        <div class="flex gap-2 mt-4">
-          <button
-            @click="applySelection"
-            class="flex-1 bg-green-500 text-white text-sm py-1.5 px-3 rounded hover:bg-green-600 transition-colors"
-          >
-            Apply
-          </button>
-          <button
-            @click="cancelSelection"
-            class="flex-1 border border-gray-300 text-gray-600 text-sm py-1.5 px-3 rounded hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
+        <button
+          @click="cancelSelection"
+          class="mt-4 w-full border border-gray-300 text-gray-600 text-sm py-1.5 px-3 rounded hover:bg-gray-50 transition-colors"
+        >
+          Tutup
+        </button>
       </div>
     </div>
   </div>
@@ -277,17 +243,9 @@ function selectDate(day, side) {
       emit('update:endDate', selected)
     }
     activePreset.value = null
+    // Auto-apply when both dates are set
+    emit('change')
   }
-}
-
-function updateStartDate(val) {
-  emit('update:startDate', val)
-  activePreset.value = null
-}
-
-function updateEndDate(val) {
-  emit('update:endDate', val)
-  activePreset.value = null
 }
 
 function prevMonth() {
@@ -350,11 +308,8 @@ function applyPreset(preset) {
     emit('update:startDate', formatDate(start))
     emit('update:endDate', formatDate(end))
   }
-}
-
-function applySelection() {
+  // Auto-apply after preset selection
   emit('change')
-  isOpen.value = false
 }
 
 function cancelSelection() {
