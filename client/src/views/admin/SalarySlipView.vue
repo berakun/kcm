@@ -972,6 +972,9 @@ function buildSlipData(row, slipNo) {
     potonganTidakHadirCount: row.potonganTidakHadirCount, tidakHadirRate: row.tidakHadirRate, potonganTidakHadir,
     potonganTerlambatCount: row.potonganTerlambatCount, terlambatRate: row.terlambatRate, potonganTerlambat,
     totalPotongan,
+    cuti: row.cuti,
+    dailyMakanTransport: row.dailyMakanTransport,
+    potonganMakanTransport: row.potonganMakanTransport,
     jumlahPinjaman, pemotonganCicilanKe, jumlahPotonganCicilan, sisaPinjaman,
     totalDiterima,
     terbilang: terbilang(totalDiterima)
