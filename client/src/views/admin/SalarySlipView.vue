@@ -387,6 +387,7 @@ import AppSidebar from '../../components/layout/AppSidebar.vue'
 import AppTopbar from '../../components/layout/AppTopbar.vue'
 import { useApi } from '../../composables/useApi'
 import { formatCurrency } from '../../utils/helpers'
+import html2pdf from 'html2pdf.js'
 
 const api = useApi()
 const loading = ref(false)
@@ -1043,11 +1044,6 @@ function cetakSlip(row) {
 
 // Download single slip as PDF using html2pdf.js
 function downloadSlipPDF(row) {
-  if (typeof html2pdf === 'undefined') {
-    alert('Library PDF belum dimuat. Silakan coba sesaat lagi.')
-    return
-  }
-
   const slipNo = tableRows.value.indexOf(row) + 1
   const slipData = buildSlipData(row, slipNo)
   const slipHTML = buildSlipHTML(slipData)
@@ -1093,10 +1089,6 @@ function cetakSemua() {
 // Download all slips as a combined PDF using html2pdf.js
 function downloadSemuaPDF() {
   if (tableRows.value.length === 0) return
-  if (typeof html2pdf === 'undefined') {
-    alert('Library PDF belum dimuat. Silakan coba sesaat lagi.')
-    return
-  }
 
   let allSlipsHTML = ''
   tableRows.value.forEach((row, idx) => {
