@@ -151,6 +151,22 @@ app.listen(PORT, async () => {
     console.error('[KCM Server] Failed to verify/create table kwitansi_invoices:', err.message);
   }
 
+  // Create menu_access table if not exists
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS menu_access (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        menu_id VARCHAR(50) NOT NULL,
+        role VARCHAR(20) NOT NULL,
+        enabled TINYINT(1) DEFAULT 1,
+        UNIQUE KEY unique_menu_role (menu_id, role)
+      )
+    `);
+    console.log('[KCM Server] Table menu_access verified/created.');
+  } catch (err) {
+    console.error('[KCM Server] Failed to verify/create table menu_access:', err.message);
+  }
+
   // Run database seeder
   const seedDb = require('./database/seed');
   await seedDb();

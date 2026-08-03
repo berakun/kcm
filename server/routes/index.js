@@ -12,6 +12,7 @@ const poRoutes = require('./po.routes');
 const leaveRoutes = require('./leave.routes');
 const salaryRoutes = require('./salary.routes');
 const kwitansiRoutes = require('./kwitansi.routes');
+const menuAccessRoutes = require('./menuAccess.routes');
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
@@ -23,5 +24,6 @@ router.use('/po', poRoutes);
 router.use('/leaves', leaveRoutes);
 router.use('/salary', salaryRoutes);
 router.use('/kwitansi', kwitansiRoutes);
+router.use('/menu-access', menuAccessRoutes);
 
 module.exports = router;
