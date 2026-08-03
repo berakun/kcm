@@ -19,7 +19,12 @@ const loginLimiter = rateLimit({
   max: 5, // Limit each IP to 5 login attempts per windowMs
   message: { error: 'Terlalu banyak percobaan login dari IP ini. Silakan coba lagi dalam 15 menit.' },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for local/LAN requests
+    const ip = req.ip || req.connection?.remoteAddress || '';
+    return ip.startsWith('192.168.') || ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+  }
 });
 
 module.exports = { generalLimiter, loginLimiter };
