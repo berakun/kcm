@@ -14,6 +14,7 @@ import AttendanceManageView from '../views/admin/AttendanceManageView.vue'
 import AttendanceRekapView from '../views/admin/AttendanceRekapView.vue'
 import SettingsView from '../views/admin/SettingsView.vue'
 import POBelanjaView from '../views/admin/POBelanjaView.vue'
+import KwitansiInvoiceView from '../views/admin/KwitansiInvoiceView.vue'
 import SalarySlipView from '../views/admin/SalarySlipView.vue'
 import StaffAttendanceView from '../views/user/StaffAttendanceView.vue'
 
@@ -48,6 +49,11 @@ const routes = [
     path: '/admin/po-belanja',
     component: POBelanjaView,
     meta: { requiresAuth: true, roles: ['super_admin', 'admin'] }
+  },
+  {
+    path: '/admin/kwitansi-invoice',
+    component: KwitansiInvoiceView,
+    meta: { requiresAuth: true, roles: ['super_admin'] }
   },
 
   // Super Admin Only Routes

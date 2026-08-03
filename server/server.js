@@ -127,6 +127,30 @@ app.listen(PORT, async () => {
     console.error("[KCM Server] Failed to verify/add 'type' column in 'attendance':", err.message);
   }
 
+  // Create kwitansi_invoices table if not exists
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS kwitansi_invoices (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        rab_id INT NOT NULL,
+        type ENUM('kwitansi', 'invoice') DEFAULT 'kwitansi',
+        file_path VARCHAR(500) NOT NULL,
+        file_type VARCHAR(20) NOT NULL,
+        original_name VARCHAR(255),
+        date DATE,
+        description TEXT,
+        uploaded_by INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (rab_id) REFERENCES rab(id) ON DELETE CASCADE,
+        FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('[KCM Server] Table kwitansi_invoices verified/created.');
+  } catch (err) {
+    console.error('[KCM Server] Failed to verify/create table kwitansi_invoices:', err.message);
+  }
+
   // Run database seeder
   const seedDb = require('./database/seed');
   await seedDb();

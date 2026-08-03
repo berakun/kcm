@@ -150,6 +150,13 @@ const allLinks = [
     roles: ['admin', 'super_admin']
   },
   {
+    id: 'kwitansi-invoice',
+    label: 'Kwitansi & Invoice',
+    icon: 'description',
+    url: '/admin/kwitansi-invoice',
+    roles: ['super_admin']
+  },
+  {
     id: 'financial',
     label: 'Keuangan',
     icon: 'payments',

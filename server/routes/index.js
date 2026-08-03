@@ -11,6 +11,7 @@ const financialRoutes = require('./financial.routes');
 const poRoutes = require('./po.routes');
 const leaveRoutes = require('./leave.routes');
 const salaryRoutes = require('./salary.routes');
+const kwitansiRoutes = require('./kwitansi.routes');
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
@@ -21,5 +22,6 @@ router.use('/financial', financialRoutes);
 router.use('/po', poRoutes);
 router.use('/leaves', leaveRoutes);
 router.use('/salary', salaryRoutes);
+router.use('/kwitansi', kwitansiRoutes);
 
 module.exports = router;
