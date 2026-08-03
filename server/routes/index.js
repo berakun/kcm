@@ -10,6 +10,7 @@ const attendanceRoutes = require('./attendance.routes');
 const financialRoutes = require('./financial.routes');
 const poRoutes = require('./po.routes');
 const leaveRoutes = require('./leave.routes');
+const salaryRoutes = require('./salary.routes');
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
@@ -19,5 +20,6 @@ router.use('/attendance', attendanceRoutes);
 router.use('/financial', financialRoutes);
 router.use('/po', poRoutes);
 router.use('/leaves', leaveRoutes);
+router.use('/salary', salaryRoutes);
 
 module.exports = router;

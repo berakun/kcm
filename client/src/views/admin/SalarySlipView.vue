@@ -457,7 +457,7 @@ const availableRoles = [
   { key: 'staff', label: 'Staff' }
 ]
 
-// Default salary settings
+// Default salary settings (fallback if API fails)
 const defaultSettings = () => ({
   super_admin: { gajiPokok: 4500000, makanTransport: 800000, tunjanganKesehatan: 0, tunjanganJabatan: 0, tunjanganHariRaya: 0 },
   admin: { gajiPokok: 3500000, makanTransport: 700000, tunjanganKesehatan: 0, tunjanganJabatan: 0, tunjanganHariRaya: 0 },
@@ -465,35 +465,26 @@ const defaultSettings = () => ({
   _rates: { lemburJam: 0, lemburHari: 0, libur: 25000, terlambat: 5000, absenSetengah: 40000, tidakHadir: 80000 }
 })
 
-// Load settings from localStorage
-function loadSettings() {
+const salarySettings = reactive(defaultSettings())
+const employeeOverrides = ref({})
+
+async function fetchSettings() {
   try {
-    const raw = localStorage.getItem('kcm_salary_settings')
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      const def = defaultSettings()
+    const data = await api.get('/api/salary/settings')
+    if (data && typeof data === 'object') {
       for (const role of ['super_admin', 'admin', 'staff']) {
-        def[role] = { ...def[role], ...(parsed[role] || {}) }
+        if (data[role]) Object.assign(salarySettings[role], data[role])
       }
-      def._rates = { ...def._rates, ...(parsed._rates || {}) }
-      return def
+      if (data._rates) Object.assign(salarySettings._rates, data._rates)
     }
-  } catch (e) { console.error('Failed to load salary settings', e) }
-  return defaultSettings()
+  } catch (e) { console.error('Failed to fetch salary settings', e) }
 }
 
-const salarySettings = reactive(loadSettings())
-
-// Employee overrides from localStorage
-function loadOverrides() {
+async function fetchOverrides() {
   try {
-    const raw = localStorage.getItem('kcm_employee_overrides')
-    return raw ? JSON.parse(raw) : {}
-  } catch (e) { return {} }
-}
-
-function saveOverrides(data) {
-  localStorage.setItem('kcm_employee_overrides', JSON.stringify(data))
+    const data = await api.get('/api/salary/overrides')
+    employeeOverrides.value = (data && typeof data === 'object') ? data : {}
+  } catch (e) { console.error('Failed to fetch overrides', e) }
 }
 
 // Edit modal state
@@ -552,18 +543,28 @@ function openDeductionsModal(row) {
   deductionsModal.show = true
 }
 
-function saveSettings() {
-  localStorage.setItem('kcm_salary_settings', JSON.stringify(salarySettings))
-  showSettings.value = false
-  loadData()
+async function saveSettings() {
+  try {
+    await api.post('/api/salary/settings', { settings: salarySettings })
+    showSettings.value = false
+    loadData()
+  } catch (e) {
+    console.error('Failed to save salary settings', e)
+    alert('Gagal menyimpan pengaturan gaji.')
+  }
 }
 
-function resetSettings() {
+async function resetSettings() {
   const def = defaultSettings()
   for (const role of ['super_admin', 'admin', 'staff']) {
     Object.assign(salarySettings[role], def[role])
   }
   Object.assign(salarySettings._rates, def._rates)
+  try {
+    await api.post('/api/salary/settings', { settings: salarySettings })
+  } catch (e) {
+    console.error('Failed to reset salary settings', e)
+  }
 }
 
 function getConfig(roleKey) {
@@ -664,7 +665,7 @@ async function loadData() {
 
   const targetUsers = users.value.filter(u => ['admin', 'staff'].includes(u.role))
   const rates = getRates()
-  const overrides = loadOverrides()
+  const overrides = employeeOverrides.value
 
   const [yearStr, monthStr] = selectedMonth.value.split('-')
   const year = parseInt(yearStr)
@@ -811,20 +812,28 @@ function openEditModal(row) {
   editModal.tunjanganHariRaya = row.tunjanganHariRaya
 }
 
-function saveEditModal() {
-  const overrides = loadOverrides()
-  overrides[editModal.userId] = {
-    gajiPokok: editModal.gajiPokok || 0,
-    makanTransport: editModal.makanTransport || 0,
-    cuti: editModal.cuti || 0,
-    liburTahunan: editModal.liburTahunan || 0,
-    tunjanganKesehatan: editModal.tunjanganKesehatan || 0,
-    tunjanganJabatan: editModal.tunjanganJabatan || 0,
-    tunjanganHariRaya: editModal.tunjanganHariRaya || 0
+async function saveEditModal() {
+  try {
+    await api.post('/api/salary/overrides', {
+      userId: editModal.userId,
+      data: {
+        gajiPokok: editModal.gajiPokok || 0,
+        makanTransport: editModal.makanTransport || 0,
+        cuti: editModal.cuti || 0,
+        liburTahunan: editModal.liburTahunan || 0,
+        tunjanganKesehatan: editModal.tunjanganKesehatan || 0,
+        tunjanganJabatan: editModal.tunjanganJabatan || 0,
+        tunjanganHariRaya: editModal.tunjanganHariRaya || 0
+      }
+    })
+    // Refresh overrides from DB
+    await fetchOverrides()
+    editModal.show = false
+    loadData()
+  } catch (e) {
+    console.error('Failed to save override', e)
+    alert('Gagal menyimpan data karyawan.')
   }
-  saveOverrides(overrides)
-  editModal.show = false
-  loadData()
 }
 
 // Build a single slip's HTML for print window
@@ -1114,7 +1123,11 @@ function downloadSemuaPDF() {
   html2pdf().from(element).set(opt).save()
 }
 
-onMounted(async () => { await loadUsers(); loadData() })
+onMounted(async () => {
+  await loadUsers()
+  await Promise.all([fetchSettings(), fetchOverrides()])
+  loadData()
+})
 </script>
 
 <style scoped>
