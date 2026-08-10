@@ -69,7 +69,7 @@
 
           <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl shadow-sm border border-gray-150 dark:border-gray-800 flex items-center justify-between">
             <div>
-              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Terlambat (> 08.00)</p>
+              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Terlambat (kelipatan 10m)</p>
               <h3 class="text-2xl font-black mt-2 text-amber-600">{{ summary.terlambat }}</h3>
             </div>
             <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-955/20 text-amber-600 flex items-center justify-center">
@@ -571,12 +571,23 @@ function resetFilters() {
 // Summary Numbers
 const summary = computed(() => {
   const present = rekapLogs.value.filter(l => l.check_in !== null)
-  const late = present.filter(l => isLate(l.check_in))
+  // Terlambat: kelipatan 10 menit dari jam 08:00, max 3x per hari
+  let terlambatMultiplier = 0
+  present.forEach(l => {
+    if (!l.check_in) return
+    const t = l.check_in.includes('T') ? l.check_in.split('T')[1] : (l.check_in.includes(' ') ? l.check_in.split(' ')[1] : l.check_in)
+    const parts = t.split(':')
+    const h = parseInt(parts[0], 10)
+    const m = parseInt(parts[1], 10)
+    if (h < 8 || (h === 8 && m === 0)) return
+    const lateMinutes = (h - 8) * 60 + m
+    terlambatMultiplier += Math.min(Math.ceil(lateMinutes / 10), 3)
+  })
   const absent = rekapLogs.value.filter(l => l.check_in === null && (!l.type || l.type === 'check_in'))
   const izinCuti = rekapLogs.value.filter(l => l.type && l.type !== 'check_in').length
   return {
     hadir: present.length,
-    terlambat: late.length,
+    terlambat: terlambatMultiplier,
     tidak_hadir: absent.length,
     izinCuti
   }
@@ -739,10 +750,21 @@ async function showDetailModal(log) {
   employeeLogs.value = list
   
   const present = list.filter(l => l.check_in !== null)
-  const late = present.filter(l => isLate(l.check_in))
+  // Terlambat: kelipatan 10 menit dari jam 08:00, max 3x per hari
+  let terlambatMultiplier = 0
+  present.forEach(l => {
+    if (!l.check_in) return
+    const t = l.check_in.includes('T') ? l.check_in.split('T')[1] : (l.check_in.includes(' ') ? l.check_in.split(' ')[1] : l.check_in)
+    const parts = t.split(':')
+    const h = parseInt(parts[0], 10)
+    const m = parseInt(parts[1], 10)
+    if (h < 8 || (h === 8 && m === 0)) return
+    const lateMinutes = (h - 8) * 60 + m
+    terlambatMultiplier += Math.min(Math.ceil(lateMinutes / 10), 3)
+  })
   employeeStats.value = {
     hadir: present.length,
-    terlambat: late.length,
+    terlambat: terlambatMultiplier,
     total: list.length
   }
   

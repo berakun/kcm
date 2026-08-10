@@ -304,12 +304,12 @@
             <!-- 1. Terlambat -->
             <div class="py-3 flex justify-between items-start">
               <div>
-                <p class="font-bold text-gray-800 dark:text-gray-200">Terlambat Hadir (10+ menit)</p>
-                <p class="text-[10px] text-gray-400 mt-0.5">Jumlah: {{ deductionsModal.potonganTerlambatCount }} kali</p>
+                <p class="font-bold text-gray-800 dark:text-gray-200">Terlambat Hadir (kelipatan 10m, max 3x)</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">Total multiplier: {{ deductionsModal.potonganTerlambatCount }}x</p>
               </div>
               <div class="text-right">
                 <p class="font-mono text-gray-700 dark:text-gray-300">{{ formatCurrency(deductionsModal.potonganTerlambatCount * deductionsModal.terlambatRate) }}</p>
-                <p class="text-[9px] text-gray-400 mt-0.5">Rate: {{ formatCurrency(deductionsModal.terlambatRate) }}/kali</p>
+                <p class="text-[9px] text-gray-400 mt-0.5">Rate: {{ formatCurrency(deductionsModal.terlambatRate) }}/10menit</p>
               </div>
             </div>
 
@@ -711,15 +711,20 @@ async function loadData() {
       // Hanya potong jika staf memiliki riwayat absen di bulan tersebut, mencegah penalty penuh bulan kosong
       const tidakHadir = logs.length > 0 ? Math.max(0, totalWorkingDays - daysWithAnyRecord) : 0
 
-      // Terlambat: check_in after 08:15 (hour > 8 or hour === 8 && minute > 15)
-      const terlambat = normalLogs.filter(l => {
-        if (!l.check_in) return false
+      // Terlambat: kelipatan 10 menit dari jam 08:00, tanpa batas
+      // 08:01-08:10 = 1x, 08:11-08:20 = 2x, ..., 09:00 = 6x, 09:10 = 7x, dst.
+      let terlambatMultiplier = 0
+      normalLogs.forEach(l => {
+        if (!l.check_in) return
         const t = l.check_in.includes(' ') ? l.check_in.split(' ')[1] : l.check_in
         const parts = t.split(':')
         const h = parseInt(parts[0])
         const m = parseInt(parts[1])
-        return h > 8 || (h === 8 && m > 15)
-      }).length
+        if (h < 8 || (h === 8 && m === 0)) return
+        const lateMinutes = (h - 8) * 60 + m
+        terlambatMultiplier += Math.ceil(lateMinutes / 10)
+      })
+      const terlambat = terlambatMultiplier
 
       // Fetch dynamic approved leave days
       const periodStr = `${calcYear}-${String(calcMonth).padStart(2, '0')}`
@@ -753,7 +758,7 @@ async function loadData() {
       const terlambatRate = rates.terlambat || 5000
       const tidakHadirRate = rates.tidakHadir || 80000
       const absenSetengahRate = rates.absenSetengah || 40000
-      const potonganTerlambat = terlambat * terlambatRate
+      const potonganTerlambat = terlambatMultiplier * terlambatRate
       const potonganTidakHadir = tidakHadir * tidakHadirRate
       const potonganAbsen = absenSetengah * absenSetengahRate
       const totalPotongan = potonganTerlambat + potonganTidakHadir + potonganAbsen + Math.round(potonganMakanTransport)
