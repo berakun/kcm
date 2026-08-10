@@ -304,7 +304,7 @@
             <!-- 1. Terlambat -->
             <div class="py-3 flex justify-between items-start">
               <div>
-                <p class="font-bold text-gray-800 dark:text-gray-200">Terlambat Hadir (kelipatan 10m, max 3x)</p>
+                <p class="font-bold text-gray-800 dark:text-gray-200">Terlambat Hadir (kelipatan 10m)</p>
                 <p class="text-[10px] text-gray-400 mt-0.5">Total multiplier: {{ deductionsModal.potonganTerlambatCount }}x</p>
               </div>
               <div class="text-right">

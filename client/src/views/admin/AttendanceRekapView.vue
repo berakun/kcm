@@ -571,7 +571,7 @@ function resetFilters() {
 // Summary Numbers
 const summary = computed(() => {
   const present = rekapLogs.value.filter(l => l.check_in !== null)
-  // Terlambat: kelipatan 10 menit dari jam 08:00, max 3x per hari
+  // Terlambat: kelipatan 10 menit dari jam 08:00, tanpa batas
   let terlambatMultiplier = 0
   present.forEach(l => {
     if (!l.check_in) return
@@ -581,7 +581,7 @@ const summary = computed(() => {
     const m = parseInt(parts[1], 10)
     if (h < 8 || (h === 8 && m === 0)) return
     const lateMinutes = (h - 8) * 60 + m
-    terlambatMultiplier += Math.min(Math.ceil(lateMinutes / 10), 3)
+    terlambatMultiplier += Math.ceil(lateMinutes / 10)
   })
   const absent = rekapLogs.value.filter(l => l.check_in === null && (!l.type || l.type === 'check_in'))
   const izinCuti = rekapLogs.value.filter(l => l.type && l.type !== 'check_in').length
@@ -750,7 +750,7 @@ async function showDetailModal(log) {
   employeeLogs.value = list
   
   const present = list.filter(l => l.check_in !== null)
-  // Terlambat: kelipatan 10 menit dari jam 08:00, max 3x per hari
+  // Terlambat: kelipatan 10 menit dari jam 08:00, tanpa batas
   let terlambatMultiplier = 0
   present.forEach(l => {
     if (!l.check_in) return
@@ -760,7 +760,7 @@ async function showDetailModal(log) {
     const m = parseInt(parts[1], 10)
     if (h < 8 || (h === 8 && m === 0)) return
     const lateMinutes = (h - 8) * 60 + m
-    terlambatMultiplier += Math.min(Math.ceil(lateMinutes / 10), 3)
+    terlambatMultiplier += Math.ceil(lateMinutes / 10)
   })
   employeeStats.value = {
     hadir: present.length,
