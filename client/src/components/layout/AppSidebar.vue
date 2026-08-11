@@ -136,7 +136,7 @@ const menuAccess = ref({})
 
 async function loadMenuAccess() {
   try {
-    const data = await api.get('/api/menu-access')
+    const data = await api.get('/api/menu-access', { t: Date.now() })
     menuAccess.value = data || {}
   } catch (e) {
     // fallback: use hardcoded roles
