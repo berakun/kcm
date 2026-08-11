@@ -35,18 +35,26 @@ app.use('/api', generalLimiter);
 
 // Load index routes
 const apiRoutes = require('./routes');
-app.use('/api', apiRoutes);
 
-// Serve frontend build (production)
-const clientDistPath = path.join(__dirname, '../client/dist');
+// No-cache for API + index.html (prevent CF/CDN caching)
 app.use((req, res, next) => {
   if (req.path === '/' || req.path === '/index.html') {
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.set('Surrogate-Control', 'no-store');
     res.set('CDN-Cache-Control', 'no-store');
   }
+  if (req.path.startsWith('/api')) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Surrogate-Control', 'no-store');
+    res.set('CDN-Cache-Control', 'no-store');
+  }
   next();
 });
+
+app.use('/api', apiRoutes);
+
+// Serve frontend build (production)
+const clientDistPath = path.join(__dirname, '../client/dist');
 app.use(express.static(clientDistPath));
 
 // SPA fallback — all non-API routes serve index.html
