@@ -101,6 +101,7 @@ onMounted(() => {
     scrollContainer.value.scrollTop = parseInt(savedScroll, 10)
   }
   loadMenuAccess()
+  window.addEventListener('menu-access-changed', loadMenuAccess)
 })
 
 const sidebarOpen = computed({

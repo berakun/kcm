@@ -137,6 +137,7 @@ async function toggleMenu(menuId, role, enabled) {
   accessMap.value[key] = enabled
   try {
     await api.put('/api/menu-access', { menu_id: menuId, role, enabled })
+    window.dispatchEvent(new Event('menu-access-changed'))
     appStore.showAlert(`${menuId} → ${role}: ${enabled ? 'Aktif' : 'Nonaktif'}`, 'success')
   } catch (err) {
     // revert on error
