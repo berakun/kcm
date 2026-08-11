@@ -39,6 +39,12 @@ app.use('/api', apiRoutes);
 
 // Serve frontend build (production)
 const clientDistPath = path.join(__dirname, '../client/dist');
+app.use((req, res, next) => {
+  if (req.path === '/' || req.path === '/index.html') {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  }
+  next();
+});
 app.use(express.static(clientDistPath));
 
 // SPA fallback — all non-API routes serve index.html
