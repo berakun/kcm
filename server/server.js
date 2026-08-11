@@ -42,6 +42,8 @@ const clientDistPath = path.join(__dirname, '../client/dist');
 app.use((req, res, next) => {
   if (req.path === '/' || req.path === '/index.html') {
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Surrogate-Control', 'no-store');
+    res.set('CDN-Cache-Control', 'no-store');
   }
   next();
 });
