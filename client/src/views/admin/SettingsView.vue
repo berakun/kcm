@@ -3,7 +3,8 @@
     <AppSidebar />
     <main class="flex-grow flex flex-col h-screen overflow-hidden">
       <AppTopbar title="Pengaturan Sistem" />
-      <div class="p-8 flex-grow space-y-6 overflow-y-auto max-w-2xl">
+      <div class="p-8 flex-grow overflow-y-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl">
 
         <!-- Role-Based Menu Access -->
         <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm space-y-4">
@@ -87,6 +88,7 @@
               Belum ada IP yang terdaftar.
             </div>
           </div>
+        </div>
         </div>
       </div>
     </main>
